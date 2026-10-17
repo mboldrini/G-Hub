@@ -64,17 +64,17 @@ public class OnceRunner(GhApiClient client, string login, AppConfig config)
 
         Directory.CreateDirectory(weeklyDir);
 
-        // Write meus-prs.md atomically
+        // Grava meus-prs.md atomicamente
         var mdContent = MarkdownWriter.BuildMeusPrs(myPrs, reviewPrs, state.MergedHistory, state.ClosedHistory, config.HistoryDays, now);
         var mdPath = Path.Combine(weeklyDir, "meus-prs.md");
         WriteWithHashCheck(mdPath, mdContent, logger);
 
-        // Write historico.md atomically
+        // Grava historico.md atomicamente
         var histContent = MarkdownWriter.BuildHistorico(state.MergedHistory, state.ClosedHistory, now);
         var histPath = Path.Combine(weeklyDir, "historico.md");
         WriteWithHashCheck(histPath, histContent, logger);
 
-        // Write standup-YYYY-MM-DD.md (daily snapshot, overwritten each run)
+        // Grava standup-YYYY-MM-DD.md (snapshot diário, sobrescrito a cada execução)
         var standupContent = MarkdownWriter.BuildStandup(myPrs, reviewPrs, state.MergedHistory, now);
         var standupPath = Path.Combine(weeklyDir, $"standup-{now.ToLocalTime():yyyy-MM-dd}.md");
         WriteWithHashCheck(standupPath, standupContent, logger);

@@ -2,7 +2,7 @@
 
 A self-hosted Windows dashboard for GitHub pull requests. Runs a local web UI on `localhost:5555` that shows your open PRs, incoming review requests and CI status — with live auto-refresh, audio notifications, and Markdown standup reports.
 
-![Dashboard screenshot](exemplo.png)
+![Dashboard screenshot](demo.png)
 
 ## Download
 
@@ -80,9 +80,9 @@ Output in `./out/`:
 
 | File | Description |
 |------|-------------|
-| `meus-prs.md` | Open PRs + recently merged |
-| `historico.md` | Full merge history |
-| `standup-YYYY-MM-DD.md` | Daily standup snapshot |
+| `meus-prs.md` | PRs abertos + mergeados recentemente |
+| `historico.md` | Histórico completo de merges |
+| `standup-YYYY-MM-DD.md` | Snapshot diário do standup |
 
 ## Audio Notifications
 
