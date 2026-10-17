@@ -2,6 +2,8 @@
 
 A self-hosted Windows dashboard for GitHub pull requests. Runs a local web UI on `localhost:5555` that shows your open PRs, incoming review requests and CI status — with live auto-refresh, audio notifications, and Markdown standup reports.
 
+Built out of a personal need: working across many different repositories at once, GitHub's own interface never felt right for keeping track of everything — and following PRs by email is even worse. This tool gives a single focused view of what actually needs attention.
+
 ![Dashboard screenshot](demo.png)
 
 ## Download
