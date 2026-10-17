@@ -1,0 +1,26 @@
+{
+  "Repo": "org/repo",
+  "Number": 5,
+  "Title": "Bot Comments Only",
+  "Url": "https://github.com/org/repo/pull/5",
+  "IsDraft": false,
+  "CreatedAt": "2026-09-01T10:00:00Z",
+  "UpdatedAt": "2026-09-05T10:00:00Z",
+  "HeadRef": "feat/v",
+  "BaseRef": "main",
+  "ReviewDecision": "REVIEW_REQUIRED",
+  "Mergeable": "MERGEABLE",
+  "MergeStateStatus": "BLOCKED",
+  "LatestReviews": [],
+  "ReviewRequests": [],
+  "LastCommit": { "MessageHeadline": "deps: bump", "CommittedDate": "2026-09-01T12:00:00Z" },
+  "OverallCiStatus": "SUCCESS",
+  "StatusChecks": [],
+  "RecentComments": [
+    { "Author": "dependabot[bot]", "CreatedAt": "2026-09-05T08:00:00Z", "Body": "Rebased" },
+    { "Author": "codecov-commenter", "CreatedAt": "2026-09-05T09:00:00Z", "Body": "Coverage 80%" },
+    { "Author": "mylogin", "CreatedAt": "2026-09-01T11:00:00Z", "Body": "LGTM" }
+  ],
+  "RecentReviews": [],
+  "ReviewThreads": []
+}

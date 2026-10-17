@@ -1,0 +1,252 @@
+diff --git a/PrDashboard/Web/WebAssets.cs b/PrDashboard/Web/WebAssets.cs
+new file mode 100644
+index 0000000..c155e80
+--- /dev/null
++++ b/PrDashboard/Web/WebAssets.cs
+@@ -0,0 +1,193 @@
++namespace PrDashboard.Web;
++
++public static class WebAssets
++{
++    public const string Html = """
++        <!DOCTYPE html>
++        <html lang="pt-BR">
++        <head>
++        <meta charset="UTF-8">
++        <meta name="viewport" content="width=device-width, initial-scale=1">
++        <title>PrDashboard</title>
++        <style>
++        :root{--bg:#0d1117;--bg2:#161b22;--bg3:#21262d;--border:#30363d;--text:#e6edf3;--muted:#8b949e;--red:#f85149;--yellow:#d29922;--green:#3fb950;--blue:#58a6ff}
++        *{box-sizing:border-box;margin:0;padding:0}
++        body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:14px}
++        header{position:sticky;top:0;z-index:10;background:var(--bg2);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}
++        .hl{display:flex;align-items:center;gap:12px}
++        h1{font-size:16px;font-weight:600}
++        .counts{color:var(--muted);font-size:13px}
++        .hr{display:flex;align-items:center;gap:12px;color:var(--muted);font-size:13px;flex-shrink:0}
++        .rbtn{background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:4px 10px;border-radius:6px;cursor:pointer;font-size:13px}
++        .rbtn:hover{background:var(--border)}
++        .dot{color:var(--green)}
++        .dot.loading{color:var(--yellow);animation:pulse 1s infinite}
++        .dot.error{color:var(--red)}
++        @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
++        main{max-width:1100px;margin:0 auto;padding:20px}
++        .ebanner{background:#3d1f1f;border:1px solid var(--red);border-radius:8px;padding:10px 16px;margin-bottom:16px;color:var(--red);display:none}
++        section{margin-bottom:24px}
++        .stitle{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px}
++        .rgroup{margin-bottom:14px}
++        .rlabel{font-size:12px;color:var(--blue);margin-bottom:6px;font-weight:500}
++        .pr{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;margin-bottom:6px;border-left:3px solid transparent}
++        .pr.ci{border-left-color:var(--red)}
++        .pr.ch{border-left-color:var(--red)}
++        .pr.cp{border-left-color:var(--yellow)}
++        .pr.ar{border-left-color:var(--blue)}
++        .pr.ap{border-left-color:var(--green)}
++        .pr.draft{opacity:.65}
++        .ptitle{margin-bottom:5px}
++        .pnum{color:var(--muted);font-size:12px;margin-right:4px}
++        .ptitle a{color:var(--text);text-decoration:none;font-weight:500}
++        .ptitle a:hover{color:var(--blue)}
++        .pmeta{display:flex;gap:8px;flex-wrap:wrap;font-size:12px;color:var(--muted);align-items:center}
++        .b{display:inline-flex;align-items:center;gap:3px;padding:1px 8px;border-radius:20px;font-size:11px;font-weight:500;white-space:nowrap}
++        .br{background:#3d1f1f;color:var(--red)}
++        .by{background:#3d2c0a;color:var(--yellow)}
++        .bg{background:#0f2d18;color:var(--green)}
++        .bb{background:#0c1f3f;color:var(--blue)}
++        .bx{background:var(--bg3);color:var(--muted)}
++        .empty{color:var(--muted);font-style:italic;padding:24px;text-align:center}
++        .scard{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px}
++        .mrow{display:flex;gap:12px;padding:7px 0;border-bottom:1px solid var(--bg3);font-size:13px;align-items:baseline}
++        .mrow:last-child{border-bottom:none}
++        .mrepo{color:var(--muted);min-width:150px;font-size:12px;flex-shrink:0}
++        .mrow a{color:var(--text);text-decoration:none}
++        .mrow a:hover{color:var(--blue)}
++        .mmeta{color:var(--muted);font-size:12px;margin-left:auto;white-space:nowrap;flex-shrink:0}
++        </style>
++        </head>
++        <body>
++        <header>
++          <div class="hl">
++            <span class="dot" id="dot">●</span>
++            <h1>Meus PRs</h1>
++            <span class="counts" id="counts"></span>
++          </div>
++          <div class="hr">
++            <span id="rlabel"></span>
++            <button class="rbtn" onclick="manual()">↻ Atualizar</button>
++          </div>
++        </header>
++        <main>
++          <div class="ebanner" id="err"></div>
++          <div class="empty" id="loading">Carregando...</div>
++          <div id="content" style="display:none">
++            <section id="s-my"></section>
++            <section id="s-rev"></section>
++            <section id="s-mrg"></section>
++          </div>
++        </main>
++        <script>
++        let ivSecs=300,cd=0,tmr=null;
++        const uc={CiFailing:'ci',ChangesRequested:'ch',CommentsPending:'cp',AwaitingReview:'ar',Approved:'ap',Normal:''};
++        function e(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
++        function badge(cls,icon,text){return text?`<span class="b ${cls}">${icon} ${e(text)}</span>`:''}
++        function reviewBadge(p){
++          if(p.reviewState==='Approved')return badge('bg','✓',`${p.reviewedBy} · ${p.reviewedAgo}`);
++          if(p.reviewState==='ChangesRequested')return badge('br','✗','mudanças pedidas');
++          if(p.reviewState==='Pending')return badge('bb','⏳',p.pendingReviewers?.join(', ')||'aguardando');
++          return badge('bx','','sem review');
++        }
++        function ciBadge(ciState,failingCheck){
++          if(ciState==='Passing')return badge('bg','✓','CI');
++          if(ciState==='Failing')return badge('br','✗',failingCheck||'CI');
++          if(ciState==='Pending')return badge('by','⏳','CI');
++          return '';
++        }
++        function commentBadge(p){
++          if(p.commentState==='New'){
++            const t=p.openThreads>0?` · ${p.openThreads} threads`:'';
++            return badge('by','🆕',`${p.lastCommentBy} ${p.lastCommentAgo}${t}`);
++          }
++          if(p.commentState==='HasComments'||p.openThreads>0)return badge('bx','💬',p.openThreads>0?`${p.openThreads} threads`:' ');
++          return '';
++        }
++        function mergeBadge(s){
++          if(s==='Conflict')return badge('br','⚡','conflito');
++          if(s==='BehindBase')return badge('by','↓','desatualizado');
++          return '';
++        }
++        function renderMyPr(p){
++          const cls=(uc[p.urgency]||'')+(p.isDraft?' draft':'');
++          const draft=p.isDraft?badge('bx','','rascunho'):'';
++          return `<div class="pr ${cls}">
++            <div class="ptitle"><span class="pnum">#${p.number}</span><a href="${e(p.url)}" target="_blank" rel="noopener">${e(p.title)}</a></div>
++            <div class="pmeta">${draft}${reviewBadge(p)}${ciBadge(p.ciState,p.failingCheck)}${commentBadge(p)}${mergeBadge(p.mergeState)}<span>${e(p.ageAgo)}</span></div>
++          </div>`;
++        }
++        function renderMyPrs(prs){
++          const s=document.getElementById('s-my');
++          if(!prs.length){s.innerHTML='<div class="stitle">Meus PRs Abertos</div><div class="empty">Nenhum PR aberto.</div>';return}
++          const groups={};
++          for(const p of prs)(groups[p.repo]=groups[p.repo]||[]).push(p);
++          let h='<div class="stitle">Meus PRs Abertos</div>';
++          for(const[repo,list]of Object.entries(groups).sort()){
++            h+=`<div class="rgroup"><div class="rlabel">${e(repo)}</div>${list.map(renderMyPr).join('')}</div>`;
++          }
++          s.innerHTML=h;
++        }
++        function renderReviews(prs){
++          const s=document.getElementById('s-rev');
++          if(!prs.length){s.innerHTML='';return}
++          let h='<div class="stitle">Reviews Pedidos a Mim</div>';
++          for(const p of prs){
++            const ci=ciBadge(p.ciState,p.failingCheck);
++            const cmt=p.lastCommentBy?badge('bx','💬',`${p.lastCommentBy} · ${p.lastCommentAgo}`):'';
++            h+=`<div class="pr">
++              <div class="ptitle"><span class="pnum">#${p.number}</span><a href="${e(p.url)}" target="_blank" rel="noopener">${e(p.title)}</a></div>
++              <div class="pmeta"><span class="bx b">${e(p.author)}</span>${ci}${cmt}<span>${e(p.ageAgo)}</span><span style="color:var(--blue);font-size:11px">${e(p.repo)}</span></div>
++            </div>`;
++          }
++          s.innerHTML=h;
++        }
++        function renderMerged(prs){
++          const s=document.getElementById('s-mrg');
++          if(!prs.length){s.innerHTML='';return}
++          let h='<div class="stitle">Mergeados Recentemente</div><div class="scard">';
++          for(const p of prs)h+=`<div class="mrow"><div class="mrepo">${e(p.repo)}</div><div><a href="${e(p.url)}" target="_blank" rel="noopener">#${p.number} ${e(p.title)}</a></div><div class="mmeta">${e(p.mergedAgo)} · levou ${e(p.duration)}</div></div>`;
++          s.innerHTML=h+'</div>';
++        }
++        function render(data){
++          const dot=document.getElementById('dot');
++          const err=document.getElementById('err');
++          if(data.isLoading){dot.className='dot loading';return}
++          dot.className='dot';
++          document.getElementById('loading').style.display='none';
++          document.getElementById('content').style.display='';
++          const na=data.myPrs.filter(p=>p.needsAction).length;
++          document.getElementById('counts').textContent=`${data.myPrs.length} abertos${na?`, ${na} precisam de ação`:''}`;
++          if(data.error){err.style.display='';err.textContent='Erro: '+data.error}else{err.style.display='none'}
++          renderMyPrs(data.myPrs);
++          renderReviews(data.reviewPrs);
++          renderMerged(data.mergedPrs);
++          ivSecs=data.intervalSeconds||300;
++          startCd();
++        }
++        function startCd(){clearTimeout(tmr);cd=ivSecs;tick()}
++        function tick(){
++          const l=document.getElementById('rlabel');
++          if(cd>0){l.textContent=`próximo refresh em ${cd}s`;cd--;tmr=setTimeout(tick,1000)}
++          else{l.textContent='atualizando...';go()}
++        }
++        async function go(){
++          const dot=document.getElementById('dot');
++          try{
++            const r=await fetch('/api/prs');
++            if(!r.ok)throw new Error('HTTP '+r.status);
++            render(await r.json());
++          }catch(ex){
++            dot.className='dot error';
++            const err=document.getElementById('err');
++            err.style.display='';err.textContent='Falha na conexão: '+ex.message;
++            startCd();
++          }
++        }
++        function manual(){clearTimeout(tmr);document.getElementById('rlabel').textContent='atualizando...';go()}
++        go();
++        </script>
++        </body>
++        </html>
++        """;
++}
+diff --git a/PrDashboard/Web/WebServer.cs b/PrDashboard/Web/WebServer.cs
+new file mode 100644
+index 0000000..0c323c1
+--- /dev/null
++++ b/PrDashboard/Web/WebServer.cs
+@@ -0,0 +1,47 @@
++using System.Diagnostics;
++using System.Text.Json;
++using System.Text.Json.Serialization;
++using Microsoft.AspNetCore.Builder;
++using Microsoft.AspNetCore.Http;
++using Microsoft.Extensions.Logging;
++using PrDashboard.Models;
++
++namespace PrDashboard.Web;
++
++public class WebServer(PrsDataService dataService, AppConfig config)
++{
++    private static readonly JsonSerializerOptions JsonOpts = new()
++    {
++        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
++        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
++    };
++
++    public async Task RunAsync(CancellationToken ct)
++    {
++        var builder = WebApplication.CreateBuilder();
++        builder.WebHost.UseUrls($"http://localhost:{config.WebPort}");
++        builder.WebHost.SuppressStatusMessages(true);
++        builder.Logging.SetMinimumLevel(LogLevel.Warning);
++
++        var app = builder.Build();
++
++        app.MapGet("/", () =>
++            Results.Content(WebAssets.Html, "text/html; charset=utf-8"));
++
++        app.MapGet("/api/prs", () =>
++        {
++            var data = dataService.Cached ?? new PrsApiResponse { IsLoading = true };
++            return Results.Json(data, JsonOpts);
++        });
++
++        app.Lifetime.ApplicationStarted.Register(() =>
++        {
++            var url = $"http://localhost:{config.WebPort}";
++            try { Process.Start(new ProcessStartInfo(url) { UseShellExecute = true }); }
++            catch { /* browser open is best-effort */ }
++        });
++
++        dataService.StartBackgroundRefresh(ct);
++        await app.RunAsync(ct);
++    }
++}

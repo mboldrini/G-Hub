@@ -1,0 +1,24 @@
+{
+  "Repo": "org/repo",
+  "Number": 4,
+  "Title": "New Comment After Commit",
+  "Url": "https://github.com/org/repo/pull/4",
+  "IsDraft": false,
+  "CreatedAt": "2026-09-01T10:00:00Z",
+  "UpdatedAt": "2026-09-04T10:00:00Z",
+  "HeadRef": "feat/w",
+  "BaseRef": "main",
+  "ReviewDecision": "REVIEW_REQUIRED",
+  "Mergeable": "MERGEABLE",
+  "MergeStateStatus": "BLOCKED",
+  "LatestReviews": [],
+  "ReviewRequests": [{ "Login": "reviewer3", "IsTeam": false }],
+  "LastCommit": { "MessageHeadline": "refactor", "CommittedDate": "2026-09-01T12:00:00Z" },
+  "OverallCiStatus": "SUCCESS",
+  "StatusChecks": [],
+  "RecentComments": [
+    { "Author": "reviewer3", "CreatedAt": "2026-09-04T08:00:00Z", "Body": "Looks good but check line 42" }
+  ],
+  "RecentReviews": [],
+  "ReviewThreads": []
+}

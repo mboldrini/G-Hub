@@ -1,0 +1,27 @@
+{
+  "intervalSeconds": 300,
+  "outputDir": "./out",
+  "historyDays": 30,
+  "hostname": "github.com",
+  "ignoredOrgs": [],
+  "ignoredRepos": [],
+  "watchedRepos": [],
+  "hideDrafts": false,
+  "webPort": 5555,
+  "visibleColumns": [
+    "repo",
+    "number",
+    "title",
+    "review",
+    "ci",
+    "comment",
+    "merge",
+    "age"
+  ],
+  "language": "en-US",
+  "theme": "dark",
+  "collapsedRepos": [],
+  "myPrsFilter": "",
+  "myPrsView": "repo",
+  "sidebarOpen": true
+}

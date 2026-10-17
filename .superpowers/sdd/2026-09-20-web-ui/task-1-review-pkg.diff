@@ -1,0 +1,36 @@
+diff --git a/PrDashboard/Models/AppConfig.cs b/PrDashboard/Models/AppConfig.cs
+index 403899c..26d7621 100644
+--- a/PrDashboard/Models/AppConfig.cs
++++ b/PrDashboard/Models/AppConfig.cs
+@@ -4,13 +4,14 @@ namespace PrDashboard.Models;
+ 
+ public class AppConfig
+ {
+     [JsonPropertyName("intervalSeconds")] public int IntervalSeconds { get; set; } = 300;
+     [JsonPropertyName("outputDir")] public string OutputDir { get; set; } = "./out";
+     [JsonPropertyName("historyDays")] public int HistoryDays { get; set; } = 30;
+     [JsonPropertyName("hostname")] public string Hostname { get; set; } = "github.com";
+     [JsonPropertyName("ignoredOrgs")] public List<string> IgnoredOrgs { get; set; } = [];
+     [JsonPropertyName("ignoredRepos")] public List<string> IgnoredRepos { get; set; } = [];
+     [JsonPropertyName("hideDrafts")] public bool HideDrafts { get; set; } = false;
++    [JsonPropertyName("webPort")] public int WebPort { get; set; } = 5555;
+     [JsonPropertyName("visibleColumns")] public List<string> VisibleColumns { get; set; } =
+         ["repo", "number", "title", "review", "ci", "comment", "merge", "age"];
+ }
+diff --git a/PrDashboard/PrDashboard.csproj b/PrDashboard/PrDashboard.csproj
+index cc51269..5782a6c 100644
+--- a/PrDashboard/PrDashboard.csproj
++++ b/PrDashboard/PrDashboard.csproj
+@@ -1,11 +1,11 @@
+-﻿<Project Sdk="Microsoft.NET.Sdk">
++﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+ 
+   <PropertyGroup>
+     <OutputType>Exe</OutputType>
+     <TargetFramework>net8.0</TargetFramework>
+     <ImplicitUsings>enable</ImplicitUsings>
+     <Nullable>enable</Nullable>
+     <AssemblyName>PrDashboard</AssemblyName>
+     <!-- See README.md for publish command -->
+   </PropertyGroup>
+ 

@@ -1,0 +1,19 @@
+# Build outputs
+**/bin/
+**/obj/
+artifacts/
+
+# Sensitive / generated output — never commit
+out/
+fixtures/real/
+**/prs-state.json
+**/logs/
+
+# IDE
+.vs/
+*.user
+.idea/
+
+# OS
+Thumbs.db
+.DS_Store

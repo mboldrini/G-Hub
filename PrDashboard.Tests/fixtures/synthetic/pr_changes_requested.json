@@ -1,0 +1,28 @@
+{
+  "Repo": "org/repo",
+  "Number": 3,
+  "Title": "Needs Changes",
+  "Url": "https://github.com/org/repo/pull/3",
+  "IsDraft": false,
+  "CreatedAt": "2026-09-01T10:00:00Z",
+  "UpdatedAt": "2026-09-03T10:00:00Z",
+  "HeadRef": "feat/z",
+  "BaseRef": "main",
+  "ReviewDecision": "CHANGES_REQUESTED",
+  "Mergeable": "MERGEABLE",
+  "MergeStateStatus": "BLOCKED",
+  "LatestReviews": [
+    { "Author": "reviewer2", "State": "CHANGES_REQUESTED", "SubmittedAt": "2026-09-03T08:00:00Z" }
+  ],
+  "ReviewRequests": [],
+  "LastCommit": { "MessageHeadline": "feat: initial", "CommittedDate": "2026-09-01T12:00:00Z" },
+  "OverallCiStatus": "SUCCESS",
+  "StatusChecks": [],
+  "RecentComments": [
+    { "Author": "reviewer2", "CreatedAt": "2026-09-03T09:00:00Z", "Body": "Please fix this" }
+  ],
+  "RecentReviews": [],
+  "ReviewThreads": [
+    { "IsResolved": false, "IsOutdated": false, "Author": "reviewer2", "CreatedAt": "2026-09-03T08:00:00Z", "Path": "src/foo.cs", "Url": null }
+  ]
+}

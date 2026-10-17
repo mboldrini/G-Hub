@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="PrDashboard.Tests/PrDashboard.Tests.csproj" />
+  <Project Path="PrDashboard/PrDashboard.csproj" />
+</Solution>

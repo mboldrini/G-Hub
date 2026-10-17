@@ -1,0 +1,10 @@
+{
+  "intervalSeconds": 300,
+  "outputDir": "./out",
+  "historyDays": 30,
+  "hostname": "github.com",
+  "ignoredOrgs": [],
+  "ignoredRepos": [],
+  "hideDrafts": false,
+  "visibleColumns": ["repo", "number", "title", "review", "ci", "comment", "merge", "age"]
+}

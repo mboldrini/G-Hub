@@ -1,0 +1,101 @@
+name: Build & Release
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    name: Build, Test & Release
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Compute version
+        id: ver
+        shell: pwsh
+        run: |
+          $n    = ${{ github.run_number }}
+          $date = Get-Date -Format 'yyyy.MM.dd'
+          $asmv = "$date.$n"
+          $tagv = "v$asmv"
+          "VERSION=$tagv"     | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+          "ASM_VERSION=$asmv" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+          Write-Host "Tag: $tagv  |  Assembly: $asmv"
+
+      - name: Restore
+        shell: pwsh
+        run: dotnet restore
+
+      - name: Test
+        shell: pwsh
+        run: dotnet test --no-restore -c Release
+
+      - name: Publish — Normal
+        shell: pwsh
+        run: |
+          dotnet publish PrDashboard/PrDashboard.csproj `
+            -c Release -r win-x64 `
+            --self-contained true `
+            -p:PublishSingleFile=true `
+            -p:IncludeNativeLibrariesForSelfExtract=true `
+            -p:Version="${{ steps.ver.outputs.ASM_VERSION }}" `
+            -p:FileVersion="${{ steps.ver.outputs.ASM_VERSION }}" `
+            -p:AssemblyVersion="${{ steps.ver.outputs.ASM_VERSION }}" `
+            -o artifacts/normal
+
+      - name: Publish — Demo
+        shell: pwsh
+        run: |
+          dotnet publish PrDashboard/PrDashboard.csproj `
+            -c Release -r win-x64 `
+            --self-contained true `
+            -p:PublishSingleFile=true `
+            -p:IncludeNativeLibrariesForSelfExtract=true `
+            -p:Version="${{ steps.ver.outputs.ASM_VERSION }}" `
+            -p:FileVersion="${{ steps.ver.outputs.ASM_VERSION }}" `
+            -p:AssemblyVersion="${{ steps.ver.outputs.ASM_VERSION }}" `
+            -o artifacts/demo
+          # Rename so Program.cs auto-detects demo mode via exe filename
+          Rename-Item -Path "artifacts/demo/PrDashboard.exe" -NewName "PrDashboard-demo.exe"
+
+      - name: Package ZIPs
+        shell: pwsh
+        run: |
+          $v = "${{ steps.ver.outputs.VERSION }}"
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          [IO.Compression.ZipFile]::CreateFromDirectory("$pwd/artifacts/normal", "$pwd/PrDashboard-$v.zip")
+          [IO.Compression.ZipFile]::CreateFromDirectory("$pwd/artifacts/demo",   "$pwd/PrDashboard-demo-$v.zip")
+          Write-Host "Packaged: PrDashboard-$v.zip"
+          Write-Host "Packaged: PrDashboard-demo-$v.zip"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.ver.outputs.VERSION }}
+          name: "PrDashboard ${{ steps.ver.outputs.VERSION }}"
+          body: |
+            **Commit:** `${{ github.sha }}`
+
+            | Download | Description |
+            |----------|-------------|
+            | `PrDashboard-${{ steps.ver.outputs.VERSION }}.zip` | Standard — requires `gh` CLI authenticated |
+            | `PrDashboard-demo-${{ steps.ver.outputs.VERSION }}.zip` | Demo — fake data, no GitHub auth required |
+
+            **Quick start:** extract → run `PrDashboard.exe` → open [http://localhost:5555](http://localhost:5555)
+          files: |
+            PrDashboard-${{ steps.ver.outputs.VERSION }}.zip
+            PrDashboard-demo-${{ steps.ver.outputs.VERSION }}.zip
+          make_latest: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

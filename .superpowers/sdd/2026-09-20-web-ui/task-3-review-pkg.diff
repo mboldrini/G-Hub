@@ -1,0 +1,108 @@
+diff --git a/PrDashboard/Web/PrsDataService.cs b/PrDashboard/Web/PrsDataService.cs
+new file mode 100644
+index 0000000..d0a2a97
+--- /dev/null
++++ b/PrDashboard/Web/PrsDataService.cs
+@@ -0,0 +1,102 @@
++using PrDashboard.GitHub;
++using PrDashboard.Logic;
++using PrDashboard.Models;
++using PrDashboard.UI;
++
++namespace PrDashboard.Web;
++
++public class PrsDataService(GhApiClient client, string login, AppConfig config, bool demoMode)
++{
++    private volatile PrsApiResponse? _cached;
++
++    public PrsApiResponse? Cached => _cached;
++
++    public async Task InitAsync(CancellationToken ct)
++    {
++        if (demoMode)
++        {
++            _cached = BuildDemoResponse();
++            return;
++        }
++        await RefreshAsync(ct);
++    }
++
++    public void StartBackgroundRefresh(CancellationToken ct)
++    {
++        if (demoMode) return;
++        _ = Task.Run(async () =>
++        {
++            while (!ct.IsCancellationRequested)
++            {
++                try { await Task.Delay(TimeSpan.FromSeconds(config.IntervalSeconds), ct); }
++                catch (OperationCanceledException) { return; }
++                await RefreshAsync(ct);
++            }
++        }, ct);
++    }
++
++    private async Task RefreshAsync(CancellationToken ct)
++    {
++        try
++        {
++            var myPrs = await client.FetchMyOpenPrsAsync(login, config, ct);
++            var reviewPrs = await client.FetchReviewRequestedPrsAsync(login, config, ct);
++            var mergedPrs = await client.FetchMergedPrsAsync(login, config.HistoryDays, ct);
++
++            var myKeys = myPrs.Select(p => $"{p.Repo}#{p.Number}").ToHashSet();
++            reviewPrs = reviewPrs
++                .Where(p => !myKeys.Contains($"{p.Repo}#{p.Number}"))
++                .Where(p => !PrAnalyzer.IsBot(p.Author ?? ""))
++                .ToList();
++
++            var now = DateTimeOffset.UtcNow;
++            foreach (var pr in myPrs.Concat(reviewPrs))
++                pr.Status = PrAnalyzer.Analyze(pr, login, now);
++
++            _cached = new PrsApiResponse
++            {
++                Login = login,
++                UpdatedAt = now.ToLocalTime().ToString("HH:mm:ss"),
++                IntervalSeconds = config.IntervalSeconds,
++                MyPrs = myPrs.Select(p => PrsApiDtos.MapMyPr(p, now)).ToList(),
++                ReviewPrs = reviewPrs.Select(p => PrsApiDtos.MapReviewPr(p, now)).ToList(),
++                MergedPrs = mergedPrs.Select(p => PrsApiDtos.MapMergedPr(p, now)).ToList(),
++            };
++        }
++        catch (OperationCanceledException) { throw; }
++        catch (Exception ex)
++        {
++            var prev = _cached;
++            _cached = new PrsApiResponse
++            {
++                Login = prev?.Login ?? login,
++                UpdatedAt = prev?.UpdatedAt ?? "",
++                IntervalSeconds = config.IntervalSeconds,
++                Error = ex.Message,
++                MyPrs = prev?.MyPrs ?? [],
++                ReviewPrs = prev?.ReviewPrs ?? [],
++                MergedPrs = prev?.MergedPrs ?? [],
++            };
++        }
++    }
++
++    private PrsApiResponse BuildDemoResponse()
++    {
++        var (myPrs, reviewPrs, mergedPrs) = DemoData.Generate();
++        var now = DateTimeOffset.UtcNow;
++        foreach (var pr in myPrs.Concat(reviewPrs))
++            pr.Status = PrAnalyzer.Analyze(pr, "demo-user", now);
++
++        return new PrsApiResponse
++        {
++            Login = "demo-user",
++            UpdatedAt = now.ToLocalTime().ToString("HH:mm:ss"),
++            IntervalSeconds = config.IntervalSeconds,
++            MyPrs = myPrs.Select(p => PrsApiDtos.MapMyPr(p, now)).ToList(),
++            ReviewPrs = reviewPrs
++                .Where(p => !PrAnalyzer.IsBot(p.Author ?? ""))
++                .Select(p => PrsApiDtos.MapReviewPr(p, now)).ToList(),
++            MergedPrs = mergedPrs.Select(p => PrsApiDtos.MapMergedPr(p, now)).ToList(),
++        };
++    }
++}

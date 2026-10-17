@@ -1,0 +1,26 @@
+{
+  "Repo": "org/repo",
+  "Number": 1,
+  "Title": "Feature X",
+  "Url": "https://github.com/org/repo/pull/1",
+  "IsDraft": false,
+  "CreatedAt": "2026-09-01T10:00:00Z",
+  "UpdatedAt": "2026-09-02T10:00:00Z",
+  "HeadRef": "feat/x",
+  "BaseRef": "main",
+  "ReviewDecision": "APPROVED",
+  "Mergeable": "MERGEABLE",
+  "MergeStateStatus": "CLEAN",
+  "LatestReviews": [
+    { "Author": "reviewer1", "State": "APPROVED", "SubmittedAt": "2026-09-02T09:00:00Z" }
+  ],
+  "ReviewRequests": [],
+  "LastCommit": { "MessageHeadline": "feat: add x", "CommittedDate": "2026-09-01T12:00:00Z" },
+  "OverallCiStatus": "SUCCESS",
+  "StatusChecks": [
+    { "Name": "build", "Conclusion": "SUCCESS", "State": null, "DetailsUrl": null }
+  ],
+  "RecentComments": [],
+  "RecentReviews": [],
+  "ReviewThreads": []
+}

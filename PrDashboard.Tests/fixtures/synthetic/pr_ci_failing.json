@@ -1,0 +1,25 @@
+{
+  "Repo": "org/repo",
+  "Number": 2,
+  "Title": "Broken CI",
+  "Url": "https://github.com/org/repo/pull/2",
+  "IsDraft": false,
+  "CreatedAt": "2026-09-01T10:00:00Z",
+  "UpdatedAt": "2026-09-02T10:00:00Z",
+  "HeadRef": "feat/y",
+  "BaseRef": "main",
+  "ReviewDecision": "REVIEW_REQUIRED",
+  "Mergeable": "MERGEABLE",
+  "MergeStateStatus": "BLOCKED",
+  "LatestReviews": [],
+  "ReviewRequests": [{ "Login": "reviewer1", "IsTeam": false }],
+  "LastCommit": { "MessageHeadline": "wip", "CommittedDate": "2026-09-01T12:00:00Z" },
+  "OverallCiStatus": "FAILURE",
+  "StatusChecks": [
+    { "Name": "unit-tests", "Conclusion": "FAILURE", "State": null, "DetailsUrl": null },
+    { "Name": "lint", "Conclusion": "SUCCESS", "State": null, "DetailsUrl": null }
+  ],
+  "RecentComments": [],
+  "RecentReviews": [],
+  "ReviewThreads": []
+}

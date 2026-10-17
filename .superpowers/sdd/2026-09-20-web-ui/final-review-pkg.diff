@@ -1,0 +1,750 @@
+diff --git a/PrDashboard/Models/AppConfig.cs b/PrDashboard/Models/AppConfig.cs
+index 403899c..26d7621 100644
+--- a/PrDashboard/Models/AppConfig.cs
++++ b/PrDashboard/Models/AppConfig.cs
+@@ -4,13 +4,14 @@ namespace PrDashboard.Models;
+ 
+ public class AppConfig
+ {
+     [JsonPropertyName("intervalSeconds")] public int IntervalSeconds { get; set; } = 300;
+     [JsonPropertyName("outputDir")] public string OutputDir { get; set; } = "./out";
+     [JsonPropertyName("historyDays")] public int HistoryDays { get; set; } = 30;
+     [JsonPropertyName("hostname")] public string Hostname { get; set; } = "github.com";
+     [JsonPropertyName("ignoredOrgs")] public List<string> IgnoredOrgs { get; set; } = [];
+     [JsonPropertyName("ignoredRepos")] public List<string> IgnoredRepos { get; set; } = [];
+     [JsonPropertyName("hideDrafts")] public bool HideDrafts { get; set; } = false;
++    [JsonPropertyName("webPort")] public int WebPort { get; set; } = 5555;
+     [JsonPropertyName("visibleColumns")] public List<string> VisibleColumns { get; set; } =
+         ["repo", "number", "title", "review", "ci", "comment", "merge", "age"];
+ }
+diff --git a/PrDashboard/PrDashboard.csproj b/PrDashboard/PrDashboard.csproj
+index cc51269..5782a6c 100644
+--- a/PrDashboard/PrDashboard.csproj
++++ b/PrDashboard/PrDashboard.csproj
+@@ -1,11 +1,11 @@
+-﻿<Project Sdk="Microsoft.NET.Sdk">
++﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+ 
+   <PropertyGroup>
+     <OutputType>Exe</OutputType>
+     <TargetFramework>net8.0</TargetFramework>
+     <ImplicitUsings>enable</ImplicitUsings>
+     <Nullable>enable</Nullable>
+     <AssemblyName>PrDashboard</AssemblyName>
+     <!-- See README.md for publish command -->
+   </PropertyGroup>
+ 
+diff --git a/PrDashboard/Program.cs b/PrDashboard/Program.cs
+index 07588bc..2f64769 100644
+--- a/PrDashboard/Program.cs
++++ b/PrDashboard/Program.cs
+@@ -1,17 +1,16 @@
+ using System.Text.Json;
+ using PrDashboard.Config;
+ using PrDashboard.GitHub;
+ using PrDashboard.IO;
+-using PrDashboard.Logic;
+ using PrDashboard.Models;
+-using PrDashboard.UI;
++using PrDashboard.Web;
+ using Spectre.Console;
+ 
+ var configPath = Path.Combine(AppContext.BaseDirectory, "config.json");
+ var config = ConfigLoader.Load(configPath);
+ 
+ AppLogger.Initialize(Path.GetFullPath(config.OutputDir));
+ 
+ bool demo = false, once = false, checkpoint = false;
+ bool noEmoji = false;
+ string? intervalArg = null, hostnameArg = null;
+@@ -40,31 +39,34 @@ for (int i = 0; i < args.Length; i++)
+             break;
+         case "--hostname" when i + 1 < args.Length:
+             hostnameArg = args[++i];
+             break;
+     }
+ }
+ 
+ if (hostnameArg != null) config.Hostname = hostnameArg;
+ if (intervalArg != null && int.TryParse(intervalArg, out int iv)) config.IntervalSeconds = iv;
+ 
+-bool useEmoji = !noEmoji && TerminalDetector.SupportsEmoji;
+-bool useLinks = TerminalDetector.SupportsLinks;
++_ = noEmoji;
+ 
+-// --demo: skip pre-checks, use fake data
++// --demo: web server with fake data, no pre-checks or API calls
+ if (demo)
+ {
+-    var (myPrs, reviewPrs, mergedPrs) = DemoData.Generate();
+-    foreach (var pr in myPrs.Concat(reviewPrs))
+-        pr.Status = PrAnalyzer.Analyze(pr, "demo-user", DateTimeOffset.UtcNow);
+-
+-    await RunDemoDisplayAsync(myPrs, reviewPrs, mergedPrs, useEmoji, useLinks);
++    using var demoCts = new CancellationTokenSource();
++    Console.CancelKeyPress += (_, e) => { e.Cancel = true; demoCts.Cancel(); };
++    AnsiConsole.MarkupLine($"[grey]Modo demo — abrindo http://localhost:{config.WebPort} ...[/]");
++    var demoClient = new GhApiClient(config.Hostname);
++    var demoSvc = new PrsDataService(demoClient, "demo-user", config, demoMode: true);
++    await demoSvc.InitAsync(demoCts.Token);
++    var demoServer = new WebServer(demoSvc, config);
++    try { await demoServer.RunAsync(demoCts.Token); }
++    catch (OperationCanceledException) { }
+     return 0;
+ }
+ 
+ // Pre-checks
+ string login;
+ try
+ {
+     AnsiConsole.MarkupLine("[grey]Verificando pré-requisitos...[/]");
+     login = await PreChecks.RunAllAsync(config.Hostname);
+     AnsiConsole.MarkupLine($"[grey]Autenticado como [bold]{Markup.Escape(login)}[/][/]");
+@@ -91,141 +93,97 @@ if (checkpoint)
+ }
+ 
+ if (once)
+ {
+     var runner = new OnceRunner(client, login, config);
+     using var onceCts = new CancellationTokenSource();
+     Console.CancelKeyPress += (_, e) => { e.Cancel = true; onceCts.Cancel(); };
+     return await runner.RunAsync(onceCts.Token);
+ }
+ 
+-// Default: live screen
++// Default: web dashboard
+ using var cts = new CancellationTokenSource();
+ Console.CancelKeyPress += (_, e) => { e.Cancel = true; cts.Cancel(); };
+ 
+-var dashboard = new LiveDashboard(client, login, config, useEmoji, useLinks);
+-try
+-{
+-    await dashboard.RunAsync(cts.Token);
+-}
+-catch (OperationCanceledException) { /* normal exit */ }
++AnsiConsole.MarkupLine($"[grey]Iniciando dashboard web em http://localhost:{config.WebPort} ...[/]");
++
++var dataService = new PrsDataService(client, login, config, demoMode: false);
++await dataService.InitAsync(cts.Token);
++
++var webServer = new WebServer(dataService, config);
++try { await webServer.RunAsync(cts.Token); }
++catch (OperationCanceledException) { /* normal exit via Ctrl+C */ }
+ catch (Exception ex)
+ {
+     AnsiConsole.MarkupLine($"[red]Erro fatal:[/] {Markup.Escape(ex.Message)}");
+     WaitKeyIfDoubleClick();
+     return 1;
+ }
+ 
+ return 0;
+ 
+ static void PrintHelp()
+ {
+     AnsiConsole.Write(new Panel("""
+         [bold]PrDashboard[/] — Dashboard de Pull Requests do GitHub
+ 
+         [bold]Uso:[/]
+           PrDashboard [opções]
+ 
+         [bold]Opções:[/]
+-          (sem args)          Tela ao vivo com atualização automática
++          (sem args)          Abre dashboard web em http://localhost:5555
+           --once              Busca uma vez, salva arquivos, sai
+-          --demo              Usa dados falsos (sem chamar a API)
++          --demo              Dashboard web com dados falsos (sem chamar a API)
+           --interval <seg>    Intervalo de atualização (sobrescreve config.json)
+           --hostname <host>   GitHub Enterprise hostname
+-          --no-emoji          Símbolos simples para terminais antigos
+           --checkpoint        Salva JSON bruto em fixtures/real/ e exibe na tela
+           --help, -h          Exibe esta ajuda
+ 
+         [bold]Configuração:[/]
+-          config.json ao lado do executável
++          config.json ao lado do executável (webPort: 5555)
+         """).Header("[bold]Ajuda[/]"));
+ }
+ 
+ static void WaitKeyIfDoubleClick()
+ {
+     if (!Console.IsInputRedirected)
+     {
+         AnsiConsole.WriteLine("\nPressione qualquer tecla para sair...");
+         Console.ReadKey(true);
+     }
+ }
+ 
+-static async Task RunDemoDisplayAsync(
+-    List<PullRequest> myPrs, List<PullRequest> reviewPrs, List<MergedPr> mergedPrs,
+-    bool useEmoji, bool useLinks)
+-{
+-    var renderer = new PrRenderer(useEmoji, useLinks);
+-    var now = DateTimeOffset.UtcNow;
+-    var needsAction  = myPrs.Count(p => p.Status?.NeedsMyAction == true);
+-    var readyToMerge = myPrs.Count(PrRenderer.IsReadyToMerge);
+-    var drafts       = myPrs.Count(p => p.IsDraft);
+-    int width; try { width = Console.WindowWidth > 0 ? Console.WindowWidth - 4 : 116; } catch { width = 116; }
+-
+-    try { AnsiConsole.Clear(); } catch { /* ignore when stdout is redirected */ }
+-    AnsiConsole.Write(renderer.BuildHeaderPanel(myPrs.Count, needsAction, readyToMerge, drafts, now, 0));
+-
+-    int navIdx = 0;
+-    foreach (var group in myPrs.GroupBy(p => p.Repo).OrderBy(g => g.Key))
+-    {
+-        AnsiConsole.Write(renderer.BuildRepoSection(group.Key, group.ToList(), -1, navIdx, width, now));
+-        navIdx += group.Count();
+-    }
+-
+-    if (!myPrs.Any())
+-        AnsiConsole.MarkupLine("[grey]  Nenhum PR aberto.[/]");
+-
+-    AnsiConsole.Write(renderer.BuildReviewSection(reviewPrs, -1, navIdx, now));
+-
+-    var concluded = renderer.BuildConcludedSection(mergedPrs);
+-    if (concluded is not null)
+-        AnsiConsole.Write(concluded);
+-
+-    AnsiConsole.Write(renderer.RenderFooter());
+-    AnsiConsole.WriteLine();
+-    AnsiConsole.MarkupLine("[grey](modo --demo, pressione qualquer tecla para sair)[/]");
+-    if (!Console.IsInputRedirected)
+-        Console.ReadKey(true);
+-
+-    await Task.CompletedTask;
+-}
+-
+ async Task RunCheckpointAsync(GhApiClient c, string l, AppConfig cfg)
+ {
+     AnsiConsole.MarkupLine("[bold yellow]CHECKPOINT: buscando PRs reais...[/]");
+-
+     List<PullRequest> myPrs;
+     List<PullRequest> reviewPrs;
+-
+     try
+     {
+         myPrs = await c.FetchMyOpenPrsAsync(l, cfg);
+         reviewPrs = await c.FetchReviewRequestedPrsAsync(l, cfg);
+     }
+     catch (GhException ex)
+     {
+         AnsiConsole.MarkupLine($"[red]Erro na API:[/] {Markup.Escape(ex.Message)}");
+         return;
+     }
+-
+     AnsiConsole.MarkupLine($"[green]Meus PRs abertos:[/] {myPrs.Count}");
+     AnsiConsole.MarkupLine($"[green]Reviews pedidos a mim:[/] {reviewPrs.Count}");
+-
+     var sample = myPrs.Take(3).ToList();
+     AnsiConsole.MarkupLine("\n[bold]Amostra (primeiros 3 PRs — dados sensíveis mascarados):[/]");
+-
+     foreach (var pr in sample)
+     {
+         var masked = MaskSensitive(pr);
+         AnsiConsole.WriteLine(JsonSerializer.Serialize(masked, new JsonSerializerOptions { WriteIndented = true }));
+         AnsiConsole.Write(new Spectre.Console.Rule());
+     }
+-
+     var fixturesDir = Path.Combine(AppContext.BaseDirectory, "fixtures", "real");
+     Directory.CreateDirectory(fixturesDir);
+     var outPath = Path.Combine(fixturesDir, $"checkpoint-{DateTime.UtcNow:yyyyMMdd-HHmmss}.json");
+     var payload = new { myPrs, reviewPrs };
+     await File.WriteAllTextAsync(outPath, JsonSerializer.Serialize(payload, new JsonSerializerOptions { WriteIndented = true }));
+     AnsiConsole.MarkupLine($"\n[grey]JSON completo salvo em (ignorado pelo git): {Markup.Escape(outPath)}[/]");
+ }
+ 
+ static object MaskSensitive(PullRequest pr) => new
+ {
+diff --git a/PrDashboard/Web/PrsApiDtos.cs b/PrDashboard/Web/PrsApiDtos.cs
+new file mode 100644
+index 0000000..e8b70a4
+--- /dev/null
++++ b/PrDashboard/Web/PrsApiDtos.cs
+@@ -0,0 +1,128 @@
++using PrDashboard.Logic;
++using PrDashboard.Models;
++
++namespace PrDashboard.Web;
++
++public class PrsApiResponse
++{
++    public string Login { get; set; } = "";
++    public string UpdatedAt { get; set; } = "";
++    public int IntervalSeconds { get; set; }
++    public bool IsLoading { get; set; }
++    public string? Error { get; set; }
++    public List<PrDto> MyPrs { get; set; } = [];
++    public List<ReviewPrDto> ReviewPrs { get; set; } = [];
++    public List<MergedPrDto> MergedPrs { get; set; } = [];
++}
++
++public class PrDto
++{
++    public string Repo { get; set; } = "";
++    public int Number { get; set; }
++    public string Title { get; set; } = "";
++    public string Url { get; set; } = "";
++    public bool IsDraft { get; set; }
++    public string Author { get; set; } = "";
++    public string AgeAgo { get; set; } = "";
++    public string Urgency { get; set; } = "";
++    public bool NeedsAction { get; set; }
++    public string ReviewState { get; set; } = "";
++    public string? ReviewedBy { get; set; }
++    public string? ReviewedAgo { get; set; }
++    public List<string> PendingReviewers { get; set; } = [];
++    public string CiState { get; set; } = "";
++    public string? FailingCheck { get; set; }
++    public string CommentState { get; set; } = "";
++    public string? LastCommentBy { get; set; }
++    public string? LastCommentAgo { get; set; }
++    public int OpenThreads { get; set; }
++    public string MergeState { get; set; } = "";
++}
++
++public class ReviewPrDto
++{
++    public string Repo { get; set; } = "";
++    public int Number { get; set; }
++    public string Title { get; set; } = "";
++    public string Url { get; set; } = "";
++    public string Author { get; set; } = "";
++    public string AgeAgo { get; set; } = "";
++    public string CiState { get; set; } = "";
++    public string? FailingCheck { get; set; }
++    public string? LastCommentBy { get; set; }
++    public string? LastCommentAgo { get; set; }
++}
++
++public class MergedPrDto
++{
++    public string Repo { get; set; } = "";
++    public int Number { get; set; }
++    public string Title { get; set; } = "";
++    public string Url { get; set; } = "";
++    public string MergedAgo { get; set; } = "";
++    public string Duration { get; set; } = "";
++}
++
++public static class PrsApiDtos
++{
++    public static PrDto MapMyPr(PullRequest pr, DateTimeOffset now)
++    {
++        var s = pr.Status;
++        return new PrDto
++        {
++            Repo = pr.Repo,
++            Number = pr.Number,
++            Title = pr.Title,
++            Url = pr.Url,
++            IsDraft = pr.IsDraft,
++            Author = pr.Author ?? "",
++            AgeAgo = TimeFormatter.Ago(pr.CreatedAt, now),
++            Urgency = s?.Urgency.ToString() ?? "Normal",
++            NeedsAction = s?.NeedsMyAction ?? false,
++            ReviewState = s?.Review.State.ToString() ?? "None",
++            ReviewedBy = s?.Review.Reviewer,
++            ReviewedAgo = s?.Review.Since is { } rs ? TimeFormatter.Duration(rs) + " atrás" : null,
++            PendingReviewers = s?.Review.PendingReviewers ?? [],
++            CiState = s?.Ci.State.ToString() ?? "None",
++            FailingCheck = s?.Ci.FailingCheck,
++            CommentState = s?.Comment.State.ToString() ?? "Quiet",
++            LastCommentBy = s?.Comment.LastAuthor,
++            LastCommentAgo = s?.Comment.Since is { } cs ? TimeFormatter.Duration(cs) + " atrás" : null,
++            OpenThreads = s?.Comment.OpenThreads ?? 0,
++            MergeState = s?.Merge.State.ToString() ?? "Unknown",
++        };
++    }
++
++    public static ReviewPrDto MapReviewPr(PullRequest pr, DateTimeOffset now)
++    {
++        var s = pr.Status;
++        var lastComment = pr.RecentComments
++            .Where(c => c.Author != (pr.Author ?? "") && !PrAnalyzer.IsBot(c.Author))
++            .OrderByDescending(c => c.CreatedAt)
++            .FirstOrDefault();
++
++        return new ReviewPrDto
++        {
++            Repo = pr.Repo,
++            Number = pr.Number,
++            Title = pr.Title,
++            Url = pr.Url,
++            Author = pr.Author ?? "",
++            AgeAgo = TimeFormatter.Ago(pr.CreatedAt, now),
++            CiState = s?.Ci.State.ToString() ?? "None",
++            FailingCheck = s?.Ci.FailingCheck,
++            LastCommentBy = lastComment?.Author,
++            LastCommentAgo = lastComment is not null ? TimeFormatter.Ago(lastComment.CreatedAt, now) : null,
++        };
++    }
++
++    public static MergedPrDto MapMergedPr(MergedPr pr, DateTimeOffset now) => new()
++    {
++        Repo = pr.Repo,
++        Number = pr.Number,
++        Title = pr.Title,
++        Url = pr.Url,
++        MergedAgo = TimeFormatter.Ago(pr.MergedAt, now),
++        Duration = TimeFormatter.Duration(pr.MergedAt - pr.CreatedAt),
++    };
++}
+diff --git a/PrDashboard/Web/PrsDataService.cs b/PrDashboard/Web/PrsDataService.cs
+new file mode 100644
+index 0000000..d0a2a97
+--- /dev/null
++++ b/PrDashboard/Web/PrsDataService.cs
+@@ -0,0 +1,102 @@
++using PrDashboard.GitHub;
++using PrDashboard.Logic;
++using PrDashboard.Models;
++using PrDashboard.UI;
++
++namespace PrDashboard.Web;
++
++public class PrsDataService(GhApiClient client, string login, AppConfig config, bool demoMode)
++{
++    private volatile PrsApiResponse? _cached;
++
++    public PrsApiResponse? Cached => _cached;
++
++    public async Task InitAsync(CancellationToken ct)
++    {
++        if (demoMode)
++        {
++            _cached = BuildDemoResponse();
++            return;
++        }
++        await RefreshAsync(ct);
++    }
++
++    public void StartBackgroundRefresh(CancellationToken ct)
++    {
++        if (demoMode) return;
++        _ = Task.Run(async () =>
++        {
++            while (!ct.IsCancellationRequested)
++            {
++                try { await Task.Delay(TimeSpan.FromSeconds(config.IntervalSeconds), ct); }
++                catch (OperationCanceledException) { return; }
++                await RefreshAsync(ct);
++            }
++        }, ct);
++    }
++
++    private async Task RefreshAsync(CancellationToken ct)
++    {
++        try
++        {
++            var myPrs = await client.FetchMyOpenPrsAsync(login, config, ct);
++            var reviewPrs = await client.FetchReviewRequestedPrsAsync(login, config, ct);
++            var mergedPrs = await client.FetchMergedPrsAsync(login, config.HistoryDays, ct);
++
++            var myKeys = myPrs.Select(p => $"{p.Repo}#{p.Number}").ToHashSet();
++            reviewPrs = reviewPrs
++                .Where(p => !myKeys.Contains($"{p.Repo}#{p.Number}"))
++                .Where(p => !PrAnalyzer.IsBot(p.Author ?? ""))
++                .ToList();
++
++            var now = DateTimeOffset.UtcNow;
++            foreach (var pr in myPrs.Concat(reviewPrs))
++                pr.Status = PrAnalyzer.Analyze(pr, login, now);
++
++            _cached = new PrsApiResponse
++            {
++                Login = login,
++                UpdatedAt = now.ToLocalTime().ToString("HH:mm:ss"),
++                IntervalSeconds = config.IntervalSeconds,
++                MyPrs = myPrs.Select(p => PrsApiDtos.MapMyPr(p, now)).ToList(),
++                ReviewPrs = reviewPrs.Select(p => PrsApiDtos.MapReviewPr(p, now)).ToList(),
++                MergedPrs = mergedPrs.Select(p => PrsApiDtos.MapMergedPr(p, now)).ToList(),
++            };
++        }
++        catch (OperationCanceledException) { throw; }
++        catch (Exception ex)
++        {
++            var prev = _cached;
++            _cached = new PrsApiResponse
++            {
++                Login = prev?.Login ?? login,
++                UpdatedAt = prev?.UpdatedAt ?? "",
++                IntervalSeconds = config.IntervalSeconds,
++                Error = ex.Message,
++                MyPrs = prev?.MyPrs ?? [],
++                ReviewPrs = prev?.ReviewPrs ?? [],
++                MergedPrs = prev?.MergedPrs ?? [],
++            };
++        }
++    }
++
++    private PrsApiResponse BuildDemoResponse()
++    {
++        var (myPrs, reviewPrs, mergedPrs) = DemoData.Generate();
++        var now = DateTimeOffset.UtcNow;
++        foreach (var pr in myPrs.Concat(reviewPrs))
++            pr.Status = PrAnalyzer.Analyze(pr, "demo-user", now);
++
++        return new PrsApiResponse
++        {
++            Login = "demo-user",
++            UpdatedAt = now.ToLocalTime().ToString("HH:mm:ss"),
++            IntervalSeconds = config.IntervalSeconds,
++            MyPrs = myPrs.Select(p => PrsApiDtos.MapMyPr(p, now)).ToList(),
++            ReviewPrs = reviewPrs
++                .Where(p => !PrAnalyzer.IsBot(p.Author ?? ""))
++                .Select(p => PrsApiDtos.MapReviewPr(p, now)).ToList(),
++            MergedPrs = mergedPrs.Select(p => PrsApiDtos.MapMergedPr(p, now)).ToList(),
++        };
++    }
++}
+diff --git a/PrDashboard/Web/WebAssets.cs b/PrDashboard/Web/WebAssets.cs
+new file mode 100644
+index 0000000..c155e80
+--- /dev/null
++++ b/PrDashboard/Web/WebAssets.cs
+@@ -0,0 +1,193 @@
++namespace PrDashboard.Web;
++
++public static class WebAssets
++{
++    public const string Html = """
++        <!DOCTYPE html>
++        <html lang="pt-BR">
++        <head>
++        <meta charset="UTF-8">
++        <meta name="viewport" content="width=device-width, initial-scale=1">
++        <title>PrDashboard</title>
++        <style>
++        :root{--bg:#0d1117;--bg2:#161b22;--bg3:#21262d;--border:#30363d;--text:#e6edf3;--muted:#8b949e;--red:#f85149;--yellow:#d29922;--green:#3fb950;--blue:#58a6ff}
++        *{box-sizing:border-box;margin:0;padding:0}
++        body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:14px}
++        header{position:sticky;top:0;z-index:10;background:var(--bg2);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}
++        .hl{display:flex;align-items:center;gap:12px}
++        h1{font-size:16px;font-weight:600}
++        .counts{color:var(--muted);font-size:13px}
++        .hr{display:flex;align-items:center;gap:12px;color:var(--muted);font-size:13px;flex-shrink:0}
++        .rbtn{background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:4px 10px;border-radius:6px;cursor:pointer;font-size:13px}
++        .rbtn:hover{background:var(--border)}
++        .dot{color:var(--green)}
++        .dot.loading{color:var(--yellow);animation:pulse 1s infinite}
++        .dot.error{color:var(--red)}
++        @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
++        main{max-width:1100px;margin:0 auto;padding:20px}
++        .ebanner{background:#3d1f1f;border:1px solid var(--red);border-radius:8px;padding:10px 16px;margin-bottom:16px;color:var(--red);display:none}
++        section{margin-bottom:24px}
++        .stitle{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px}
++        .rgroup{margin-bottom:14px}
++        .rlabel{font-size:12px;color:var(--blue);margin-bottom:6px;font-weight:500}
++        .pr{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;margin-bottom:6px;border-left:3px solid transparent}
++        .pr.ci{border-left-color:var(--red)}
++        .pr.ch{border-left-color:var(--red)}
++        .pr.cp{border-left-color:var(--yellow)}
++        .pr.ar{border-left-color:var(--blue)}
++        .pr.ap{border-left-color:var(--green)}
++        .pr.draft{opacity:.65}
++        .ptitle{margin-bottom:5px}
++        .pnum{color:var(--muted);font-size:12px;margin-right:4px}
++        .ptitle a{color:var(--text);text-decoration:none;font-weight:500}
++        .ptitle a:hover{color:var(--blue)}
++        .pmeta{display:flex;gap:8px;flex-wrap:wrap;font-size:12px;color:var(--muted);align-items:center}
++        .b{display:inline-flex;align-items:center;gap:3px;padding:1px 8px;border-radius:20px;font-size:11px;font-weight:500;white-space:nowrap}
++        .br{background:#3d1f1f;color:var(--red)}
++        .by{background:#3d2c0a;color:var(--yellow)}
++        .bg{background:#0f2d18;color:var(--green)}
++        .bb{background:#0c1f3f;color:var(--blue)}
++        .bx{background:var(--bg3);color:var(--muted)}
++        .empty{color:var(--muted);font-style:italic;padding:24px;text-align:center}
++        .scard{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px}
++        .mrow{display:flex;gap:12px;padding:7px 0;border-bottom:1px solid var(--bg3);font-size:13px;align-items:baseline}
++        .mrow:last-child{border-bottom:none}
++        .mrepo{color:var(--muted);min-width:150px;font-size:12px;flex-shrink:0}
++        .mrow a{color:var(--text);text-decoration:none}
++        .mrow a:hover{color:var(--blue)}
++        .mmeta{color:var(--muted);font-size:12px;margin-left:auto;white-space:nowrap;flex-shrink:0}
++        </style>
++        </head>
++        <body>
++        <header>
++          <div class="hl">
++            <span class="dot" id="dot">●</span>
++            <h1>Meus PRs</h1>
++            <span class="counts" id="counts"></span>
++          </div>
++          <div class="hr">
++            <span id="rlabel"></span>
++            <button class="rbtn" onclick="manual()">↻ Atualizar</button>
++          </div>
++        </header>
++        <main>
++          <div class="ebanner" id="err"></div>
++          <div class="empty" id="loading">Carregando...</div>
++          <div id="content" style="display:none">
++            <section id="s-my"></section>
++            <section id="s-rev"></section>
++            <section id="s-mrg"></section>
++          </div>
++        </main>
++        <script>
++        let ivSecs=300,cd=0,tmr=null;
++        const uc={CiFailing:'ci',ChangesRequested:'ch',CommentsPending:'cp',AwaitingReview:'ar',Approved:'ap',Normal:''};
++        function e(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
++        function badge(cls,icon,text){return text?`<span class="b ${cls}">${icon} ${e(text)}</span>`:''}
++        function reviewBadge(p){
++          if(p.reviewState==='Approved')return badge('bg','✓',`${p.reviewedBy} · ${p.reviewedAgo}`);
++          if(p.reviewState==='ChangesRequested')return badge('br','✗','mudanças pedidas');
++          if(p.reviewState==='Pending')return badge('bb','⏳',p.pendingReviewers?.join(', ')||'aguardando');
++          return badge('bx','','sem review');
++        }
++        function ciBadge(ciState,failingCheck){
++          if(ciState==='Passing')return badge('bg','✓','CI');
++          if(ciState==='Failing')return badge('br','✗',failingCheck||'CI');
++          if(ciState==='Pending')return badge('by','⏳','CI');
++          return '';
++        }
++        function commentBadge(p){
++          if(p.commentState==='New'){
++            const t=p.openThreads>0?` · ${p.openThreads} threads`:'';
++            return badge('by','🆕',`${p.lastCommentBy} ${p.lastCommentAgo}${t}`);
++          }
++          if(p.commentState==='HasComments'||p.openThreads>0)return badge('bx','💬',p.openThreads>0?`${p.openThreads} threads`:' ');
++          return '';
++        }
++        function mergeBadge(s){
++          if(s==='Conflict')return badge('br','⚡','conflito');
++          if(s==='BehindBase')return badge('by','↓','desatualizado');
++          return '';
++        }
++        function renderMyPr(p){
++          const cls=(uc[p.urgency]||'')+(p.isDraft?' draft':'');
++          const draft=p.isDraft?badge('bx','','rascunho'):'';
++          return `<div class="pr ${cls}">
++            <div class="ptitle"><span class="pnum">#${p.number}</span><a href="${e(p.url)}" target="_blank" rel="noopener">${e(p.title)}</a></div>
++            <div class="pmeta">${draft}${reviewBadge(p)}${ciBadge(p.ciState,p.failingCheck)}${commentBadge(p)}${mergeBadge(p.mergeState)}<span>${e(p.ageAgo)}</span></div>
++          </div>`;
++        }
++        function renderMyPrs(prs){
++          const s=document.getElementById('s-my');
++          if(!prs.length){s.innerHTML='<div class="stitle">Meus PRs Abertos</div><div class="empty">Nenhum PR aberto.</div>';return}
++          const groups={};
++          for(const p of prs)(groups[p.repo]=groups[p.repo]||[]).push(p);
++          let h='<div class="stitle">Meus PRs Abertos</div>';
++          for(const[repo,list]of Object.entries(groups).sort()){
++            h+=`<div class="rgroup"><div class="rlabel">${e(repo)}</div>${list.map(renderMyPr).join('')}</div>`;
++          }
++          s.innerHTML=h;
++        }
++        function renderReviews(prs){
++          const s=document.getElementById('s-rev');
++          if(!prs.length){s.innerHTML='';return}
++          let h='<div class="stitle">Reviews Pedidos a Mim</div>';
++          for(const p of prs){
++            const ci=ciBadge(p.ciState,p.failingCheck);
++            const cmt=p.lastCommentBy?badge('bx','💬',`${p.lastCommentBy} · ${p.lastCommentAgo}`):'';
++            h+=`<div class="pr">
++              <div class="ptitle"><span class="pnum">#${p.number}</span><a href="${e(p.url)}" target="_blank" rel="noopener">${e(p.title)}</a></div>
++              <div class="pmeta"><span class="bx b">${e(p.author)}</span>${ci}${cmt}<span>${e(p.ageAgo)}</span><span style="color:var(--blue);font-size:11px">${e(p.repo)}</span></div>
++            </div>`;
++          }
++          s.innerHTML=h;
++        }
++        function renderMerged(prs){
++          const s=document.getElementById('s-mrg');
++          if(!prs.length){s.innerHTML='';return}
++          let h='<div class="stitle">Mergeados Recentemente</div><div class="scard">';
++          for(const p of prs)h+=`<div class="mrow"><div class="mrepo">${e(p.repo)}</div><div><a href="${e(p.url)}" target="_blank" rel="noopener">#${p.number} ${e(p.title)}</a></div><div class="mmeta">${e(p.mergedAgo)} · levou ${e(p.duration)}</div></div>`;
++          s.innerHTML=h+'</div>';
++        }
++        function render(data){
++          const dot=document.getElementById('dot');
++          const err=document.getElementById('err');
++          if(data.isLoading){dot.className='dot loading';return}
++          dot.className='dot';
++          document.getElementById('loading').style.display='none';
++          document.getElementById('content').style.display='';
++          const na=data.myPrs.filter(p=>p.needsAction).length;
++          document.getElementById('counts').textContent=`${data.myPrs.length} abertos${na?`, ${na} precisam de ação`:''}`;
++          if(data.error){err.style.display='';err.textContent='Erro: '+data.error}else{err.style.display='none'}
++          renderMyPrs(data.myPrs);
++          renderReviews(data.reviewPrs);
++          renderMerged(data.mergedPrs);
++          ivSecs=data.intervalSeconds||300;
++          startCd();
++        }
++        function startCd(){clearTimeout(tmr);cd=ivSecs;tick()}
++        function tick(){
++          const l=document.getElementById('rlabel');
++          if(cd>0){l.textContent=`próximo refresh em ${cd}s`;cd--;tmr=setTimeout(tick,1000)}
++          else{l.textContent='atualizando...';go()}
++        }
++        async function go(){
++          const dot=document.getElementById('dot');
++          try{
++            const r=await fetch('/api/prs');
++            if(!r.ok)throw new Error('HTTP '+r.status);
++            render(await r.json());
++          }catch(ex){
++            dot.className='dot error';
++            const err=document.getElementById('err');
++            err.style.display='';err.textContent='Falha na conexão: '+ex.message;
++            startCd();
++          }
++        }
++        function manual(){clearTimeout(tmr);document.getElementById('rlabel').textContent='atualizando...';go()}
++        go();
++        </script>
++        </body>
++        </html>
++        """;
++}
+diff --git a/PrDashboard/Web/WebServer.cs b/PrDashboard/Web/WebServer.cs
+new file mode 100644
+index 0000000..0c323c1
+--- /dev/null
++++ b/PrDashboard/Web/WebServer.cs
+@@ -0,0 +1,47 @@
++using System.Diagnostics;
++using System.Text.Json;
++using System.Text.Json.Serialization;
++using Microsoft.AspNetCore.Builder;
++using Microsoft.AspNetCore.Http;
++using Microsoft.Extensions.Logging;
++using PrDashboard.Models;
++
++namespace PrDashboard.Web;
++
++public class WebServer(PrsDataService dataService, AppConfig config)
++{
++    private static readonly JsonSerializerOptions JsonOpts = new()
++    {
++        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
++        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
++    };
++
++    public async Task RunAsync(CancellationToken ct)
++    {
++        var builder = WebApplication.CreateBuilder();
++        builder.WebHost.UseUrls($"http://localhost:{config.WebPort}");
++        builder.WebHost.SuppressStatusMessages(true);
++        builder.Logging.SetMinimumLevel(LogLevel.Warning);
++
++        var app = builder.Build();
++
++        app.MapGet("/", () =>
++            Results.Content(WebAssets.Html, "text/html; charset=utf-8"));
++
++        app.MapGet("/api/prs", () =>
++        {
++            var data = dataService.Cached ?? new PrsApiResponse { IsLoading = true };
++            return Results.Json(data, JsonOpts);
++        });
++
++        app.Lifetime.ApplicationStarted.Register(() =>
++        {
++            var url = $"http://localhost:{config.WebPort}";
++            try { Process.Start(new ProcessStartInfo(url) { UseShellExecute = true }); }
++            catch { /* browser open is best-effort */ }
++        });
++
++        dataService.StartBackgroundRefresh(ct);
++        await app.RunAsync(ct);
++    }
++}

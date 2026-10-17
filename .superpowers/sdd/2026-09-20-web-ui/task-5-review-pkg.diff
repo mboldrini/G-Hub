@@ -1,0 +1,220 @@
+diff --git a/PrDashboard/Program.cs b/PrDashboard/Program.cs
+index 07588bc..2f64769 100644
+--- a/PrDashboard/Program.cs
++++ b/PrDashboard/Program.cs
+@@ -1,17 +1,16 @@
+ using System.Text.Json;
+ using PrDashboard.Config;
+ using PrDashboard.GitHub;
+ using PrDashboard.IO;
+-using PrDashboard.Logic;
+ using PrDashboard.Models;
+-using PrDashboard.UI;
++using PrDashboard.Web;
+ using Spectre.Console;
+ 
+ var configPath = Path.Combine(AppContext.BaseDirectory, "config.json");
+ var config = ConfigLoader.Load(configPath);
+ 
+ AppLogger.Initialize(Path.GetFullPath(config.OutputDir));
+ 
+ bool demo = false, once = false, checkpoint = false;
+ bool noEmoji = false;
+ string? intervalArg = null, hostnameArg = null;
+@@ -40,31 +39,34 @@ for (int i = 0; i < args.Length; i++)
+             break;
+         case "--hostname" when i + 1 < args.Length:
+             hostnameArg = args[++i];
+             break;
+     }
+ }
+ 
+ if (hostnameArg != null) config.Hostname = hostnameArg;
+ if (intervalArg != null && int.TryParse(intervalArg, out int iv)) config.IntervalSeconds = iv;
+ 
+-bool useEmoji = !noEmoji && TerminalDetector.SupportsEmoji;
+-bool useLinks = TerminalDetector.SupportsLinks;
++_ = noEmoji;
+ 
+-// --demo: skip pre-checks, use fake data
++// --demo: web server with fake data, no pre-checks or API calls
+ if (demo)
+ {
+-    var (myPrs, reviewPrs, mergedPrs) = DemoData.Generate();
+-    foreach (var pr in myPrs.Concat(reviewPrs))
+-        pr.Status = PrAnalyzer.Analyze(pr, "demo-user", DateTimeOffset.UtcNow);
+-
+-    await RunDemoDisplayAsync(myPrs, reviewPrs, mergedPrs, useEmoji, useLinks);
++    using var demoCts = new CancellationTokenSource();
++    Console.CancelKeyPress += (_, e) => { e.Cancel = true; demoCts.Cancel(); };
++    AnsiConsole.MarkupLine($"[grey]Modo demo — abrindo http://localhost:{config.WebPort} ...[/]");
++    var demoClient = new GhApiClient(config.Hostname);
++    var demoSvc = new PrsDataService(demoClient, "demo-user", config, demoMode: true);
++    await demoSvc.InitAsync(demoCts.Token);
++    var demoServer = new WebServer(demoSvc, config);
++    try { await demoServer.RunAsync(demoCts.Token); }
++    catch (OperationCanceledException) { }
+     return 0;
+ }
+ 
+ // Pre-checks
+ string login;
+ try
+ {
+     AnsiConsole.MarkupLine("[grey]Verificando pré-requisitos...[/]");
+     login = await PreChecks.RunAllAsync(config.Hostname);
+     AnsiConsole.MarkupLine($"[grey]Autenticado como [bold]{Markup.Escape(login)}[/][/]");
+@@ -91,141 +93,97 @@ if (checkpoint)
+ }
+ 
+ if (once)
+ {
+     var runner = new OnceRunner(client, login, config);
+     using var onceCts = new CancellationTokenSource();
+     Console.CancelKeyPress += (_, e) => { e.Cancel = true; onceCts.Cancel(); };
+     return await runner.RunAsync(onceCts.Token);
+ }
+ 
+-// Default: live screen
++// Default: web dashboard
+ using var cts = new CancellationTokenSource();
+ Console.CancelKeyPress += (_, e) => { e.Cancel = true; cts.Cancel(); };
+ 
+-var dashboard = new LiveDashboard(client, login, config, useEmoji, useLinks);
+-try
+-{
+-    await dashboard.RunAsync(cts.Token);
+-}
+-catch (OperationCanceledException) { /* normal exit */ }
++AnsiConsole.MarkupLine($"[grey]Iniciando dashboard web em http://localhost:{config.WebPort} ...[/]");
++
++var dataService = new PrsDataService(client, login, config, demoMode: false);
++await dataService.InitAsync(cts.Token);
++
++var webServer = new WebServer(dataService, config);
++try { await webServer.RunAsync(cts.Token); }
++catch (OperationCanceledException) { /* normal exit via Ctrl+C */ }
+ catch (Exception ex)
+ {
+     AnsiConsole.MarkupLine($"[red]Erro fatal:[/] {Markup.Escape(ex.Message)}");
+     WaitKeyIfDoubleClick();
+     return 1;
+ }
+ 
+ return 0;
+ 
+ static void PrintHelp()
+ {
+     AnsiConsole.Write(new Panel("""
+         [bold]PrDashboard[/] — Dashboard de Pull Requests do GitHub
+ 
+         [bold]Uso:[/]
+           PrDashboard [opções]
+ 
+         [bold]Opções:[/]
+-          (sem args)          Tela ao vivo com atualização automática
++          (sem args)          Abre dashboard web em http://localhost:5555
+           --once              Busca uma vez, salva arquivos, sai
+-          --demo              Usa dados falsos (sem chamar a API)
++          --demo              Dashboard web com dados falsos (sem chamar a API)
+           --interval <seg>    Intervalo de atualização (sobrescreve config.json)
+           --hostname <host>   GitHub Enterprise hostname
+-          --no-emoji          Símbolos simples para terminais antigos
+           --checkpoint        Salva JSON bruto em fixtures/real/ e exibe na tela
+           --help, -h          Exibe esta ajuda
+ 
+         [bold]Configuração:[/]
+-          config.json ao lado do executável
++          config.json ao lado do executável (webPort: 5555)
+         """).Header("[bold]Ajuda[/]"));
+ }
+ 
+ static void WaitKeyIfDoubleClick()
+ {
+     if (!Console.IsInputRedirected)
+     {
+         AnsiConsole.WriteLine("\nPressione qualquer tecla para sair...");
+         Console.ReadKey(true);
+     }
+ }
+ 
+-static async Task RunDemoDisplayAsync(
+-    List<PullRequest> myPrs, List<PullRequest> reviewPrs, List<MergedPr> mergedPrs,
+-    bool useEmoji, bool useLinks)
+-{
+-    var renderer = new PrRenderer(useEmoji, useLinks);
+-    var now = DateTimeOffset.UtcNow;
+-    var needsAction  = myPrs.Count(p => p.Status?.NeedsMyAction == true);
+-    var readyToMerge = myPrs.Count(PrRenderer.IsReadyToMerge);
+-    var drafts       = myPrs.Count(p => p.IsDraft);
+-    int width; try { width = Console.WindowWidth > 0 ? Console.WindowWidth - 4 : 116; } catch { width = 116; }
+-
+-    try { AnsiConsole.Clear(); } catch { /* ignore when stdout is redirected */ }
+-    AnsiConsole.Write(renderer.BuildHeaderPanel(myPrs.Count, needsAction, readyToMerge, drafts, now, 0));
+-
+-    int navIdx = 0;
+-    foreach (var group in myPrs.GroupBy(p => p.Repo).OrderBy(g => g.Key))
+-    {
+-        AnsiConsole.Write(renderer.BuildRepoSection(group.Key, group.ToList(), -1, navIdx, width, now));
+-        navIdx += group.Count();
+-    }
+-
+-    if (!myPrs.Any())
+-        AnsiConsole.MarkupLine("[grey]  Nenhum PR aberto.[/]");
+-
+-    AnsiConsole.Write(renderer.BuildReviewSection(reviewPrs, -1, navIdx, now));
+-
+-    var concluded = renderer.BuildConcludedSection(mergedPrs);
+-    if (concluded is not null)
+-        AnsiConsole.Write(concluded);
+-
+-    AnsiConsole.Write(renderer.RenderFooter());
+-    AnsiConsole.WriteLine();
+-    AnsiConsole.MarkupLine("[grey](modo --demo, pressione qualquer tecla para sair)[/]");
+-    if (!Console.IsInputRedirected)
+-        Console.ReadKey(true);
+-
+-    await Task.CompletedTask;
+-}
+-
+ async Task RunCheckpointAsync(GhApiClient c, string l, AppConfig cfg)
+ {
+     AnsiConsole.MarkupLine("[bold yellow]CHECKPOINT: buscando PRs reais...[/]");
+-
+     List<PullRequest> myPrs;
+     List<PullRequest> reviewPrs;
+-
+     try
+     {
+         myPrs = await c.FetchMyOpenPrsAsync(l, cfg);
+         reviewPrs = await c.FetchReviewRequestedPrsAsync(l, cfg);
+     }
+     catch (GhException ex)
+     {
+         AnsiConsole.MarkupLine($"[red]Erro na API:[/] {Markup.Escape(ex.Message)}");
+         return;
+     }
+-
+     AnsiConsole.MarkupLine($"[green]Meus PRs abertos:[/] {myPrs.Count}");
+     AnsiConsole.MarkupLine($"[green]Reviews pedidos a mim:[/] {reviewPrs.Count}");
+-
+     var sample = myPrs.Take(3).ToList();
+     AnsiConsole.MarkupLine("\n[bold]Amostra (primeiros 3 PRs — dados sensíveis mascarados):[/]");
+-
+     foreach (var pr in sample)
+     {
+         var masked = MaskSensitive(pr);
+         AnsiConsole.WriteLine(JsonSerializer.Serialize(masked, new JsonSerializerOptions { WriteIndented = true }));
+         AnsiConsole.Write(new Spectre.Console.Rule());
+     }
+-
+     var fixturesDir = Path.Combine(AppContext.BaseDirectory, "fixtures", "real");
+     Directory.CreateDirectory(fixturesDir);
+     var outPath = Path.Combine(fixturesDir, $"checkpoint-{DateTime.UtcNow:yyyyMMdd-HHmmss}.json");
+     var payload = new { myPrs, reviewPrs };
+     await File.WriteAllTextAsync(outPath, JsonSerializer.Serialize(payload, new JsonSerializerOptions { WriteIndented = true }));
+     AnsiConsole.MarkupLine($"\n[grey]JSON completo salvo em (ignorado pelo git): {Markup.Escape(outPath)}[/]");
+ }
+ 
+ static object MaskSensitive(PullRequest pr) => new
+ {
