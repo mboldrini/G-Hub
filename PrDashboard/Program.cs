@@ -113,7 +113,7 @@ if (once)
 // Default: web dashboard
 using var cts = new CancellationTokenSource();
 Console.CancelKeyPress += (_, e) => { e.Cancel = true; cts.Cancel(); };
-AppDomain.CurrentDomain.ProcessExit += (_, _) => cts.Cancel();
+AppDomain.CurrentDomain.ProcessExit += (_, _) => { try { cts.Cancel(); } catch (ObjectDisposedException) { } };
 
 AnsiConsole.MarkupLine($"[grey]Iniciando dashboard web em http://localhost:{config.WebPort} ...[/]");
 

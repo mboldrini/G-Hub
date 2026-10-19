@@ -5,6 +5,28 @@
   "hostname": "github.com",
   "ignoredOrgs": [],
   "ignoredRepos": [],
+  "watchedRepos": [],
   "hideDrafts": false,
-  "visibleColumns": ["repo", "number", "title", "review", "ci", "comment", "merge", "age"]
+  "webPort": 5555,
+  "visibleColumns": [
+    "repo",
+    "number",
+    "title",
+    "review",
+    "ci",
+    "comment",
+    "merge",
+    "age"
+  ],
+  "language": "en-US",
+  "theme": "dark",
+  "collapsedRepos": [
+    "acme/backend",
+    "acme/frontend",
+    "acme/infra",
+    "acme/platform"
+  ],
+  "myPrsFilter": "",
+  "myPrsView": "repo",
+  "sidebarOpen": true
 }

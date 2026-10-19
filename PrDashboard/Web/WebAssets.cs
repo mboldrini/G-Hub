@@ -13,6 +13,7 @@ public static class WebAssets
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+        <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
         <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
         <script>
           tailwind.config={darkMode:'class',theme:{extend:{fontFamily:{
@@ -123,6 +124,7 @@ public static class WebAssets
         .notif{background:var(--surf);border:1px solid var(--border);border-radius:10px;padding:12px 36px 12px 14px;box-shadow:0 4px 20px rgba(0,0,0,.25);animation:slideIn .2s ease;pointer-events:all;position:relative}
         .notif.comment{border-left:3px solid var(--amber)}
         .notif.ci{border-left:3px solid var(--red)}
+        .notif.merged{border-left:3px solid var(--green)}
         .nclose{position:absolute;top:6px;right:8px;cursor:pointer;color:var(--muted);background:none;border:none;font-size:18px;line-height:1;padding:2px}
         .nclose:hover{color:var(--text)}
         .ntitle{font-weight:600;font-size:13px;margin-bottom:3px;color:var(--text)}
@@ -183,9 +185,15 @@ public static class WebAssets
                 <svg id="icon-sun" width="16" height="16" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" style="display:none"><circle cx="12" cy="12" r="5"/><path d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72l1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
                 <svg id="icon-moon" width="16" height="16" fill="#818cf8" viewBox="0 0 24 24"><path d="M12 3a9 9 0 109 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 01-4.4 2.26 5.403 5.403 0 01-5.4-5.4c0-1.81.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z"/></svg>
               </button>
-              <!-- Test notification buttons -->
-              <button onclick="testNotif('comment')" title="test notification" style="font-size:11px;padding:4px 6px;border-radius:5px;border:1px solid var(--border);background:var(--subtle);color:var(--muted);cursor:pointer;opacity:.4;transition:opacity .15s" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='.4'">🔔</button>
-              <button onclick="testNotif('ci')" title="test CI" style="font-size:11px;padding:4px 6px;border-radius:5px;border:1px solid var(--border);background:var(--subtle);color:var(--muted);cursor:pointer;opacity:.4;transition:opacity .15s" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='.4'">⚠</button>
+              <!-- Test notification dropdown -->
+              <div style="position:relative;display:inline-block" id="test-dd-wrap">
+                <button onclick="toggleTestDropdown()" title="test notifications" style="font-size:11px;padding:4px 6px;border-radius:5px;border:1px solid var(--border);background:var(--subtle);color:var(--muted);cursor:pointer;opacity:.4;transition:opacity .15s;display:inline-flex;align-items:center;gap:3px" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='.4'">🔔<svg width="8" height="8" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button>
+                <div id="test-dd" style="display:none;position:absolute;right:0;top:calc(100% + 4px);background:var(--surf);border:1px solid var(--border);border-radius:8px;min-width:170px;box-shadow:0 4px 16px rgba(0,0,0,.25);z-index:200;overflow:hidden">
+                  <button onclick="testNotif('comment');closeTestDropdown()" style="display:flex;align-items:center;gap:8px;width:100%;padding:8px 12px;font-size:12px;color:var(--text);background:none;border:none;cursor:pointer;font-family:inherit;transition:background .12s;text-align:left" onmouseover="this.style.background='var(--subtle)'" onmouseout="this.style.background='none'">🔔 <span data-i18n="testComment">Novo comentário</span></button>
+                  <button onclick="testNotif('ci');closeTestDropdown()" style="display:flex;align-items:center;gap:8px;width:100%;padding:8px 12px;font-size:12px;color:var(--text);background:none;border:none;cursor:pointer;font-family:inherit;transition:background .12s;text-align:left" onmouseover="this.style.background='var(--subtle)'" onmouseout="this.style.background='none'">⚠️ <span data-i18n="testCi">CI com erro</span></button>
+                  <button onclick="testNotif('merged');closeTestDropdown()" style="display:flex;align-items:center;gap:8px;width:100%;padding:8px 12px;font-size:12px;color:var(--text);background:none;border:none;cursor:pointer;font-family:inherit;transition:background .12s;text-align:left" onmouseover="this.style.background='var(--subtle)'" onmouseout="this.style.background='none'">🎉 <span data-i18n="testMerged">PR mergeado</span></button>
+                </div>
+              </div>
               <!-- User pill -->
               <div id="upill" title="" style="width:28px;height:28px;border-radius:9999px;background:linear-gradient(135deg,#4f46e5,#0ea5e9);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;flex-shrink:0;cursor:pointer;box-shadow:0 0 0 2px var(--surf)">—</div>
             </div>
@@ -300,6 +308,7 @@ public static class WebAssets
             groupBy:'Agrupar por', groupByRepo:'Repositório', groupByStatus:'Status',
             stCiFailing:'CI com Falha', stChangesRequested:'Mudanças Pedidas', stCommentsPending:'Novos Comentários', stAwaitingReview:'Aguardando Review', stApproved:'Aprovado', stNormal:'Sem Ação',
             collapseAll:'Recolher todos', expandAll:'Expandir todos',
+            testComment:'Novo comentário', testCi:'CI com erro', testMerged:'PR mergeado',
           },
           'en-US':{
             refresh:'Refresh',
@@ -324,6 +333,7 @@ public static class WebAssets
             groupBy:'Group by', groupByRepo:'Repository', groupByStatus:'Status',
             stCiFailing:'CI Failing', stChangesRequested:'Changes Requested', stCommentsPending:'New Comments', stAwaitingReview:'Awaiting Review', stApproved:'Approved', stNormal:'No Action',
             collapseAll:'Collapse all', expandAll:'Expand all',
+            testComment:'New comment', testCi:'CI error', testMerged:'PR merged',
           }
         };
         let currentLang=localStorage.getItem('prd-lang')||'pt-BR';
@@ -361,7 +371,7 @@ public static class WebAssets
 
         // ── Settings API ───────────────────────────────────────────────
         async function saveSettings(patch){
-          const body={collapsedRepos:[...collapsedRepos],myPrsFilter:myPrsFilter??'',myPrsView,sidebarOpen,...patch};
+          const body={collapsedRepos:[...collapsedRepos],myPrsFilter:myPrsFilter??'',myPrsView,sidebarOpen,repoOrder,...patch};
           try{
             const r=await fetch('/api/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
             if(!r.ok)return;
@@ -369,11 +379,12 @@ public static class WebAssets
           }catch{}
         }
         function persistUiState(){
-          fetch('/api/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({collapsedRepos:[...collapsedRepos],myPrsFilter:myPrsFilter??'',myPrsView,sidebarOpen})}).catch(()=>{});
+          fetch('/api/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({collapsedRepos:[...collapsedRepos],myPrsFilter:myPrsFilter??'',myPrsView,sidebarOpen,repoOrder})}).catch(()=>{});
         }
 
         // ── Sidebar ────────────────────────────────────────────────────
         let sidebarOpen=localStorage.getItem('prd-sidebar')!=='0';
+        let repoOrder=[];
         function applySidebar(){
           const g=document.getElementById('main-grid');if(!g)return;
           const lbl=document.getElementById('stoggle-label');
@@ -395,16 +406,31 @@ public static class WebAssets
 
         // ── Notification + audio ───────────────────────────────────────
         let ivSecs=300,cd=0,tmr=null,prevState={},notifInited=false,settingsInitialized=false;
+        let prevMyNums=new Set(),prevMergedNums=new Set();
         function ck(p){return p.commentState+'|'+p.lastCommentBy+'|'+(p.lastCommentAt||p.lastCommentAgo||'')}
         function detectAndNotify(data){
-          const prs=data.myPrs||[];
-          if(!notifInited){for(const p of prs)prevState[p.number]={ck:ck(p),cif:p.ciState==='Failing'};notifInited=true;return}
+          const prs=data.myPrs||[];const mrg=data.mergedPrs||[];
+          if(!notifInited){
+            for(const p of prs)prevState[p.number]={ck:ck(p),cif:p.ciState==='Failing'};
+            prevMyNums=new Set(prs.map(p=>p.number));
+            prevMergedNums=new Set(mrg.map(p=>p.number));
+            notifInited=true;return;
+          }
+          const curMergedNums=new Set(mrg.map(p=>p.number));
+          for(const num of prevMyNums){
+            if(curMergedNums.has(num)&&!prevMergedNums.has(num)){
+              const merged=mrg.find(p=>p.number===num);
+              if(merged){showMergedNotif(merged);playAudio('/audio/done.mp3',1)}
+            }
+          }
           for(const p of prs){
             const prev=prevState[p.number]||{};const k=ck(p);
             if(p.commentState==='New'&&k!==prev.ck){showNotif('comment',p);playAudio('/audio/message.mp3',1)}
             if(p.ciState==='Failing'&&!prev.cif){showNotif('ci',p);playAudio('/audio/error.mp3',3)}
             prevState[p.number]={ck:k,cif:p.ciState==='Failing'};
           }
+          prevMyNums=new Set(prs.map(p=>p.number));
+          prevMergedNums=curMergedNums;
         }
         async function playAudio(src,n){for(let i=0;i<n;i++)await new Promise(r=>{const a=new Audio(src);a.onended=r;a.onerror=r;a.play().catch(r)})}
         function showNotif(type,pr){
@@ -414,7 +440,63 @@ public static class WebAssets
           document.getElementById('nstack').prepend(d);
           setTimeout(()=>{if(d.parentNode)d.remove()},8000);
         }
-        function testNotif(type){showNotif(type,{number:0,title:'PR de teste',repo:'repo/test'});if(type==='comment')playAudio('/audio/message.mp3',1);else playAudio('/audio/error.mp3',3)}
+        function launchConfetti(){
+          if(typeof confetti==='undefined')return;
+          confetti({particleCount:120,spread:70,origin:{y:0.6}});
+          setTimeout(()=>confetti({particleCount:60,spread:100,origin:{x:.2,y:.55}}),200);
+          setTimeout(()=>confetti({particleCount:60,spread:100,origin:{x:.8,y:.55}}),400);
+        }
+        function showMergedNotif(pr){
+          const d=document.createElement('div');d.className='notif merged';
+          const msg=`🎉 ${currentLang==='en-US'?'Merged!':'Mergeado!'} #${pr.number}`;
+          d.innerHTML=`<button class="nclose" onclick="this.parentNode.remove()">×</button><div class="ntitle" style="color:var(--green)">${e(msg)}</div><div class="nbody">${e(pr.repo)} · ${e(pr.title)}</div>`;
+          document.getElementById('nstack').prepend(d);
+          launchConfetti();
+          setTimeout(()=>{if(d.parentNode)d.remove()},12000);
+        }
+        function testNotif(type){
+          if(type==='merged'){playAudio('/audio/done.mp3',1);showMergedNotif({number:42,title:'PR de teste',repo:'repo/test'})}
+          else if(type==='comment'){playAudio('/audio/message.mp3',1);showNotif(type,{number:0,title:'PR de teste',repo:'repo/test'})}
+          else{playAudio('/audio/error.mp3',1);showNotif(type,{number:0,title:'PR de teste',repo:'repo/test'})}
+        }
+        function toggleTestDropdown(){const dd=document.getElementById('test-dd');dd.style.display=dd.style.display==='none'?'block':'none'}
+        function closeTestDropdown(){const dd=document.getElementById('test-dd');if(dd)dd.style.display='none'}
+        document.addEventListener('click',e=>{const w=document.getElementById('test-dd-wrap');if(w&&!w.contains(e.target))closeTestDropdown()})
+
+        // ── Repo ordering ──────────────────────────────────────────────
+        function sortRepos(names){
+          return [...names].sort((a,b)=>{
+            const ia=repoOrder.indexOf(a),ib=repoOrder.indexOf(b);
+            if(ia>=0&&ib>=0)return ia-ib;
+            if(ia>=0)return -1;
+            if(ib>=0)return 1;
+            return a.localeCompare(b);
+          });
+        }
+        function reorderBtns(repo,idx,total){
+          const r=JSON.stringify(repo).replace(/"/g,'&quot;');
+          const bs=`background:none;border:none;cursor:pointer;color:var(--muted);padding:1px 3px;border-radius:3px;line-height:1;font-size:9px;opacity:.3;transition:opacity .12s`;
+          const up=idx>0?`<button onclick="event.stopPropagation();moveRepo(${r},-1)" style="${bs}" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='.3'">▲</button>`:`<span style="display:inline-block;width:15px"></span>`;
+          const dn=idx<total-1?`<button onclick="event.stopPropagation();moveRepo(${r},1)" style="${bs}" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='.3'">▼</button>`:`<span style="display:inline-block;width:15px"></span>`;
+          return `<div style="display:flex;flex-direction:column;gap:1px;margin-left:6px">${up}${dn}</div>`;
+        }
+        function moveRepo(repo,dir){
+          const groups=[...document.querySelectorAll('#s-my .rgroup')];
+          const repos=groups.map(g=>g.dataset.repo).filter(r=>r&&!r.startsWith('__s__'));
+          const idx=repos.indexOf(repo);
+          if(idx<0)return;
+          const ni=idx+dir;
+          if(ni<0||ni>=repos.length)return;
+          [repos[idx],repos[ni]]=[repos[ni],repos[idx]];
+          repoOrder=repos;
+          renderMyPrs(_lastMyPrs);
+          persistUiState();
+        }
+        function cleanupRepoOrder(data){
+          const valid=new Set((data.myPrs||[]).map(p=>p.repo));
+          const next=repoOrder.filter(r=>valid.has(r));
+          if(next.length!==repoOrder.length){repoOrder=next;persistUiState()}
+        }
 
         // ── Badge helpers ──────────────────────────────────────────────
         const UCLS={CiFailing:'u-ci',ChangesRequested:'u-ch',CommentsPending:'u-cp',AwaitingReview:'u-ar',Approved:'u-ap',Normal:''};
@@ -640,9 +722,10 @@ public static class WebAssets
           const s=document.getElementById('s-my');
           if(!filtered.length){s.innerHTML=`<div class="empty">${t('emptyMyPrs')}</div>`;updateCollapseBtn();return}
           const groups={};for(const p of filtered)(groups[p.repo]=groups[p.repo]||[]).push(p);
-          s.innerHTML=Object.entries(groups).sort(([a],[b])=>a.localeCompare(b)).map(([repo,list])=>{
-            const col=collapsedRepos.has(repo);
-            return `<div class="rgroup" data-repo="${e(repo)}"><div class="rgroup-hdr" onclick="toggleRepo(this)"><div style="display:flex;align-items:center;gap:6px"><svg class="rg-chevron" style="${col?'transform:rotate(-90deg)':''}" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg><span style="width:8px;height:8px;border-radius:9999px;background:${groupDot(list)};display:inline-block;flex-shrink:0"></span><span class="rgroup-name">${e(repo)}</span><span class="tcnt">${list.length}</span></div><div style="display:flex;align-items:center;gap:4px">${statusChips(list)}</div></div><div class="rgroup-body"${col?' style="display:none"':''}>${list.map(renderMyCard).join('')}</div></div>`;
+          const sortedRepos=sortRepos(Object.keys(groups));
+          s.innerHTML=sortedRepos.map((repo,idx)=>{
+            const list=groups[repo];const col=collapsedRepos.has(repo);
+            return `<div class="rgroup" data-repo="${e(repo)}"><div class="rgroup-hdr" onclick="toggleRepo(this)"><div style="display:flex;align-items:center;gap:6px"><svg class="rg-chevron" style="${col?'transform:rotate(-90deg)':''}" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg><span style="width:8px;height:8px;border-radius:9999px;background:${groupDot(list)};display:inline-block;flex-shrink:0"></span><span class="rgroup-name">${e(repo)}</span><span class="tcnt">${list.length}</span></div><div style="display:flex;align-items:center;gap:4px">${statusChips(list)}${reorderBtns(repo,idx,sortedRepos.length)}</div></div><div class="rgroup-body"${col?' style="display:none"':''}>${list.map(renderMyCard).join('')}</div></div>`;
           }).join('');
           updateCollapseBtn();
         }
@@ -726,6 +809,7 @@ public static class WebAssets
             if(data.myPrsView==='repo'||data.myPrsView==='status'){myPrsView=data.myPrsView;document.getElementById('vbtn-repo')?.classList.toggle('active',myPrsView==='repo');document.getElementById('vbtn-status')?.classList.toggle('active',myPrsView==='status')}
             myPrsFilter=data.myPrsFilter||null;
             if(data.sidebarOpen!==undefined)sidebarOpen=!!data.sidebarOpen;
+            if(Array.isArray(data.repoOrder))repoOrder=data.repoOrder;
           }
 
           document.getElementById('loading').style.display='none';
@@ -746,6 +830,7 @@ public static class WebAssets
           renderMrgSidebar(data.mergedPrs||[]);
           renderMrgFull(data.mergedPrs||[]);
           cleanupCollapsedRepos(data);
+          cleanupRepoOrder(data);
           applySidebar();
           ivSecs=data.intervalSeconds||300;
           startCd();

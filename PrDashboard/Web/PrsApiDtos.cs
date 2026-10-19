@@ -16,6 +16,7 @@ public class PrsApiResponse
     public string MyPrsFilter { get; set; } = "";
     public string MyPrsView { get; set; } = "repo";
     public bool SidebarOpen { get; set; } = true;
+    public List<string> RepoOrder { get; set; } = [];
     public List<PrDto> MyPrs { get; set; } = [];
     public List<ReviewPrDto> ReviewPrs { get; set; } = [];
     public List<MergedPrDto> MergedPrs { get; set; } = [];

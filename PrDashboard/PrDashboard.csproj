@@ -37,6 +37,9 @@
     <None Update="error.mp3" Condition="Exists('error.mp3')">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="done.mp3" Condition="Exists('done.mp3')">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="github.svg" Condition="Exists('github.svg')">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

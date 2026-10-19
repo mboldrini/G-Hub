@@ -20,8 +20,25 @@
   ],
   "language": "en-US",
   "theme": "dark",
-  "collapsedRepos": [],
+  "collapsedRepos": [
+    "HylandSoftware/hyland-ai-toolkit",
+    "HylandSoftware/vna-deployment",
+    "HylandSoftware/VnaMed",
+    "HylandSoftware/vnamed-performance",
+    "HylandSoftware/VnaPortal",
+    "HylandSoftware/VnaSystem",
+    "HylandSoftware/VnaWeb"
+  ],
   "myPrsFilter": "",
   "myPrsView": "repo",
-  "sidebarOpen": true
+  "sidebarOpen": false,
+  "repoOrder": [
+    "HylandSoftware/hyland-ai-toolkit",
+    "HylandSoftware/VnaMed",
+    "HylandSoftware/vna-deployment",
+    "HylandSoftware/vnamed-performance",
+    "HylandSoftware/VnaPortal",
+    "HylandSoftware/VnaSystem",
+    "HylandSoftware/VnaWeb"
+  ]
 }

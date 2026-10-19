@@ -21,4 +21,5 @@ public class AppConfig
     [JsonPropertyName("myPrsFilter")] public string MyPrsFilter { get; set; } = "";
     [JsonPropertyName("myPrsView")] public string MyPrsView { get; set; } = "repo";
     [JsonPropertyName("sidebarOpen")] public bool SidebarOpen { get; set; } = true;
+    [JsonPropertyName("repoOrder")] public List<string> RepoOrder { get; set; } = [];
 }

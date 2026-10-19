@@ -61,6 +61,7 @@ public class WebServer(PrsDataService dataService, AppConfig config)
             if (body.MyPrsFilter is not null) config.MyPrsFilter = body.MyPrsFilter;
             if (body.MyPrsView is "repo" or "status") config.MyPrsView = body.MyPrsView;
             if (body.SidebarOpen is not null) config.SidebarOpen = body.SidebarOpen.Value;
+        if (body.RepoOrder is not null) config.RepoOrder = body.RepoOrder;
 
             dataService.RemapCached(config.Language);
 
@@ -79,7 +80,7 @@ public class WebServer(PrsDataService dataService, AppConfig config)
 
         app.MapGet("/audio/{file}", (string file) =>
         {
-            if (file != "message.mp3" && file != "error.mp3")
+            if (file != "message.mp3" && file != "error.mp3" && file != "done.mp3")
                 return Results.NotFound();
             var exeDir = Path.GetDirectoryName(Environment.ProcessPath) ?? AppContext.BaseDirectory;
             var path = Path.Combine(exeDir, file);
@@ -119,5 +120,5 @@ public class WebServer(PrsDataService dataService, AppConfig config)
     private record SettingsBody(
         string? Theme, string? Language,
         List<string>? CollapsedRepos, string? MyPrsFilter,
-        string? MyPrsView, bool? SidebarOpen);
+        string? MyPrsView, bool? SidebarOpen, List<string>? RepoOrder);
 }
