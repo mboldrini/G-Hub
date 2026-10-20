@@ -62,6 +62,14 @@ public class WebServer(PrsDataService dataService, AppConfig config)
             if (body.MyPrsView is "repo" or "status") config.MyPrsView = body.MyPrsView;
             if (body.SidebarOpen is not null) config.SidebarOpen = body.SidebarOpen.Value;
         if (body.RepoOrder is not null) config.RepoOrder = body.RepoOrder;
+            if (body.NotifCommentVisual is not null) config.NotifCommentVisual = body.NotifCommentVisual.Value;
+            if (body.NotifCommentAudio is not null) config.NotifCommentAudio = body.NotifCommentAudio.Value;
+            if (body.NotifCiVisual is not null) config.NotifCiVisual = body.NotifCiVisual.Value;
+            if (body.NotifCiAudio is not null) config.NotifCiAudio = body.NotifCiAudio.Value;
+            if (body.NotifMergedVisual is not null) config.NotifMergedVisual = body.NotifMergedVisual.Value;
+            if (body.NotifMergedAudio is not null) config.NotifMergedAudio = body.NotifMergedAudio.Value;
+            if (body.IntervalSeconds is int iv && iv >= 30 && iv <= 3600) config.IntervalSeconds = iv;
+            if (body.HideBotReviews is not null) config.HideBotReviews = body.HideBotReviews.Value;
 
             dataService.RemapCached(config.Language);
 
@@ -120,5 +128,9 @@ public class WebServer(PrsDataService dataService, AppConfig config)
     private record SettingsBody(
         string? Theme, string? Language,
         List<string>? CollapsedRepos, string? MyPrsFilter,
-        string? MyPrsView, bool? SidebarOpen, List<string>? RepoOrder);
+        string? MyPrsView, bool? SidebarOpen, List<string>? RepoOrder,
+        bool? NotifCommentVisual, bool? NotifCommentAudio,
+        bool? NotifCiVisual, bool? NotifCiAudio,
+        bool? NotifMergedVisual, bool? NotifMergedAudio,
+        int? IntervalSeconds, bool? HideBotReviews);
 }

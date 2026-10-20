@@ -2,6 +2,9 @@
 **/bin/
 **/obj/
 artifacts/
+publish/
+publish-demo/
+..publish/
 
 # Sensitive / generated output — never commit
 out/

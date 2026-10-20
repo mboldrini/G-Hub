@@ -39,11 +39,9 @@ public class OnceRunner(GhApiClient client, string login, AppConfig config)
 
         var now = DateTimeOffset.UtcNow;
 
-        // Filter own PRs and bot-authored PRs from review section
         var myKeys = myPrs.Select(p => $"{p.Repo}#{p.Number}").ToHashSet();
         reviewPrs = reviewPrs
             .Where(p => !myKeys.Contains($"{p.Repo}#{p.Number}"))
-            .Where(p => !PrAnalyzer.IsBot(p.Author ?? ""))
             .ToList();
 
         foreach (var pr in myPrs.Concat(reviewPrs))
@@ -65,7 +63,7 @@ public class OnceRunner(GhApiClient client, string login, AppConfig config)
         Directory.CreateDirectory(weeklyDir);
 
         // Grava meus-prs.md atomicamente
-        var mdContent = MarkdownWriter.BuildMeusPrs(myPrs, reviewPrs, state.MergedHistory, state.ClosedHistory, config.HistoryDays, now);
+        var mdContent = MarkdownWriter.BuildMeusPrs(myPrs, state.MergedHistory, state.ClosedHistory, config.HistoryDays, now);
         var mdPath = Path.Combine(weeklyDir, "meus-prs.md");
         WriteWithHashCheck(mdPath, mdContent, logger);
 
@@ -75,9 +73,16 @@ public class OnceRunner(GhApiClient client, string login, AppConfig config)
         WriteWithHashCheck(histPath, histContent, logger);
 
         // Grava standup-YYYY-MM-DD.md (snapshot diário, sobrescrito a cada execução)
-        var standupContent = MarkdownWriter.BuildStandup(myPrs, reviewPrs, state.MergedHistory, now);
+        var standupContent = MarkdownWriter.BuildStandup(myPrs, state.MergedHistory, now);
         var standupPath = Path.Combine(weeklyDir, $"standup-{now.ToLocalTime():yyyy-MM-dd}.md");
         WriteWithHashCheck(standupPath, standupContent, logger);
+
+        // Grava reviews em sub-pasta separada
+        var reviewsDir = Path.Combine(weeklyDir, "reviews");
+        Directory.CreateDirectory(reviewsDir);
+        var reviewsContent = MarkdownWriter.BuildReviews(reviewPrs, now);
+        var reviewsPath = Path.Combine(reviewsDir, $"{now.ToLocalTime():yyyy-MM-dd}.md");
+        WriteWithHashCheck(reviewsPath, reviewsContent, logger);
 
         ToastNotifier.NotifyNewNeedsAction(myPrs);
 

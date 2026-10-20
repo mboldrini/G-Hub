@@ -17,6 +17,13 @@ public class PrsApiResponse
     public string MyPrsView { get; set; } = "repo";
     public bool SidebarOpen { get; set; } = true;
     public List<string> RepoOrder { get; set; } = [];
+    public bool NotifCommentVisual { get; set; } = true;
+    public bool NotifCommentAudio { get; set; } = true;
+    public bool NotifCiVisual { get; set; } = true;
+    public bool NotifCiAudio { get; set; } = true;
+    public bool NotifMergedVisual { get; set; } = true;
+    public bool NotifMergedAudio { get; set; } = true;
+    public bool HideBotReviews { get; set; } = false;
     public List<PrDto> MyPrs { get; set; } = [];
     public List<ReviewPrDto> ReviewPrs { get; set; } = [];
     public List<MergedPrDto> MergedPrs { get; set; } = [];
