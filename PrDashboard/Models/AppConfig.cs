@@ -28,5 +28,9 @@ public class AppConfig
     [JsonPropertyName("notifCiAudio")] public bool NotifCiAudio { get; set; } = true;
     [JsonPropertyName("notifMergedVisual")] public bool NotifMergedVisual { get; set; } = true;
     [JsonPropertyName("notifMergedAudio")] public bool NotifMergedAudio { get; set; } = true;
+    [JsonPropertyName("notifApprovedVisual")] public bool NotifApprovedVisual { get; set; } = true;
+    [JsonPropertyName("notifApprovedAudio")] public bool NotifApprovedAudio { get; set; } = true;
+    [JsonPropertyName("notifReadyVisual")] public bool NotifReadyVisual { get; set; } = true;
+    [JsonPropertyName("notifReadyAudio")] public bool NotifReadyAudio { get; set; } = true;
     [JsonPropertyName("hideBotReviews")] public bool HideBotReviews { get; set; } = false;
 }

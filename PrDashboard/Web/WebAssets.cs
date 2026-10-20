@@ -125,6 +125,8 @@ public static class WebAssets
         .notif.comment{border-left:3px solid var(--amber)}
         .notif.ci{border-left:3px solid var(--red)}
         .notif.merged{border-left:3px solid var(--green)}
+        .notif.approved{border-left:3px solid var(--green)}
+        .notif.ready{border-left:3px solid var(--indigo)}
         .nclose{position:absolute;top:6px;right:8px;cursor:pointer;color:var(--muted);background:none;border:none;font-size:18px;line-height:1;padding:2px}
         .nclose:hover{color:var(--text)}
         .ntitle{font-weight:600;font-size:13px;margin-bottom:3px;color:var(--text)}
@@ -197,6 +199,8 @@ public static class WebAssets
                     <button onclick="testNotif('comment');closeUserMenu()" style="display:flex;align-items:center;gap:8px;width:100%;padding:7px 14px;font-size:12px;color:var(--text);background:none;border:none;cursor:pointer;font-family:inherit;transition:background .12s;text-align:left" onmouseover="this.style.background='var(--subtle)'" onmouseout="this.style.background='none'">🔔 <span data-i18n="testComment">Novo comentário</span></button>
                     <button onclick="testNotif('ci');closeUserMenu()" style="display:flex;align-items:center;gap:8px;width:100%;padding:7px 14px;font-size:12px;color:var(--text);background:none;border:none;cursor:pointer;font-family:inherit;transition:background .12s;text-align:left" onmouseover="this.style.background='var(--subtle)'" onmouseout="this.style.background='none'">⚠️ <span data-i18n="testCi">CI com erro</span></button>
                     <button onclick="testNotif('merged');closeUserMenu()" style="display:flex;align-items:center;gap:8px;width:100%;padding:7px 14px;font-size:12px;color:var(--text);background:none;border:none;cursor:pointer;font-family:inherit;transition:background .12s;text-align:left" onmouseover="this.style.background='var(--subtle)'" onmouseout="this.style.background='none'">🎉 <span data-i18n="testMerged">PR mergeado</span></button>
+                    <button onclick="testNotif('approved');closeUserMenu()" style="display:flex;align-items:center;gap:8px;width:100%;padding:7px 14px;font-size:12px;color:var(--text);background:none;border:none;cursor:pointer;font-family:inherit;transition:background .12s;text-align:left" onmouseover="this.style.background='var(--subtle)'" onmouseout="this.style.background='none'">✅ <span data-i18n="testApproved">PR aprovado</span></button>
+                    <button onclick="testNotif('ready');closeUserMenu()" style="display:flex;align-items:center;gap:8px;width:100%;padding:7px 14px;font-size:12px;color:var(--text);background:none;border:none;cursor:pointer;font-family:inherit;transition:background .12s;text-align:left" onmouseover="this.style.background='var(--subtle)'" onmouseout="this.style.background='none'">🔵 <span data-i18n="testReady">PR saiu de Draft</span></button>
                   </div>
                   <div style="padding:6px 0;border-bottom:1px solid var(--border)">
                     <div style="padding:4px 14px 6px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)" data-i18n="menuConfigNotifs">Notificações</div>
@@ -219,6 +223,20 @@ public static class WebAssets
                       <div style="display:flex;gap:6px">
                         <button id="npref-merged-visual" class="npref-btn" onclick="toggleNotifPref('merged','visual')"><span data-i18n="notifVisual">👁 Aviso</span></button>
                         <button id="npref-merged-audio" class="npref-btn" onclick="toggleNotifPref('merged','audio')"><span data-i18n="notifAudio">🔊 Som</span></button>
+                      </div>
+                    </div>
+                    <div style="padding:4px 14px 8px">
+                      <div style="font-size:12px;font-weight:500;color:var(--text);margin-bottom:5px">✅ <span data-i18n="notifApproved">PR aprovado</span></div>
+                      <div style="display:flex;gap:6px">
+                        <button id="npref-approved-visual" class="npref-btn" onclick="toggleNotifPref('approved','visual')"><span data-i18n="notifVisual">👁 Aviso</span></button>
+                        <button id="npref-approved-audio" class="npref-btn" onclick="toggleNotifPref('approved','audio')"><span data-i18n="notifAudio">🔊 Som</span></button>
+                      </div>
+                    </div>
+                    <div style="padding:4px 14px 4px">
+                      <div style="font-size:12px;font-weight:500;color:var(--text);margin-bottom:5px">🔵 <span data-i18n="notifReady">PR pronto p/ review</span></div>
+                      <div style="display:flex;gap:6px">
+                        <button id="npref-ready-visual" class="npref-btn" onclick="toggleNotifPref('ready','visual')"><span data-i18n="notifVisual">👁 Aviso</span></button>
+                        <button id="npref-ready-audio" class="npref-btn" onclick="toggleNotifPref('ready','audio')"><span data-i18n="notifAudio">🔊 Som</span></button>
                       </div>
                     </div>
                   </div>
@@ -386,10 +404,10 @@ public static class WebAssets
             groupBy:'Agrupar por', groupByRepo:'Repositório', groupByStatus:'Status',
             stCiFailing:'CI com Falha', stChangesRequested:'Mudanças Pedidas', stCommentsPending:'Novos Comentários', stAwaitingReview:'Aguardando Review', stApproved:'Aprovado', stNormal:'Sem Ação',
             collapseAll:'Recolher todos', expandAll:'Expandir todos',
-            testComment:'Novo comentário', testCi:'CI com erro', testMerged:'PR mergeado',
+            testComment:'Novo comentário', testCi:'CI com erro', testMerged:'PR mergeado', testApproved:'PR aprovado', testReady:'PR saiu de Draft',
             menuTestNotifs:'Testar notificações', menuConfigNotifs:'Notificações',
             menuInterval:'Intervalo de atualização', menuSecs:'seg', menuSave:'Salvar',
-            notifComment:'Novo comentário', notifCi:'CI com erro', notifMerged:'PR mergeado',
+            notifComment:'Novo comentário', notifCi:'CI com erro', notifMerged:'PR mergeado', notifApproved:'PR aprovado', notifReady:'PR pronto p/ review',
             notifVisual:'👁 Aviso', notifAudio:'🔊 Som',
             hideBots:'Ocultar bots',
             searchPlaceholder:'Filtrar por título ou repo...',
@@ -421,10 +439,10 @@ public static class WebAssets
             groupBy:'Group by', groupByRepo:'Repository', groupByStatus:'Status',
             stCiFailing:'CI Failing', stChangesRequested:'Changes Requested', stCommentsPending:'New Comments', stAwaitingReview:'Awaiting Review', stApproved:'Approved', stNormal:'No Action',
             collapseAll:'Collapse all', expandAll:'Expand all',
-            testComment:'New comment', testCi:'CI error', testMerged:'PR merged',
+            testComment:'New comment', testCi:'CI error', testMerged:'PR merged', testApproved:'PR approved', testReady:'PR left Draft',
             menuTestNotifs:'Test notifications', menuConfigNotifs:'Notifications',
             menuInterval:'Update interval', menuSecs:'sec', menuSave:'Save',
-            notifComment:'New comment', notifCi:'CI error', notifMerged:'PR merged',
+            notifComment:'New comment', notifCi:'CI error', notifMerged:'PR merged', notifApproved:'PR approved', notifReady:'PR ready for review',
             notifVisual:'👁 Alert', notifAudio:'🔊 Sound',
             hideBots:'Hide bots',
             searchPlaceholder:'Filter by title or repo...',
@@ -507,7 +525,7 @@ public static class WebAssets
 
         // ── Notification + audio ───────────────────────────────────────
         let ivSecs=300,cd=0,tmr=null,prevState={},notifInited=false,settingsInitialized=false;
-        let notifPrefs={commentVisual:true,commentAudio:true,ciVisual:true,ciAudio:true,mergedVisual:true,mergedAudio:true};
+        let notifPrefs={commentVisual:true,commentAudio:true,ciVisual:true,ciAudio:true,mergedVisual:true,mergedAudio:true,approvedVisual:true,approvedAudio:true,readyVisual:true,readyAudio:true};
         let hideBotReviews=false;
         let prevMyNums=new Set(),prevMergedNums=new Set();
         function ck(p){return p.commentState+'|'+p.lastCommentBy+'|'+(p.lastCommentAt||p.lastCommentAgo||'')}
@@ -521,7 +539,7 @@ public static class WebAssets
         function detectAndNotify(data){
           const prs=data.myPrs||[];const mrg=data.mergedPrs||[];
           if(!notifInited){
-            for(const p of prs)prevState[p.number]={ck:ck(p),cif:p.ciState==='Failing'};
+            for(const p of prs)prevState[p.number]={ck:ck(p),cif:p.ciState==='Failing',rv:p.reviewState,dr:p.isDraft};
             prevMyNums=new Set(prs.map(p=>p.number));
             prevMergedNums=new Set(mrg.map(p=>p.number));
             notifInited=true;return;
@@ -537,7 +555,9 @@ public static class WebAssets
             const prev=prevState[p.number]||{};const k=ck(p);
             if(p.commentState==='New'&&k!==prev.ck){if(notifPrefs.commentVisual)showNotif('comment',p);if(notifPrefs.commentAudio)playAudio('/audio/message.mp3',1);logNotifToServer('comment',p)}
             if(p.ciState==='Failing'&&!prev.cif){if(notifPrefs.ciVisual)showNotif('ci',p);if(notifPrefs.ciAudio)playAudio('/audio/error.mp3',3);logNotifToServer('ci',p)}
-            prevState[p.number]={ck:k,cif:p.ciState==='Failing'};
+            if(p.reviewState==='Approved'&&prev.rv&&prev.rv!=='Approved'){if(notifPrefs.approvedVisual)showApprovedNotif(p);if(notifPrefs.approvedAudio)playAudio('/audio/done.mp3',1)}
+            if(!p.isDraft&&prev.dr===true){if(notifPrefs.readyVisual)showNotif('ready',p);if(notifPrefs.readyAudio)playAudio('/audio/done.mp3',1)}
+            prevState[p.number]={ck:k,cif:p.ciState==='Failing',rv:p.reviewState,dr:p.isDraft};
           }
           prevMyNums=new Set(prs.map(p=>p.number));
           prevMergedNums=curMergedNums;
@@ -566,13 +586,22 @@ public static class WebAssets
           launchConfetti();
           setTimeout(()=>{if(d.parentNode)d.remove()},12000);
         }
+        function showApprovedNotif(pr){
+          const d=document.createElement('div');d.className='notif approved';
+          const msg=`✅ ${currentLang==='en-US'?'Approved!':'Aprovado!'} #${pr.number} ${currentLang==='en-US'?'by':'por'} ${e(pr.reviewedBy||'?')}`;
+          d.innerHTML=`<button class="nclose" onclick="this.parentNode.remove()">×</button><div class="ntitle" style="color:var(--green)">${msg}</div><div class="nbody">${e(pr.repo)} · ${e(pr.title)}</div>`;
+          document.getElementById('nstack').prepend(d);
+          setTimeout(()=>{if(d.parentNode)d.remove()},10000);
+        }
         function testNotif(type){
           if(type==='merged'){if(notifPrefs.mergedAudio)playAudio('/audio/done.mp3',1);if(notifPrefs.mergedVisual)showMergedNotif({number:42,title:'PR de teste',repo:'repo/test'})}
           else if(type==='comment'){if(notifPrefs.commentAudio)playAudio('/audio/message.mp3',1);if(notifPrefs.commentVisual)showNotif(type,{number:0,title:'PR de teste',repo:'repo/test'})}
+          else if(type==='approved'){if(notifPrefs.approvedAudio)playAudio('/audio/done.mp3',1);if(notifPrefs.approvedVisual)showApprovedNotif({number:42,title:'PR de teste',repo:'repo/test',reviewedBy:'colega'})}
+          else if(type==='ready'){if(notifPrefs.readyAudio)playAudio('/audio/done.mp3',1);if(notifPrefs.readyVisual)showNotif('ready',{number:0,title:'PR de teste',repo:'repo/test'})}
           else{if(notifPrefs.ciAudio)playAudio('/audio/error.mp3',1);if(notifPrefs.ciVisual)showNotif(type,{number:0,title:'PR de teste',repo:'repo/test'})}
         }
         function updateNotifPrefButtons(){
-          const pairs=[['npref-comment-visual',notifPrefs.commentVisual],['npref-comment-audio',notifPrefs.commentAudio],['npref-ci-visual',notifPrefs.ciVisual],['npref-ci-audio',notifPrefs.ciAudio],['npref-merged-visual',notifPrefs.mergedVisual],['npref-merged-audio',notifPrefs.mergedAudio]];
+          const pairs=[['npref-comment-visual',notifPrefs.commentVisual],['npref-comment-audio',notifPrefs.commentAudio],['npref-ci-visual',notifPrefs.ciVisual],['npref-ci-audio',notifPrefs.ciAudio],['npref-merged-visual',notifPrefs.mergedVisual],['npref-merged-audio',notifPrefs.mergedAudio],['npref-approved-visual',notifPrefs.approvedVisual],['npref-approved-audio',notifPrefs.approvedAudio],['npref-ready-visual',notifPrefs.readyVisual],['npref-ready-audio',notifPrefs.readyAudio]];
           for(const[id,on]of pairs){const el=document.getElementById(id);if(el)el.classList.toggle('on',on)}
         }
         function isBotAuthor(a){
@@ -1083,6 +1112,10 @@ public static class WebAssets
             if(data.notifCiAudio!==undefined)notifPrefs.ciAudio=!!data.notifCiAudio;
             if(data.notifMergedVisual!==undefined)notifPrefs.mergedVisual=!!data.notifMergedVisual;
             if(data.notifMergedAudio!==undefined)notifPrefs.mergedAudio=!!data.notifMergedAudio;
+            if(data.notifApprovedVisual!==undefined)notifPrefs.approvedVisual=data.notifApprovedVisual;
+            if(data.notifApprovedAudio!==undefined)notifPrefs.approvedAudio=data.notifApprovedAudio;
+            if(data.notifReadyVisual!==undefined)notifPrefs.readyVisual=data.notifReadyVisual;
+            if(data.notifReadyAudio!==undefined)notifPrefs.readyAudio=data.notifReadyAudio;
             if(data.hideBotReviews!==undefined)hideBotReviews=!!data.hideBotReviews;
             const inp=document.getElementById('interval-input');if(inp)inp.value=data.intervalSeconds||300;
             updateNotifPrefButtons();
