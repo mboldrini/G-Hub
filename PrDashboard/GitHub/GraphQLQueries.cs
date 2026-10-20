@@ -21,6 +21,9 @@ public static class GraphQLQueries
                 additions
                 deletions
                 changedFiles
+                assignees(first: 10) {
+                  nodes { login }
+                }
                 mergeable
                 mergeStateStatus
                 repository { nameWithOwner }

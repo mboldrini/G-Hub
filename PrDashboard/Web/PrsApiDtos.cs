@@ -46,6 +46,8 @@ public class PrDto
     public List<string> PendingReviewers { get; set; } = [];
     public string CiState { get; set; } = "";
     public string? FailingCheck { get; set; }
+    public List<string> FailingChecks { get; set; } = [];
+    public string CreatedAtIso { get; set; } = "";
     public string CommentState { get; set; } = "";
     public string? LastCommentBy { get; set; }
     public string? LastCommentAgo { get; set; }
@@ -53,6 +55,7 @@ public class PrDto
     public int OpenThreads { get; set; }
     public string MergeState { get; set; } = "";
     public string HeadRef { get; set; } = "";
+    public List<string> Assignees { get; set; } = [];
 }
 
 public class ReviewPrDto
@@ -68,6 +71,8 @@ public class ReviewPrDto
     public string Urgency { get; set; } = "";
     public string CiState { get; set; } = "";
     public string? FailingCheck { get; set; }
+    public List<string> FailingChecks { get; set; } = [];
+    public string CreatedAtIso { get; set; } = "";
     public string CommentState { get; set; } = "";
     public string? LastCommentBy { get; set; }
     public string? LastCommentAgo { get; set; }
@@ -108,6 +113,8 @@ public static class PrsApiDtos
             PendingReviewers = s?.Review.PendingReviewers ?? [],
             CiState = s?.Ci.State.ToString() ?? "None",
             FailingCheck = s?.Ci.FailingCheck,
+            FailingChecks = s?.Ci.FailingChecks ?? [],
+            CreatedAtIso = pr.CreatedAt.ToString("O"),
             CommentState = s?.Comment.State.ToString() ?? "Quiet",
             LastCommentBy = s?.Comment.LastAuthor,
             LastCommentAgo = s?.Comment.Since is { } cs ? $"{TimeFormatter.Duration(cs, lang)} {suffix}" : null,
@@ -115,6 +122,7 @@ public static class PrsApiDtos
             OpenThreads = s?.Comment.OpenThreads ?? 0,
             MergeState = s?.Merge.State.ToString() ?? "Unknown",
             HeadRef = pr.HeadRef,
+            Assignees = pr.Assignees,
         };
     }
 
@@ -135,6 +143,8 @@ public static class PrsApiDtos
             Urgency = s?.Urgency.ToString() ?? "Normal",
             CiState = s?.Ci.State.ToString() ?? "None",
             FailingCheck = s?.Ci.FailingCheck,
+            FailingChecks = s?.Ci.FailingChecks ?? [],
+            CreatedAtIso = pr.CreatedAt.ToString("O"),
             CommentState = s?.Comment.State.ToString() ?? "Quiet",
             LastCommentBy = s?.Comment.LastAuthor,
             LastCommentAgo = s?.Comment.Since is { } cs ? $"{TimeFormatter.Duration(cs, lang)} {suffix}" : null,

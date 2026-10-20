@@ -195,6 +195,7 @@ public class GhApiClient(string hostname)
 
             pr.LatestReviews = ParseReviews(node["latestReviews"]?["nodes"]);
             pr.ReviewRequests = ParseReviewRequests(node["reviewRequests"]?["nodes"]);
+            pr.Assignees = ParseLogins(node["assignees"]?["nodes"]);
             pr.RecentComments = ParseComments(node["comments"]?["nodes"]);
             pr.RecentReviews = ParseReviews(node["reviews"]?["nodes"]);
             pr.ReviewThreads = ParseThreads(node["reviewThreads"]?["nodes"]);
@@ -253,6 +254,19 @@ public class GhApiClient(string hostname)
             };
         }
         catch { return null; }
+    }
+
+    private static List<string> ParseLogins(JsonNode? nodes)
+    {
+        var list = new List<string>();
+        if (nodes is not JsonArray arr) return list;
+        foreach (var n in arr)
+        {
+            if (n is null) continue;
+            var login = n["login"]?.GetValue<string>();
+            if (!string.IsNullOrWhiteSpace(login)) list.Add(login);
+        }
+        return list;
     }
 
     private static List<Review> ParseReviews(JsonNode? nodes)

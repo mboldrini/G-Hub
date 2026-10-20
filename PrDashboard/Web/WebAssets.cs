@@ -611,9 +611,9 @@ public static class WebAssets
           const rv=(p.pendingReviewers||[]).join(', ');
           return `<div class="prc-meta" style="margin-top:4px">${b('bv',t('awaitingApproval'))}${rv?b('bx',rv):''}</div>`;
         }
-        function bCI(state,fail){
+        function bCI(state,fail,failingChecks){
           if(state==='Passing')return b('bg',t('ciPassing'));
-          if(state==='Failing')return b('br','✗ '+(fail||'CI'));
+          if(state==='Failing'){const label='✗ '+(fail||'CI');return failingChecks&&failingChecks.length>1?`<span class="b br" title="${failingChecks.join(', ')}">${e(label)}</span>`:b('br',label)}
           if(state==='Pending')return b('by',t('ciPending'));
           return '';
         }
@@ -760,10 +760,10 @@ public static class WebAssets
             <div class="prc-row">
               <div class="prc-left">
                 <div class="prc-trow"><span class="prc-num">#${p.number}</span><a class="prc-link" href="${e(p.url)}" target="_blank" rel="noopener">${e(p.title)}</a></div>
-                <div class="prc-meta">${p.isDraft?b('bx',t('draft')):''}${bBranch(p.headRef)}<span>${e(p.ageAgo)}</span></div>
+                <div class="prc-meta">${p.isDraft?b('bx',t('draft')):''}${bBranch(p.headRef)}${(p.assignees||[]).map(a=>`<span class="b bx">→ ${e(a)}</span>`).join('')}<span>${e(p.ageAgo)}</span></div>
                 ${bRevMeta(p)}
               </div>
-              <div class="prc-right">${bRev(p)}${bCI(p.ciState,p.failingCheck)}${bCmt(p)}${bMrg(p.mergeState)}</div>
+              <div class="prc-right">${bRev(p)}${bCI(p.ciState,p.failingCheck,p.failingChecks)}${bCmt(p)}${bMrg(p.mergeState)}</div>
             </div>
           </div>`;
         }
@@ -776,7 +776,7 @@ public static class WebAssets
                 <div class="prc-trow"><span class="prc-num">#${p.number}</span><a class="prc-link" href="${e(p.url)}" target="_blank" rel="noopener">${e(p.title)}</a></div>
                 <div class="prc-meta">${b('bx',p.author)}${p.isDraft?b('bx',t('draft')):''}${bBranch(p.headRef)}<span>${e(p.ageAgo)}</span></div>
               </div>
-              <div class="prc-right">${bCI(p.ciState,p.failingCheck)}${bCmt(p)}${bMrg(p.mergeState)}</div>
+              <div class="prc-right">${bCI(p.ciState,p.failingCheck,p.failingChecks)}${bCmt(p)}${bMrg(p.mergeState)}</div>
             </div>
           </div>`;
         }
@@ -790,7 +790,7 @@ public static class WebAssets
                 <div class="prc-meta"><span class="branch">${e(p.repo)}</span>${p.isDraft?b('bx',t('draft')):''}${bBranch(p.headRef)}<span>${e(p.ageAgo)}</span></div>
                 ${bRevMeta(p)}
               </div>
-              <div class="prc-right">${bRev(p)}${bCI(p.ciState,p.failingCheck)}${bCmt(p)}${bMrg(p.mergeState)}</div>
+              <div class="prc-right">${bRev(p)}${bCI(p.ciState,p.failingCheck,p.failingChecks)}${bCmt(p)}${bMrg(p.mergeState)}</div>
             </div>
           </div>`;
         }
@@ -835,7 +835,7 @@ public static class WebAssets
           const items=visible.map(p=>`<div class="srev">
             <div class="srev-repo">${e(p.repo)} · #${p.number}</div>
             <a class="srev-link" href="${e(p.url)}" target="_blank" rel="noopener">${e(p.title)}</a>
-            <div class="prc-meta">${bCI(p.ciState,p.failingCheck)}${bMrg(p.mergeState)}<span>${e(p.ageAgo)}</span></div>
+            <div class="prc-meta">${bCI(p.ciState,p.failingCheck,p.failingChecks)}${bMrg(p.mergeState)}<span>${e(p.ageAgo)}</span></div>
           </div>`).join('');
           s.innerHTML=`<div class="sc"><div class="sc-hdr"><div class="sc-title"><span style="width:7px;height:7px;border-radius:9999px;background:var(--amber);display:inline-block"></span>${t('sidebarReviews')}</div><span class="b by">${t('pendingCount',visible.length)}</span></div>${items}</div>`;
         }
