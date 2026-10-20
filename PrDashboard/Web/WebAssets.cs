@@ -471,6 +471,13 @@ public static class WebAssets
         let hideBotReviews=false;
         let prevMyNums=new Set(),prevMergedNums=new Set();
         function ck(p){return p.commentState+'|'+p.lastCommentBy+'|'+(p.lastCommentAt||p.lastCommentAgo||'')}
+        function logNotifToServer(type, pr) {
+          fetch('/api/notify-log', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({type, repo: pr.repo, prNumber: pr.number, prTitle: pr.title})
+          }).catch(() => {});
+        }
         function detectAndNotify(data){
           const prs=data.myPrs||[];const mrg=data.mergedPrs||[];
           if(!notifInited){
@@ -483,13 +490,13 @@ public static class WebAssets
           for(const num of prevMyNums){
             if(curMergedNums.has(num)&&!prevMergedNums.has(num)){
               const merged=mrg.find(p=>p.number===num);
-              if(merged){if(notifPrefs.mergedVisual)showMergedNotif(merged);if(notifPrefs.mergedAudio)playAudio('/audio/done.mp3',1)}
+              if(merged){if(notifPrefs.mergedVisual)showMergedNotif(merged);if(notifPrefs.mergedAudio)playAudio('/audio/done.mp3',1);logNotifToServer('merged',merged)}
             }
           }
           for(const p of prs){
             const prev=prevState[p.number]||{};const k=ck(p);
-            if(p.commentState==='New'&&k!==prev.ck){if(notifPrefs.commentVisual)showNotif('comment',p);if(notifPrefs.commentAudio)playAudio('/audio/message.mp3',1)}
-            if(p.ciState==='Failing'&&!prev.cif){if(notifPrefs.ciVisual)showNotif('ci',p);if(notifPrefs.ciAudio)playAudio('/audio/error.mp3',3)}
+            if(p.commentState==='New'&&k!==prev.ck){if(notifPrefs.commentVisual)showNotif('comment',p);if(notifPrefs.commentAudio)playAudio('/audio/message.mp3',1);logNotifToServer('comment',p)}
+            if(p.ciState==='Failing'&&!prev.cif){if(notifPrefs.ciVisual)showNotif('ci',p);if(notifPrefs.ciAudio)playAudio('/audio/error.mp3',3);logNotifToServer('ci',p)}
             prevState[p.number]={ck:k,cif:p.ciState==='Failing'};
           }
           prevMyNums=new Set(prs.map(p=>p.number));

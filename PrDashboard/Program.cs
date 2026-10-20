@@ -16,6 +16,7 @@ var config = ConfigLoader.Load(configPath);
 if (args.Length == 0)
 {
     AppLogger.Initialize(WeeklyFolder.GetPath(Path.GetFullPath(config.OutputDir), DateTime.Now));
+    NotificationLogger.Initialize(WeeklyFolder.GetPath(Path.GetFullPath(config.OutputDir), DateTime.Now));
 
     // SDK Web inicializa o thread principal como MTA; WinForms/WebView2 exige STA.
     var staThread = new Thread(() =>
@@ -39,7 +40,7 @@ if (args.Length == 0)
                 await dataService.InitAsync(cts.Token);
 
                 splash?.UpdateStatus("Starting web server...", 80);
-                var server = new WebServer(dataService, config);
+                var server = new WebServer(dataService, config, NotificationLogger.Instance);
                 _ = Task.Run(async () =>
                 {
                     try { await server.RunAsync(cts.Token, silent: true); }
@@ -90,6 +91,7 @@ try
 catch { }
 
 AppLogger.Initialize(WeeklyFolder.GetPath(Path.GetFullPath(config.OutputDir), DateTime.Now));
+NotificationLogger.Initialize(WeeklyFolder.GetPath(Path.GetFullPath(config.OutputDir), DateTime.Now));
 
 var exeName = Path.GetFileNameWithoutExtension(Environment.ProcessPath ?? "");
 bool demo = exeName.Contains("demo", StringComparison.OrdinalIgnoreCase);
@@ -198,7 +200,7 @@ AnsiConsole.MarkupLine($"[grey]Iniciando dashboard web em http://localhost:{conf
 var dataService = new PrsDataService(client, login, config, demoMode: false);
 await dataService.InitAsync(mainCts.Token);
 
-var webServer = new WebServer(dataService, config);
+var webServer = new WebServer(dataService, config, NotificationLogger.Instance);
 try { await webServer.RunAsync(mainCts.Token); }
 catch (OperationCanceledException) { }
 catch (Exception ex)
