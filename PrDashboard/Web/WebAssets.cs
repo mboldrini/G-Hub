@@ -273,6 +273,10 @@ public static class WebAssets
                 <button class="tab-btn" data-tab="mrg" onclick="setTab('mrg')">
                   <span data-i18n="tabMerged">Mergeados</span> <span id="tc-mrg" class="tcnt">0</span>
                 </button>
+                <button class="tab-btn" data-tab="notif" onclick="setTab('notif')">
+                  <span data-i18n="tabNotif">Notificações</span>
+                  <span id="tc-notif" class="tcnt">0</span>
+                </button>
               </nav>
               <div style="padding-bottom:12px">
                 <button class="stoggle" id="stoggle-btn" onclick="toggleSidebar()">
@@ -284,6 +288,11 @@ public static class WebAssets
 
             <!-- ── TAB: MEUS PRs ── -->
             <div id="tab-my" class="tab-panel">
+              <div style="margin-bottom:12px">
+                <input id="my-search" type="search" placeholder="" data-i18n-ph="searchPlaceholder"
+                  oninput="setMySearch(this.value)"
+                  style="width:100%;padding:6px 10px;border-radius:6px;border:1px solid var(--border);background:var(--subtle);color:var(--text);font-size:13px;font-family:inherit;outline:none">
+              </div>
               <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
                 <span style="font-size:11px;color:var(--muted)" data-i18n="groupBy">Agrupar por</span>
                 <div class="view-seg">
@@ -314,6 +323,11 @@ public static class WebAssets
             </div>
 
             <div id="tab-rev" class="tab-panel">
+              <div style="margin-bottom:12px">
+                <input id="rev-search" type="search" placeholder="" data-i18n-ph="searchPlaceholder"
+                  oninput="setRevSearch(this.value)"
+                  style="width:100%;padding:6px 10px;border-radius:6px;border:1px solid var(--border);background:var(--subtle);color:var(--text);font-size:13px;font-family:inherit;outline:none">
+              </div>
               <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap">
                 <button id="rev-hide-bots-btn" class="fchip" onclick="toggleRevHideBots()"><span data-i18n="hideBots">Ocultar bots</span></button>
                 <div style="width:1px;height:16px;background:var(--border)"></div>
@@ -328,7 +342,21 @@ public static class WebAssets
               <div id="s-rev-filters" style="margin-bottom:10px"></div>
               <div id="s-rev-full"></div>
             </div>
-            <div id="tab-mrg" class="tab-panel"><div id="s-mrg-full"></div></div>
+            <div id="tab-mrg" class="tab-panel">
+              <div style="margin-bottom:12px">
+                <input id="mrg-search" type="search" placeholder="" data-i18n-ph="searchPlaceholder"
+                  oninput="setMrgSearch(this.value)"
+                  style="width:100%;padding:6px 10px;border-radius:6px;border:1px solid var(--border);background:var(--subtle);color:var(--text);font-size:13px;font-family:inherit;outline:none">
+              </div>
+              <div id="s-mrg-full"></div>
+            </div>
+            <div id="tab-notif" class="tab-panel">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+                <span style="font-size:11px;color:var(--muted)" data-i18n="notifHistoryTitle">Eventos recentes nesta sessão</span>
+                <button onclick="clearNotifHistory()" style="font-size:11px;padding:3px 10px;border-radius:6px;border:1px solid var(--border);background:none;color:var(--muted);cursor:pointer;font-family:inherit" data-i18n="clearHistory">Limpar</button>
+              </div>
+              <div id="s-notif-list"></div>
+            </div>
           </div>
         </main>
 
@@ -364,6 +392,11 @@ public static class WebAssets
             notifComment:'Novo comentário', notifCi:'CI com erro', notifMerged:'PR mergeado',
             notifVisual:'👁 Aviso', notifAudio:'🔊 Som',
             hideBots:'Ocultar bots',
+            searchPlaceholder:'Filtrar por título ou repo...',
+            tabNotif:'Notificações',
+            notifHistoryTitle:'Eventos recentes nesta sessão',
+            notifHistoryEmpty:'Nenhuma notificação ainda.',
+            clearHistory:'Limpar',
           },
           'en-US':{
             refresh:'Refresh',
@@ -394,12 +427,18 @@ public static class WebAssets
             notifComment:'New comment', notifCi:'CI error', notifMerged:'PR merged',
             notifVisual:'👁 Alert', notifAudio:'🔊 Sound',
             hideBots:'Hide bots',
+            searchPlaceholder:'Filter by title or repo...',
+            tabNotif:'Notifications',
+            notifHistoryTitle:'Recent events this session',
+            notifHistoryEmpty:'No notifications yet.',
+            clearHistory:'Clear',
           }
         };
         let currentLang=localStorage.getItem('prd-lang')||'pt-BR';
         function t(key,...args){const v=I18N[currentLang]?.[key]??I18N['pt-BR'][key]??key;return typeof v==='function'?v(...args):v}
         function applyI18n(){
           document.querySelectorAll('[data-i18n]').forEach(el=>{el.textContent=t(el.dataset.i18n)});
+          document.querySelectorAll('[data-i18n-ph]').forEach(el=>{el.placeholder=t(el.dataset.i18nPh)});
           document.getElementById('lang-display').textContent=currentLang==='pt-BR'?'PT':'EN';
           document.documentElement.lang=currentLang==='pt-BR'?'pt-BR':'en-US';
           const lbl=document.getElementById('stoggle-label');
@@ -462,6 +501,7 @@ public static class WebAssets
           document.getElementById('tab-'+tab).classList.add('active');
           document.querySelectorAll('.tab-btn').forEach(b=>{b.classList.toggle('active',b.dataset.tab===tab)});
           document.getElementById('stoggle-btn').style.display=(tab==='my')?'inline-flex':'none';
+          if(tab==='notif')renderNotifHistory();
         }
         setTab('my');
 
@@ -501,6 +541,7 @@ public static class WebAssets
           const msg=type==='comment'?`💬 ${currentLang==='en-US'?'New comment on':'Novo comentário em'} #${pr.number}`:`🔴 ${currentLang==='en-US'?'CI failed on':'CI com erro em'} #${pr.number}`;
           d.innerHTML=`<button class="nclose" onclick="this.parentNode.remove()">×</button><div class="ntitle">${e(msg)}</div><div class="nbody">${e(pr.repo)} · ${e(pr.title)}</div>`;
           document.getElementById('nstack').prepend(d);
+          pushHistory(type,pr);
           setTimeout(()=>{if(d.parentNode)d.remove()},8000);
         }
         function launchConfetti(){
@@ -514,6 +555,7 @@ public static class WebAssets
           const msg=`🎉 ${currentLang==='en-US'?'Merged!':'Mergeado!'} #${pr.number}`;
           d.innerHTML=`<button class="nclose" onclick="this.parentNode.remove()">×</button><div class="ntitle" style="color:var(--green)">${e(msg)}</div><div class="nbody">${e(pr.repo)} · ${e(pr.title)}</div>`;
           document.getElementById('nstack').prepend(d);
+          pushHistory('merged',pr);
           launchConfetti();
           setTimeout(()=>{if(d.parentNode)d.remove()},12000);
         }
@@ -551,6 +593,27 @@ public static class WebAssets
           const body={};body[sk]=notifPrefs[key];
           fetch('/api/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}).catch(()=>{});
         }
+        function pushHistory(type,pr){
+          const icons={comment:'💬',ci:'🔴',merged:'🎉',approved:'✅',ready:'🔵'};
+          notifHistory.unshift({type,icon:icons[type]||'•',ts:new Date().toLocaleTimeString(),repo:pr.repo,number:pr.number,title:pr.title,url:pr.url});
+          if(notifHistory.length>200)notifHistory.length=200;
+          document.getElementById('tc-notif').textContent=notifHistory.length;
+          if(currentTab==='notif')renderNotifHistory();
+        }
+        function renderNotifHistory(){
+          const el=document.getElementById('s-notif-list');
+          if(!el)return;
+          if(!notifHistory.length){el.innerHTML=`<div class="empty" data-i18n="notifHistoryEmpty">${t('notifHistoryEmpty')}</div>`;return;}
+          el.innerHTML=notifHistory.map(h=>`
+            <div class="mcard" style="margin-bottom:8px;display:flex;align-items:flex-start;gap:10px;padding:10px 14px">
+              <span style="font-size:16px;flex-shrink:0">${h.icon}</span>
+              <div style="flex:1;min-width:0">
+                <div style="font-size:11px;color:var(--muted);margin-bottom:2px">${e(h.ts)} · ${e(h.repo)} · #${h.number}</div>
+                <a href="${e(h.url)}" target="_blank" rel="noopener" style="font-size:13px;font-weight:500;color:var(--text);text-decoration:none">${e(h.title)}</a>
+              </div>
+            </div>`).join('');
+        }
+        function clearNotifHistory(){notifHistory.length=0;document.getElementById('tc-notif').textContent='0';renderNotifHistory();}
         function saveInterval(){
           const v=parseInt(document.getElementById('interval-input')?.value||'300');
           if(isNaN(v)||v<30)return;
@@ -702,7 +765,10 @@ public static class WebAssets
         // ── My PRs view + filter ──────────────────────────────────────
         let myPrsView=localStorage.getItem('prd-my-view')||'repo';
         let _lastMyPrs=[];
+        let _lastMrgPrs=[];
+        const notifHistory=[];
         let myPrsFilter=null;
+        let mySearchText='', revSearchText='', mrgSearchText='';
         function setMyView(v){
           myPrsView=v;
           localStorage.setItem('prd-my-view',v);
@@ -716,6 +782,9 @@ public static class WebAssets
           renderMyPrs(_lastMyPrs);
           persistUiState();
         }
+        function setMySearch(v){mySearchText=v.toLowerCase();renderMyPrs(_lastMyPrs);}
+        function setRevSearch(v){revSearchText=v.toLowerCase();renderRevFull(_lastRevPrs);}
+        function setMrgSearch(v){mrgSearchText=v.toLowerCase();renderMrgFull(_lastMrgPrs);}
         function renderStatusFilters(prs){
           const el=document.getElementById('s-my-filters');
           if(!el)return;
@@ -752,6 +821,13 @@ public static class WebAssets
           if(u==='Approved')return 'var(--green)';
           return 'var(--muted)';
         }
+        function ageBadgeCls(iso){
+          if(!iso)return 'bx';
+          const days=(Date.now()-new Date(iso).getTime())/86400000;
+          if(days<1)return 'bg';
+          if(days<=3)return 'by';
+          return 'br';
+        }
 
         // ── PR card renderers ──────────────────────────────────────────
         function renderMyCard(p){
@@ -760,7 +836,7 @@ public static class WebAssets
             <div class="prc-row">
               <div class="prc-left">
                 <div class="prc-trow"><span class="prc-num">#${p.number}</span><a class="prc-link" href="${e(p.url)}" target="_blank" rel="noopener">${e(p.title)}</a></div>
-                <div class="prc-meta">${p.isDraft?b('bx',t('draft')):''}${bBranch(p.headRef)}<span>${e(p.ageAgo)}</span></div>
+                <div class="prc-meta">${p.isDraft?b('bx',t('draft')):''}${bBranch(p.headRef)}<span class="b ${ageBadgeCls(p.createdAtIso)}">${e(p.ageAgo)}</span></div>
                 ${bRevMeta(p)}
               </div>
               <div class="prc-right">${bRev(p)}${bCI(p.ciState,p.failingCheck)}${bCmt(p)}${bMrg(p.mergeState)}</div>
@@ -774,7 +850,7 @@ public static class WebAssets
             <div class="prc-row">
               <div class="prc-left">
                 <div class="prc-trow"><span class="prc-num">#${p.number}</span><a class="prc-link" href="${e(p.url)}" target="_blank" rel="noopener">${e(p.title)}</a></div>
-                <div class="prc-meta">${b('bx',p.author)}${p.isDraft?b('bx',t('draft')):''}${bBranch(p.headRef)}<span>${e(p.ageAgo)}</span></div>
+                <div class="prc-meta">${b('bx',p.author)}${p.isDraft?b('bx',t('draft')):''}${bBranch(p.headRef)}<span class="b ${ageBadgeCls(p.createdAtIso)}">${e(p.ageAgo)}</span></div>
               </div>
               <div class="prc-right">${bCI(p.ciState,p.failingCheck)}${bCmt(p)}${bMrg(p.mergeState)}</div>
             </div>
@@ -816,10 +892,11 @@ public static class WebAssets
           _lastMyPrs=prs;
           renderStatusFilters(prs);
           const filtered=myPrsFilter?prs.filter(p=>p.urgency===myPrsFilter):prs;
-          if(myPrsView==='status'){renderMyPrsByStatus(filtered);updateCollapseBtn();return}
+          const filtered2=mySearchText?filtered.filter(p=>p.title.toLowerCase().includes(mySearchText)||p.repo.toLowerCase().includes(mySearchText)):filtered;
+          if(myPrsView==='status'){renderMyPrsByStatus(filtered2);updateCollapseBtn();return}
           const s=document.getElementById('s-my');
-          if(!filtered.length){s.innerHTML=`<div class="empty">${t('emptyMyPrs')}</div>`;updateCollapseBtn();return}
-          const groups={};for(const p of filtered)(groups[p.repo]=groups[p.repo]||[]).push(p);
+          if(!filtered2.length){s.innerHTML=`<div class="empty">${t('emptyMyPrs')}</div>`;updateCollapseBtn();return}
+          const groups={};for(const p of filtered2)(groups[p.repo]=groups[p.repo]||[]).push(p);
           const sortedRepos=sortRepos(Object.keys(groups));
           s.innerHTML=sortedRepos.map((repo,idx)=>{
             const list=groups[repo];const col=collapsedRepos.has(repo);
@@ -921,9 +998,10 @@ public static class WebAssets
           renderRevFilters(visible);
           updateRevHideBotsBtn();
           const filtered=visible.filter(p=>(!revFilter||p.urgency===revFilter)&&(!revAuthorFilter||p.author===revAuthorFilter));
+          const filtered2=revSearchText?filtered.filter(p=>p.title.toLowerCase().includes(revSearchText)||p.repo.toLowerCase().includes(revSearchText)):filtered;
           const s=document.getElementById('s-rev-full');
-          if(!filtered.length){s.innerHTML=`<div class="empty">${t('emptyReviews')}</div>`;updateRevCollapseBtn();return}
-          const groups={};for(const p of filtered)(groups[p.repo]=groups[p.repo]||[]).push(p);
+          if(!filtered2.length){s.innerHTML=`<div class="empty">${t('emptyReviews')}</div>`;updateRevCollapseBtn();return}
+          const groups={};for(const p of filtered2)(groups[p.repo]=groups[p.repo]||[]).push(p);
           s.innerHTML=Object.entries(groups).sort(([a],[b])=>a.localeCompare(b)).map(([repo,list])=>{
             const col=collapsedRepos.has(repo);
             return `<div class="rgroup" data-repo="${e(repo)}"><div class="rgroup-hdr" onclick="toggleRepo(this)"><div style="display:flex;align-items:center;gap:6px"><svg class="rg-chevron" style="${col?'transform:rotate(-90deg)':''}" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg><span style="width:8px;height:8px;border-radius:9999px;background:${groupDot(list)};display:inline-block;flex-shrink:0"></span><span class="rgroup-name">${e(repo)}</span><span class="tcnt">${list.length}</span></div><div style="display:flex;align-items:center;gap:4px">${statusChips(list)}</div></div><div class="rgroup-body"${col?' style="display:none"':''}>${list.map(renderRevCard).join('')}</div></div>`;
@@ -942,9 +1020,11 @@ public static class WebAssets
         }
 
         function renderMrgFull(prs){
+          _lastMrgPrs=prs;
+          const filtered=mrgSearchText?prs.filter(p=>p.title.toLowerCase().includes(mrgSearchText)||p.repo.toLowerCase().includes(mrgSearchText)):prs;
           const s=document.getElementById('s-mrg-full');
-          if(!prs.length){s.innerHTML=`<div class="empty">${t('emptyMerged')}</div>`;return}
-          const rows=prs.map(p=>`<div class="prc">
+          if(!filtered.length){s.innerHTML=`<div class="empty">${t('emptyMerged')}</div>`;return}
+          const rows=filtered.map(p=>`<div class="prc">
             <div class="prc-row">
               <div class="prc-left">
                 <div class="prc-trow"><span style="font-size:11px;font-family:monospace;color:var(--muted)">${e(p.repo)}</span><span class="prc-num">#${p.number}</span><a class="prc-link" href="${e(p.url)}" target="_blank" rel="noopener">${e(p.title)}</a></div>
