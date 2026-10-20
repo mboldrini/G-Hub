@@ -4,11 +4,12 @@ using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using PrDashboard.IO;
 using PrDashboard.Models;
 
 namespace PrDashboard.Web;
 
-public class WebServer(PrsDataService dataService, AppConfig config)
+public class WebServer(PrsDataService dataService, AppConfig config, NotificationLogger? notificationLogger = null)
 {
     private static readonly JsonSerializerOptions JsonOpts = new()
     {
@@ -79,6 +80,17 @@ public class WebServer(PrsDataService dataService, AppConfig config)
             return Results.Json(data, JsonOpts);
         });
 
+        app.MapPost("/api/notify-log", async (HttpContext ctx) =>
+        {
+            if (notificationLogger == null) return Results.NoContent();
+            using var reader = new System.IO.StreamReader(ctx.Request.Body);
+            var json = await reader.ReadToEndAsync();
+            var body = JsonSerializer.Deserialize<NotifyLogBody>(json, ReadOpts);
+            if (body == null) return Results.BadRequest();
+            notificationLogger.Log(body.Type, body.Repo, body.PrNumber, body.PrTitle);
+            return Results.NoContent();
+        });
+
         app.MapGet("/favicon.svg", () =>
         {
             var exeDir = Path.GetDirectoryName(Environment.ProcessPath) ?? AppContext.BaseDirectory;
@@ -136,4 +148,6 @@ public class WebServer(PrsDataService dataService, AppConfig config)
         bool? NotifCiVisual, bool? NotifCiAudio,
         bool? NotifMergedVisual, bool? NotifMergedAudio,
         int? IntervalSeconds, bool? HideBotReviews);
+
+    private record NotifyLogBody(string Type, string Repo, int PrNumber, string PrTitle);
 }
