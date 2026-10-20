@@ -68,6 +68,10 @@ public class WebServer(PrsDataService dataService, AppConfig config)
             if (body.NotifCiAudio is not null) config.NotifCiAudio = body.NotifCiAudio.Value;
             if (body.NotifMergedVisual is not null) config.NotifMergedVisual = body.NotifMergedVisual.Value;
             if (body.NotifMergedAudio is not null) config.NotifMergedAudio = body.NotifMergedAudio.Value;
+            if (body.NotifApprovedVisual is not null) config.NotifApprovedVisual = body.NotifApprovedVisual.Value;
+            if (body.NotifApprovedAudio is not null) config.NotifApprovedAudio = body.NotifApprovedAudio.Value;
+            if (body.NotifReadyVisual is not null) config.NotifReadyVisual = body.NotifReadyVisual.Value;
+            if (body.NotifReadyAudio is not null) config.NotifReadyAudio = body.NotifReadyAudio.Value;
             if (body.IntervalSeconds is int iv && iv >= 30 && iv <= 3600) config.IntervalSeconds = iv;
             if (body.HideBotReviews is not null) config.HideBotReviews = body.HideBotReviews.Value;
 
@@ -135,5 +139,7 @@ public class WebServer(PrsDataService dataService, AppConfig config)
         bool? NotifCommentVisual, bool? NotifCommentAudio,
         bool? NotifCiVisual, bool? NotifCiAudio,
         bool? NotifMergedVisual, bool? NotifMergedAudio,
+        bool? NotifApprovedVisual, bool? NotifApprovedAudio,
+        bool? NotifReadyVisual, bool? NotifReadyAudio,
         int? IntervalSeconds, bool? HideBotReviews);
 }
