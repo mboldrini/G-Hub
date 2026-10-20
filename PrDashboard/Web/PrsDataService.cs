@@ -57,7 +57,6 @@ public class PrsDataService(GhApiClient client, string login, AppConfig config, 
             var myKeys = myPrs.Select(p => $"{p.Repo}#{p.Number}").ToHashSet();
             reviewPrs = reviewPrs
                 .Where(p => !myKeys.Contains($"{p.Repo}#{p.Number}"))
-                .Where(p => !PrAnalyzer.IsBot(p.Author ?? ""))
                 .ToList();
 
             var now = DateTimeOffset.UtcNow;
@@ -69,7 +68,8 @@ public class PrsDataService(GhApiClient client, string login, AppConfig config, 
             _rawMergedPrs = mergedPrs;
 
             _cached = BuildResponse(login, now);
-            WriteStandup(myPrs, reviewPrs, mergedPrs, now);
+            WriteStandup(myPrs, mergedPrs, now);
+            WriteReviews(reviewPrs, now);
         }
         catch (OperationCanceledException) { throw; }
         catch (Exception ex)
@@ -87,6 +87,7 @@ public class PrsDataService(GhApiClient client, string login, AppConfig config, 
                 MyPrsView = config.MyPrsView,
                 SidebarOpen = config.SidebarOpen,
                 RepoOrder = config.RepoOrder,
+                HideBotReviews = config.HideBotReviews,
                 Error = ex.Message,
                 MyPrs = prev?.MyPrs ?? [],
                 ReviewPrs = prev?.ReviewPrs ?? [],
@@ -117,13 +118,35 @@ public class PrsDataService(GhApiClient client, string login, AppConfig config, 
             MyPrsView = config.MyPrsView,
             SidebarOpen = config.SidebarOpen,
             RepoOrder = config.RepoOrder,
+            NotifCommentVisual = config.NotifCommentVisual,
+            NotifCommentAudio = config.NotifCommentAudio,
+            NotifCiVisual = config.NotifCiVisual,
+            NotifCiAudio = config.NotifCiAudio,
+            NotifMergedVisual = config.NotifMergedVisual,
+            NotifMergedAudio = config.NotifMergedAudio,
+            HideBotReviews = config.HideBotReviews,
             MyPrs = _rawMyPrs.Select(p => PrsApiDtos.MapMyPr(p, now, lang)).ToList(),
             ReviewPrs = _rawReviewPrs.Select(p => PrsApiDtos.MapReviewPr(p, now, lang)).ToList(),
             MergedPrs = _rawMergedPrs.Select(p => PrsApiDtos.MapMergedPr(p, now, lang)).ToList(),
         };
     }
 
-    private void WriteStandup(List<PullRequest> myPrs, List<PullRequest> reviewPrs, List<MergedPr> mergedPrs, DateTimeOffset now)
+    private void WriteReviews(List<PullRequest> reviewPrs, DateTimeOffset now)
+    {
+        try
+        {
+            var outDir = Path.GetFullPath(config.OutputDir);
+            var weeklyDir = WeeklyFolder.GetPath(outDir, DateTime.Now);
+            var reviewsDir = Path.Combine(weeklyDir, "reviews");
+            Directory.CreateDirectory(reviewsDir);
+            var path = Path.Combine(reviewsDir, $"{now.ToLocalTime():yyyy-MM-dd}.md");
+            var content = MarkdownWriter.BuildReviews(reviewPrs, now);
+            StateStore.WriteAtomic(path, content);
+        }
+        catch { }
+    }
+
+    private void WriteStandup(List<PullRequest> myPrs, List<MergedPr> mergedPrs, DateTimeOffset now)
     {
         try
         {
@@ -131,7 +154,7 @@ public class PrsDataService(GhApiClient client, string login, AppConfig config, 
             var weeklyDir = WeeklyFolder.GetPath(outDir, DateTime.Now);
             Directory.CreateDirectory(weeklyDir);
             var path = Path.Combine(weeklyDir, $"standup-{now.ToLocalTime():yyyy-MM-dd}.md");
-            var content = MarkdownWriter.BuildStandup(myPrs, reviewPrs, mergedPrs, now);
+            var content = MarkdownWriter.BuildStandup(myPrs, mergedPrs, now);
             StateStore.WriteAtomic(path, content);
         }
         catch { }

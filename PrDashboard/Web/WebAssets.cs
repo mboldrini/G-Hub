@@ -142,6 +142,9 @@ public static class WebAssets
         @media(max-width:640px){.metrics-grid{grid-template-columns:repeat(2,1fr) !important}}
         @keyframes ping{0%{transform:scale(1);opacity:.7}75%,100%{transform:scale(2);opacity:0}}
         @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+
+        .npref-btn{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:9999px;font-size:11px;font-weight:500;border:1px solid var(--border);background:var(--subtle);color:var(--muted);cursor:pointer;transition:all .15s;font-family:inherit;opacity:.55}
+        .npref-btn.on{border-color:var(--green-bd);background:var(--green-bg);color:var(--green);opacity:1}
         </style>
         </head>
         <body>
@@ -151,11 +154,7 @@ public static class WebAssets
         <header style="position:sticky;top:0;z-index:40;background:var(--surf);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:10px 24px">
           <div style="max-width:1280px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
             <div style="display:flex;align-items:center;gap:10px">
-              <div style="width:28px;height:28px;border-radius:8px;background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.3);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-                <svg width="16" height="16" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
-                  <path d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"/>
-                </svg>
-              </div>
+              <img src="/favicon.svg" width="28" height="28" style="border-radius:6px;flex-shrink:0" alt="">
               <span style="font-size:15px;font-weight:600;letter-spacing:-.015em;color:var(--text)">PrDashboard</span>
               <span style="font-size:11px;font-family:monospace;padding:2px 8px;border-radius:9999px;border:1px solid var(--border);background:var(--subtle);color:var(--muted)">.NET 8 / gh CLI</span>
             </div>
@@ -185,17 +184,54 @@ public static class WebAssets
                 <svg id="icon-sun" width="16" height="16" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" style="display:none"><circle cx="12" cy="12" r="5"/><path d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72l1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
                 <svg id="icon-moon" width="16" height="16" fill="#818cf8" viewBox="0 0 24 24"><path d="M12 3a9 9 0 109 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 01-4.4 2.26 5.403 5.403 0 01-5.4-5.4c0-1.81.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z"/></svg>
               </button>
-              <!-- Test notification dropdown -->
-              <div style="position:relative;display:inline-block" id="test-dd-wrap">
-                <button onclick="toggleTestDropdown()" title="test notifications" style="font-size:11px;padding:4px 6px;border-radius:5px;border:1px solid var(--border);background:var(--subtle);color:var(--muted);cursor:pointer;opacity:.4;transition:opacity .15s;display:inline-flex;align-items:center;gap:3px" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='.4'">🔔<svg width="8" height="8" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button>
-                <div id="test-dd" style="display:none;position:absolute;right:0;top:calc(100% + 4px);background:var(--surf);border:1px solid var(--border);border-radius:8px;min-width:170px;box-shadow:0 4px 16px rgba(0,0,0,.25);z-index:200;overflow:hidden">
-                  <button onclick="testNotif('comment');closeTestDropdown()" style="display:flex;align-items:center;gap:8px;width:100%;padding:8px 12px;font-size:12px;color:var(--text);background:none;border:none;cursor:pointer;font-family:inherit;transition:background .12s;text-align:left" onmouseover="this.style.background='var(--subtle)'" onmouseout="this.style.background='none'">🔔 <span data-i18n="testComment">Novo comentário</span></button>
-                  <button onclick="testNotif('ci');closeTestDropdown()" style="display:flex;align-items:center;gap:8px;width:100%;padding:8px 12px;font-size:12px;color:var(--text);background:none;border:none;cursor:pointer;font-family:inherit;transition:background .12s;text-align:left" onmouseover="this.style.background='var(--subtle)'" onmouseout="this.style.background='none'">⚠️ <span data-i18n="testCi">CI com erro</span></button>
-                  <button onclick="testNotif('merged');closeTestDropdown()" style="display:flex;align-items:center;gap:8px;width:100%;padding:8px 12px;font-size:12px;color:var(--text);background:none;border:none;cursor:pointer;font-family:inherit;transition:background .12s;text-align:left" onmouseover="this.style.background='var(--subtle)'" onmouseout="this.style.background='none'">🎉 <span data-i18n="testMerged">PR mergeado</span></button>
+              <!-- User menu -->
+              <div style="position:relative;display:inline-block" id="user-menu-wrap">
+                <div id="upill" onclick="toggleUserMenu()" title="" style="width:28px;height:28px;border-radius:9999px;background:linear-gradient(135deg,#4f46e5,#0ea5e9);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;flex-shrink:0;cursor:pointer;box-shadow:0 0 0 2px var(--surf)">—</div>
+                <div id="user-dd" style="display:none;position:absolute;right:0;top:calc(100% + 8px);background:var(--surf);border:1px solid var(--border);border-radius:10px;min-width:240px;box-shadow:0 4px 20px rgba(0,0,0,.3);z-index:200;overflow:hidden">
+                  <div style="padding:10px 14px 8px;border-bottom:1px solid var(--border)">
+                    <div style="font-size:10px;color:var(--muted);margin-bottom:2px;text-transform:uppercase;letter-spacing:.05em">GitHub</div>
+                    <div id="user-dd-name" style="font-size:13px;font-weight:600;color:var(--text)">—</div>
+                  </div>
+                  <div style="padding:4px 0;border-bottom:1px solid var(--border)">
+                    <div style="padding:6px 14px 3px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)" data-i18n="menuTestNotifs">Testar notificações</div>
+                    <button onclick="testNotif('comment');closeUserMenu()" style="display:flex;align-items:center;gap:8px;width:100%;padding:7px 14px;font-size:12px;color:var(--text);background:none;border:none;cursor:pointer;font-family:inherit;transition:background .12s;text-align:left" onmouseover="this.style.background='var(--subtle)'" onmouseout="this.style.background='none'">🔔 <span data-i18n="testComment">Novo comentário</span></button>
+                    <button onclick="testNotif('ci');closeUserMenu()" style="display:flex;align-items:center;gap:8px;width:100%;padding:7px 14px;font-size:12px;color:var(--text);background:none;border:none;cursor:pointer;font-family:inherit;transition:background .12s;text-align:left" onmouseover="this.style.background='var(--subtle)'" onmouseout="this.style.background='none'">⚠️ <span data-i18n="testCi">CI com erro</span></button>
+                    <button onclick="testNotif('merged');closeUserMenu()" style="display:flex;align-items:center;gap:8px;width:100%;padding:7px 14px;font-size:12px;color:var(--text);background:none;border:none;cursor:pointer;font-family:inherit;transition:background .12s;text-align:left" onmouseover="this.style.background='var(--subtle)'" onmouseout="this.style.background='none'">🎉 <span data-i18n="testMerged">PR mergeado</span></button>
+                  </div>
+                  <div style="padding:6px 0;border-bottom:1px solid var(--border)">
+                    <div style="padding:4px 14px 6px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)" data-i18n="menuConfigNotifs">Notificações</div>
+                    <div style="padding:4px 14px 8px">
+                      <div style="font-size:12px;font-weight:500;color:var(--text);margin-bottom:5px">🔔 <span data-i18n="notifComment">Novo comentário</span></div>
+                      <div style="display:flex;gap:6px">
+                        <button id="npref-comment-visual" class="npref-btn" onclick="toggleNotifPref('comment','visual')"><span data-i18n="notifVisual">👁 Aviso</span></button>
+                        <button id="npref-comment-audio" class="npref-btn" onclick="toggleNotifPref('comment','audio')"><span data-i18n="notifAudio">🔊 Som</span></button>
+                      </div>
+                    </div>
+                    <div style="padding:4px 14px 8px">
+                      <div style="font-size:12px;font-weight:500;color:var(--text);margin-bottom:5px">⚠️ <span data-i18n="notifCi">CI com erro</span></div>
+                      <div style="display:flex;gap:6px">
+                        <button id="npref-ci-visual" class="npref-btn" onclick="toggleNotifPref('ci','visual')"><span data-i18n="notifVisual">👁 Aviso</span></button>
+                        <button id="npref-ci-audio" class="npref-btn" onclick="toggleNotifPref('ci','audio')"><span data-i18n="notifAudio">🔊 Som</span></button>
+                      </div>
+                    </div>
+                    <div style="padding:4px 14px 4px">
+                      <div style="font-size:12px;font-weight:500;color:var(--text);margin-bottom:5px">🎉 <span data-i18n="notifMerged">PR mergeado</span></div>
+                      <div style="display:flex;gap:6px">
+                        <button id="npref-merged-visual" class="npref-btn" onclick="toggleNotifPref('merged','visual')"><span data-i18n="notifVisual">👁 Aviso</span></button>
+                        <button id="npref-merged-audio" class="npref-btn" onclick="toggleNotifPref('merged','audio')"><span data-i18n="notifAudio">🔊 Som</span></button>
+                      </div>
+                    </div>
+                  </div>
+                  <div style="padding:10px 14px 12px">
+                    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px" data-i18n="menuInterval">Intervalo de atualização</div>
+                    <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">
+                      <input id="interval-input" type="number" min="30" max="3600" value="300" style="width:70px;padding:4px 8px;border-radius:5px;border:1px solid var(--border);background:var(--subtle);color:var(--text);font-size:13px;font-family:inherit">
+                      <span style="font-size:12px;color:var(--muted)" data-i18n="menuSecs">seg</span>
+                    </div>
+                    <button onclick="saveInterval()" style="width:100%;padding:6px 0;border-radius:6px;border:1px solid var(--indigo-bd);background:var(--indigo-bg);color:var(--indigo);font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;transition:all .12s" data-i18n="menuSave">Salvar</button>
+                  </div>
                 </div>
               </div>
-              <!-- User pill -->
-              <div id="upill" title="" style="width:28px;height:28px;border-radius:9999px;background:linear-gradient(135deg,#4f46e5,#0ea5e9);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;flex-shrink:0;cursor:pointer;box-shadow:0 0 0 2px var(--surf)">—</div>
             </div>
           </div>
         </header>
@@ -277,7 +313,21 @@ public static class WebAssets
               </div>
             </div>
 
-            <div id="tab-rev" class="tab-panel"><div id="s-rev-full"></div></div>
+            <div id="tab-rev" class="tab-panel">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+                <button id="rev-hide-bots-btn" class="fchip" onclick="toggleRevHideBots()"><span data-i18n="hideBots">Ocultar bots</span></button>
+                <div style="width:1px;height:16px;background:var(--border)"></div>
+                <div class="view-seg">
+                  <button id="rev-collapse-all-btn" class="view-btn" onclick="toggleAllRevRepos()" style="display:inline-flex;align-items:center;gap:4px">
+                    <svg class="rev-icon-collapse" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M5 12l7-7 7 7M5 19l7-7 7 7"/></svg>
+                    <svg class="rev-icon-expand" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" style="display:none"><path d="M5 5l7 7 7-7M5 12l7 7 7-7"/></svg>
+                    <span id="rev-collapse-all-label" data-i18n="collapseAll">Recolher todos</span>
+                  </button>
+                </div>
+              </div>
+              <div id="s-rev-filters" style="margin-bottom:10px"></div>
+              <div id="s-rev-full"></div>
+            </div>
             <div id="tab-mrg" class="tab-panel"><div id="s-mrg-full"></div></div>
           </div>
         </main>
@@ -309,6 +359,11 @@ public static class WebAssets
             stCiFailing:'CI com Falha', stChangesRequested:'Mudanças Pedidas', stCommentsPending:'Novos Comentários', stAwaitingReview:'Aguardando Review', stApproved:'Aprovado', stNormal:'Sem Ação',
             collapseAll:'Recolher todos', expandAll:'Expandir todos',
             testComment:'Novo comentário', testCi:'CI com erro', testMerged:'PR mergeado',
+            menuTestNotifs:'Testar notificações', menuConfigNotifs:'Notificações',
+            menuInterval:'Intervalo de atualização', menuSecs:'seg', menuSave:'Salvar',
+            notifComment:'Novo comentário', notifCi:'CI com erro', notifMerged:'PR mergeado',
+            notifVisual:'👁 Aviso', notifAudio:'🔊 Som',
+            hideBots:'Ocultar bots',
           },
           'en-US':{
             refresh:'Refresh',
@@ -334,6 +389,11 @@ public static class WebAssets
             stCiFailing:'CI Failing', stChangesRequested:'Changes Requested', stCommentsPending:'New Comments', stAwaitingReview:'Awaiting Review', stApproved:'Approved', stNormal:'No Action',
             collapseAll:'Collapse all', expandAll:'Expand all',
             testComment:'New comment', testCi:'CI error', testMerged:'PR merged',
+            menuTestNotifs:'Test notifications', menuConfigNotifs:'Notifications',
+            menuInterval:'Update interval', menuSecs:'sec', menuSave:'Save',
+            notifComment:'New comment', notifCi:'CI error', notifMerged:'PR merged',
+            notifVisual:'👁 Alert', notifAudio:'🔊 Sound',
+            hideBots:'Hide bots',
           }
         };
         let currentLang=localStorage.getItem('prd-lang')||'pt-BR';
@@ -345,6 +405,7 @@ public static class WebAssets
           const lbl=document.getElementById('stoggle-label');
           if(lbl)lbl.textContent=sidebarOpen?t('closeSidebar'):t('openSidebar');
           updateCollapseBtn();
+          updateRevCollapseBtn();
         }
 
         // ── Theme ──────────────────────────────────────────────────────
@@ -406,6 +467,8 @@ public static class WebAssets
 
         // ── Notification + audio ───────────────────────────────────────
         let ivSecs=300,cd=0,tmr=null,prevState={},notifInited=false,settingsInitialized=false;
+        let notifPrefs={commentVisual:true,commentAudio:true,ciVisual:true,ciAudio:true,mergedVisual:true,mergedAudio:true};
+        let hideBotReviews=false;
         let prevMyNums=new Set(),prevMergedNums=new Set();
         function ck(p){return p.commentState+'|'+p.lastCommentBy+'|'+(p.lastCommentAt||p.lastCommentAgo||'')}
         function detectAndNotify(data){
@@ -420,13 +483,13 @@ public static class WebAssets
           for(const num of prevMyNums){
             if(curMergedNums.has(num)&&!prevMergedNums.has(num)){
               const merged=mrg.find(p=>p.number===num);
-              if(merged){showMergedNotif(merged);playAudio('/audio/done.mp3',1)}
+              if(merged){if(notifPrefs.mergedVisual)showMergedNotif(merged);if(notifPrefs.mergedAudio)playAudio('/audio/done.mp3',1)}
             }
           }
           for(const p of prs){
             const prev=prevState[p.number]||{};const k=ck(p);
-            if(p.commentState==='New'&&k!==prev.ck){showNotif('comment',p);playAudio('/audio/message.mp3',1)}
-            if(p.ciState==='Failing'&&!prev.cif){showNotif('ci',p);playAudio('/audio/error.mp3',3)}
+            if(p.commentState==='New'&&k!==prev.ck){if(notifPrefs.commentVisual)showNotif('comment',p);if(notifPrefs.commentAudio)playAudio('/audio/message.mp3',1)}
+            if(p.ciState==='Failing'&&!prev.cif){if(notifPrefs.ciVisual)showNotif('ci',p);if(notifPrefs.ciAudio)playAudio('/audio/error.mp3',3)}
             prevState[p.number]={ck:k,cif:p.ciState==='Failing'};
           }
           prevMyNums=new Set(prs.map(p=>p.number));
@@ -455,13 +518,48 @@ public static class WebAssets
           setTimeout(()=>{if(d.parentNode)d.remove()},12000);
         }
         function testNotif(type){
-          if(type==='merged'){playAudio('/audio/done.mp3',1);showMergedNotif({number:42,title:'PR de teste',repo:'repo/test'})}
-          else if(type==='comment'){playAudio('/audio/message.mp3',1);showNotif(type,{number:0,title:'PR de teste',repo:'repo/test'})}
-          else{playAudio('/audio/error.mp3',1);showNotif(type,{number:0,title:'PR de teste',repo:'repo/test'})}
+          if(type==='merged'){if(notifPrefs.mergedAudio)playAudio('/audio/done.mp3',1);if(notifPrefs.mergedVisual)showMergedNotif({number:42,title:'PR de teste',repo:'repo/test'})}
+          else if(type==='comment'){if(notifPrefs.commentAudio)playAudio('/audio/message.mp3',1);if(notifPrefs.commentVisual)showNotif(type,{number:0,title:'PR de teste',repo:'repo/test'})}
+          else{if(notifPrefs.ciAudio)playAudio('/audio/error.mp3',1);if(notifPrefs.ciVisual)showNotif(type,{number:0,title:'PR de teste',repo:'repo/test'})}
         }
-        function toggleTestDropdown(){const dd=document.getElementById('test-dd');dd.style.display=dd.style.display==='none'?'block':'none'}
-        function closeTestDropdown(){const dd=document.getElementById('test-dd');if(dd)dd.style.display='none'}
-        document.addEventListener('click',e=>{const w=document.getElementById('test-dd-wrap');if(w&&!w.contains(e.target))closeTestDropdown()})
+        function updateNotifPrefButtons(){
+          const pairs=[['npref-comment-visual',notifPrefs.commentVisual],['npref-comment-audio',notifPrefs.commentAudio],['npref-ci-visual',notifPrefs.ciVisual],['npref-ci-audio',notifPrefs.ciAudio],['npref-merged-visual',notifPrefs.mergedVisual],['npref-merged-audio',notifPrefs.mergedAudio]];
+          for(const[id,on]of pairs){const el=document.getElementById(id);if(el)el.classList.toggle('on',on)}
+        }
+        function isBotAuthor(a){
+          const l=(a||'').toLowerCase();
+          return l.endsWith('[bot]')||l.endsWith('-bot')||l.endsWith('_bot')||['dependabot','renovate','github-actions','snyk-bot','codecov-commenter'].includes(l);
+        }
+        function toggleRevHideBots(){
+          hideBotReviews=!hideBotReviews;
+          updateRevHideBotsBtn();
+          fetch('/api/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({hideBotReviews})}).catch(()=>{});
+          renderRevFull(_lastRevPrs);
+          renderRevSidebar(_lastRevPrs);
+        }
+        function updateRevHideBotsBtn(){
+          const btn=document.getElementById('rev-hide-bots-btn');
+          if(!btn)return;
+          btn.style.borderColor=hideBotReviews?'var(--muted)':'';
+          btn.style.color=hideBotReviews?'var(--text)':'';
+        }
+        function toggleNotifPref(type,kind){
+          const key=type+(kind==='visual'?'Visual':'Audio');
+          notifPrefs[key]=!notifPrefs[key];
+          updateNotifPrefButtons();
+          const sk='notif'+type.charAt(0).toUpperCase()+type.slice(1)+(kind==='visual'?'Visual':'Audio');
+          const body={};body[sk]=notifPrefs[key];
+          fetch('/api/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}).catch(()=>{});
+        }
+        function saveInterval(){
+          const v=parseInt(document.getElementById('interval-input')?.value||'300');
+          if(isNaN(v)||v<30)return;
+          fetch('/api/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({intervalSeconds:v})}).catch(()=>{});
+          ivSecs=v;cd=v;
+        }
+        function toggleUserMenu(){const dd=document.getElementById('user-dd');dd.style.display=dd.style.display==='none'?'block':'none'}
+        function closeUserMenu(){const dd=document.getElementById('user-dd');if(dd)dd.style.display='none'}
+        document.addEventListener('click',e=>{const w=document.getElementById('user-menu-wrap');if(w&&!w.contains(e.target))closeUserMenu()})
 
         // ── Repo ordering ──────────────────────────────────────────────
         function sortRepos(names){
@@ -732,23 +830,105 @@ public static class WebAssets
 
         function renderRevSidebar(prs){
           const s=document.getElementById('s-rev-side');
-          if(!prs.length){s.innerHTML='';return}
-          const items=prs.map(p=>`<div class="srev">
+          const visible=hideBotReviews?prs.filter(p=>!isBotAuthor(p.author)):prs;
+          if(!visible.length){s.innerHTML='';return}
+          const items=visible.map(p=>`<div class="srev">
             <div class="srev-repo">${e(p.repo)} · #${p.number}</div>
             <a class="srev-link" href="${e(p.url)}" target="_blank" rel="noopener">${e(p.title)}</a>
             <div class="prc-meta">${bCI(p.ciState,p.failingCheck)}${bMrg(p.mergeState)}<span>${e(p.ageAgo)}</span></div>
           </div>`).join('');
-          s.innerHTML=`<div class="sc"><div class="sc-hdr"><div class="sc-title"><span style="width:7px;height:7px;border-radius:9999px;background:var(--amber);display:inline-block"></span>${t('sidebarReviews')}</div><span class="b by">${t('pendingCount',prs.length)}</span></div>${items}</div>`;
+          s.innerHTML=`<div class="sc"><div class="sc-hdr"><div class="sc-title"><span style="width:7px;height:7px;border-radius:9999px;background:var(--amber);display:inline-block"></span>${t('sidebarReviews')}</div><span class="b by">${t('pendingCount',visible.length)}</span></div>${items}</div>`;
+        }
+
+        // ── Reviews tab view + filter ─────────────────────────────────
+        let _lastRevPrs=[];
+        let revFilter=null;
+        let revAuthorFilter=null;
+        function setRevFilter(urgency){
+          revFilter=urgency;
+          renderRevFull(_lastRevPrs);
+        }
+        function setRevAuthorFilter(author){
+          revAuthorFilter=author;
+          renderRevFull(_lastRevPrs);
+        }
+        function renderRevFilters(visible){
+          const el=document.getElementById('s-rev-filters');
+          if(!el)return;
+          let html='';
+          const cnt={};for(const p of visible)cnt[p.urgency]=(cnt[p.urgency]||0)+1;
+          const ORDER=['CiFailing','ChangesRequested','CommentsPending','AwaitingReview','Approved','Normal'];
+          const existing=ORDER.filter(u=>cnt[u]);
+          if(existing.length){
+            const all=revFilter===null;
+            const chips=[
+              `<button class="fchip" style="${all?'border-color:var(--muted);color:var(--text)':''}" onclick="setRevFilter(null)">${t('filterAll')} <span class="tcnt">${visible.length}</span></button>`,
+              ...existing.map(u=>{
+                const active=revFilter===u;const col=urgencyColor(u);
+                return `<button class="fchip" style="${active?`border-color:${col};color:${col}`:''}" onclick="setRevFilter('${u}')">${t('st'+u)} <span class="tcnt">${cnt[u]}</span></button>`;
+              })
+            ];
+            html+=`<div style="display:flex;gap:6px;flex-wrap:wrap">${chips.join('')}</div>`;
+          }
+          const acnt={};for(const p of visible)if(p.author)acnt[p.author]=(acnt[p.author]||0)+1;
+          const authors=Object.keys(acnt).sort((a,b)=>acnt[b]-acnt[a]);
+          if(authors.length>=2){
+            const allA=revAuthorFilter===null;
+            const achips=[
+              `<button class="fchip" style="${allA?'border-color:var(--muted);color:var(--text)':''}" onclick="setRevAuthorFilter(null)">${t('filterAll')} <span class="tcnt">${visible.length}</span></button>`,
+              ...authors.map(a=>{
+                const active=revAuthorFilter===a;
+                return `<button class="fchip" style="${active?'border-color:var(--indigo);color:var(--indigo)':''}" onclick="setRevAuthorFilter('${a}')">${e(a)} <span class="tcnt">${acnt[a]}</span></button>`;
+              })
+            ];
+            html+=(html?'<div style="height:6px"></div>':'')+`<div style="display:flex;gap:6px;flex-wrap:wrap">${achips.join('')}</div>`;
+          }
+          el.innerHTML=html;
+        }
+        function toggleAllRevRepos(){
+          const groups=[...document.querySelectorAll('#s-rev-full .rgroup')];
+          if(!groups.length)return;
+          const repos=groups.map(g=>g.dataset.repo).filter(Boolean);
+          const allCollapsed=repos.length>0&&repos.every(r=>collapsedRepos.has(r));
+          if(allCollapsed){
+            repos.forEach(r=>collapsedRepos.delete(r));
+            groups.forEach(g=>{const b=g.querySelector('.rgroup-body');const c=g.querySelector('.rg-chevron');if(b)b.style.display='';if(c)c.style.transform=''});
+          }else{
+            repos.forEach(r=>collapsedRepos.add(r));
+            groups.forEach(g=>{const b=g.querySelector('.rgroup-body');const c=g.querySelector('.rg-chevron');if(b)b.style.display='none';if(c)c.style.transform='rotate(-90deg)'});
+          }
+          localStorage.setItem('prd-collapsed',JSON.stringify([...collapsedRepos]));
+          persistUiState();
+          updateRevCollapseBtn();
+        }
+        function updateRevCollapseBtn(){
+          const btn=document.getElementById('rev-collapse-all-btn');
+          if(!btn)return;
+          const groups=[...document.querySelectorAll('#s-rev-full .rgroup')];
+          const repos=groups.map(g=>g.dataset.repo).filter(Boolean);
+          const allCollapsed=repos.length>0&&repos.every(r=>collapsedRepos.has(r));
+          const lbl=document.getElementById('rev-collapse-all-label');
+          const ic=btn.querySelector('.rev-icon-collapse');
+          const ie=btn.querySelector('.rev-icon-expand');
+          if(lbl)lbl.textContent=allCollapsed?t('expandAll'):t('collapseAll');
+          if(ic)ic.style.display=allCollapsed?'none':'';
+          if(ie)ie.style.display=allCollapsed?'':'none';
         }
 
         function renderRevFull(prs){
+          _lastRevPrs=prs;
+          const visible=hideBotReviews?prs.filter(p=>!isBotAuthor(p.author)):prs;
+          renderRevFilters(visible);
+          updateRevHideBotsBtn();
+          const filtered=visible.filter(p=>(!revFilter||p.urgency===revFilter)&&(!revAuthorFilter||p.author===revAuthorFilter));
           const s=document.getElementById('s-rev-full');
-          if(!prs.length){s.innerHTML=`<div class="empty">${t('emptyReviews')}</div>`;return}
-          const groups={};for(const p of prs)(groups[p.repo]=groups[p.repo]||[]).push(p);
+          if(!filtered.length){s.innerHTML=`<div class="empty">${t('emptyReviews')}</div>`;updateRevCollapseBtn();return}
+          const groups={};for(const p of filtered)(groups[p.repo]=groups[p.repo]||[]).push(p);
           s.innerHTML=Object.entries(groups).sort(([a],[b])=>a.localeCompare(b)).map(([repo,list])=>{
             const col=collapsedRepos.has(repo);
             return `<div class="rgroup" data-repo="${e(repo)}"><div class="rgroup-hdr" onclick="toggleRepo(this)"><div style="display:flex;align-items:center;gap:6px"><svg class="rg-chevron" style="${col?'transform:rotate(-90deg)':''}" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg><span style="width:8px;height:8px;border-radius:9999px;background:${groupDot(list)};display:inline-block;flex-shrink:0"></span><span class="rgroup-name">${e(repo)}</span><span class="tcnt">${list.length}</span></div><div style="display:flex;align-items:center;gap:4px">${statusChips(list)}</div></div><div class="rgroup-body"${col?' style="display:none"':''}>${list.map(renderRevCard).join('')}</div></div>`;
           }).join('');
+          updateRevCollapseBtn();
         }
 
         function renderMrgSidebar(prs){
@@ -810,6 +990,16 @@ public static class WebAssets
             myPrsFilter=data.myPrsFilter||null;
             if(data.sidebarOpen!==undefined)sidebarOpen=!!data.sidebarOpen;
             if(Array.isArray(data.repoOrder))repoOrder=data.repoOrder;
+            if(data.notifCommentVisual!==undefined)notifPrefs.commentVisual=!!data.notifCommentVisual;
+            if(data.notifCommentAudio!==undefined)notifPrefs.commentAudio=!!data.notifCommentAudio;
+            if(data.notifCiVisual!==undefined)notifPrefs.ciVisual=!!data.notifCiVisual;
+            if(data.notifCiAudio!==undefined)notifPrefs.ciAudio=!!data.notifCiAudio;
+            if(data.notifMergedVisual!==undefined)notifPrefs.mergedVisual=!!data.notifMergedVisual;
+            if(data.notifMergedAudio!==undefined)notifPrefs.mergedAudio=!!data.notifMergedAudio;
+            if(data.hideBotReviews!==undefined)hideBotReviews=!!data.hideBotReviews;
+            const inp=document.getElementById('interval-input');if(inp)inp.value=data.intervalSeconds||300;
+            updateNotifPrefButtons();
+            updateRevHideBotsBtn();
           }
 
           document.getElementById('loading').style.display='none';
@@ -819,6 +1009,7 @@ public static class WebAssets
             pill.title=data.login;
             const initials=data.login.replace(/-/g,' ').split(' ').map(w=>w[0]?.toUpperCase()||'').join('').slice(0,2)||'—';
             pill.textContent=initials;
+            const ddname=document.getElementById('user-dd-name');if(ddname)ddname.textContent=data.login;
           }
           const err=document.getElementById('err');
           if(data.error){err.style.display='';err.textContent='Erro: '+data.error}else{err.style.display='none'}
@@ -869,6 +1060,7 @@ public static class WebAssets
 
         // Init i18n immediately with cached lang
         applyI18n();
+        updateNotifPrefButtons();
         document.getElementById('vbtn-repo')?.classList.toggle('active',myPrsView==='repo');
         document.getElementById('vbtn-status')?.classList.toggle('active',myPrsView==='status');
         go();

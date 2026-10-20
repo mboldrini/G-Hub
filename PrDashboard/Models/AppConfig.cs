@@ -22,4 +22,11 @@ public class AppConfig
     [JsonPropertyName("myPrsView")] public string MyPrsView { get; set; } = "repo";
     [JsonPropertyName("sidebarOpen")] public bool SidebarOpen { get; set; } = true;
     [JsonPropertyName("repoOrder")] public List<string> RepoOrder { get; set; } = [];
+    [JsonPropertyName("notifCommentVisual")] public bool NotifCommentVisual { get; set; } = true;
+    [JsonPropertyName("notifCommentAudio")] public bool NotifCommentAudio { get; set; } = true;
+    [JsonPropertyName("notifCiVisual")] public bool NotifCiVisual { get; set; } = true;
+    [JsonPropertyName("notifCiAudio")] public bool NotifCiAudio { get; set; } = true;
+    [JsonPropertyName("notifMergedVisual")] public bool NotifMergedVisual { get; set; } = true;
+    [JsonPropertyName("notifMergedAudio")] public bool NotifMergedAudio { get; set; } = true;
+    [JsonPropertyName("hideBotReviews")] public bool HideBotReviews { get; set; } = false;
 }

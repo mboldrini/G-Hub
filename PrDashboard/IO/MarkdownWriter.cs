@@ -7,7 +7,6 @@ public static class MarkdownWriter
 {
     public static string BuildMeusPrs(
         List<PullRequest> myPrs,
-        List<PullRequest> reviewPrs,
         List<MergedPr> merged,
         List<ClosedPr> closed,
         int historyDays,
@@ -39,25 +38,6 @@ public static class MarkdownWriter
             var merge = FormatMerge(pr.Status?.Merge);
             var age = TimeFormatter.Ago(pr.CreatedAt, now);
             sb.AppendLine($"| {EscapeMd(pr.Repo)} | {link} | {title} | {commit} | {review} | {ci} | {comment} | {merge} | {age} |");
-        }
-
-        sb.AppendLine();
-        sb.AppendLine("## Reviews pedidos a mim");
-        sb.AppendLine();
-
-        if (reviewPrs.Any())
-        {
-            sb.AppendLine("| Repo | # | Título | Idade |");
-            sb.AppendLine("|------|---|--------|-------|");
-            foreach (var pr in reviewPrs.OrderBy(p => p.Repo).ThenBy(p => p.Number))
-            {
-                var link = $"[#{pr.Number}]({pr.Url})";
-                sb.AppendLine($"| {EscapeMd(pr.Repo)} | {link} | {EscapeMd(pr.Title)} | {TimeFormatter.Ago(pr.CreatedAt, now)} |");
-            }
-        }
-        else
-        {
-            sb.AppendLine("_Nenhum._");
         }
 
         sb.AppendLine();
@@ -114,6 +94,44 @@ public static class MarkdownWriter
         return sb.ToString();
     }
 
+    public static string BuildReviews(List<PullRequest> reviewPrs, DateTimeOffset now)
+    {
+        var sb = new System.Text.StringBuilder();
+        sb.AppendLine($"# Reviews pedidos a mim — {now.ToLocalTime():yyyy-MM-dd}");
+        sb.AppendLine();
+        sb.AppendLine($"_Gerado em {now.ToLocalTime():HH:mm:ss}_");
+        sb.AppendLine();
+
+        if (!reviewPrs.Any())
+        {
+            sb.AppendLine("_Nenhum._");
+            return sb.ToString();
+        }
+
+        foreach (var group in reviewPrs.GroupBy(p => p.Repo).OrderBy(g => g.Key))
+        {
+            sb.AppendLine($"### {group.Key}");
+            foreach (var pr in group.OrderBy(p => p.Number))
+            {
+                var ci = pr.Status?.Ci.State switch
+                {
+                    CiState.Passing => "✅ CI",
+                    CiState.Failing => $"❌ {pr.Status.Ci.FailingCheck ?? "CI"}",
+                    CiState.Pending => "⏳ CI",
+                    _ => ""
+                };
+                var age = TimeFormatter.Ago(pr.CreatedAt, now);
+                var badges = string.Join(" · ", new[] { ci }.Where(s => s != ""));
+                var draft = pr.IsDraft ? " _(rascunho)_" : "";
+                sb.AppendLine($"- **[#{pr.Number}]({pr.Url})** {EscapeMd(pr.Title)}{draft}");
+                sb.AppendLine($"  _{EscapeMd(pr.Author ?? "")}_ · {(badges != "" ? badges + " · " : "")}{age}");
+            }
+            sb.AppendLine();
+        }
+
+        return sb.ToString();
+    }
+
     public static string BuildHistorico(List<MergedPr> allMerged, List<ClosedPr> allClosed, DateTimeOffset now)
     {
         var sb = new System.Text.StringBuilder();
@@ -165,7 +183,6 @@ public static class MarkdownWriter
 
     public static string BuildStandup(
         List<PullRequest> myPrs,
-        List<PullRequest> reviewPrs,
         List<MergedPr> mergedPrs,
         DateTimeOffset now)
     {
@@ -238,31 +255,6 @@ public static class MarkdownWriter
                 sb.AppendLine();
             }
         }
-
-        // Reviews
-        sb.AppendLine("## Reviews Pedidos a Mim");
-        sb.AppendLine();
-        if (!reviewPrs.Any())
-        {
-            sb.AppendLine("_Nenhum._");
-        }
-        else
-        {
-            foreach (var pr in reviewPrs.OrderBy(p => p.Repo).ThenBy(p => p.Number))
-            {
-                var ci = pr.Status?.Ci.State switch
-                {
-                    CiState.Passing => "✅ CI",
-                    CiState.Failing => $"❌ {pr.Status.Ci.FailingCheck ?? "CI"}",
-                    _ => ""
-                };
-                var age = TimeFormatter.Ago(pr.CreatedAt, now);
-                var badges = string.Join(" · ", new[] { ci }.Where(s => s != ""));
-                sb.AppendLine($"- **[#{pr.Number}]({pr.Url})** {EscapeMd(pr.Title)}");
-                sb.AppendLine($"  _{EscapeMd(pr.Author ?? "")}_ · {(badges != "" ? badges + " · " : "")}{age} · {EscapeMd(pr.Repo)}");
-            }
-        }
-        sb.AppendLine();
 
         // Merged
         sb.AppendLine("## Mergeados Recentemente");
