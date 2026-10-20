@@ -1,5 +1,6 @@
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.WinForms;
+using PrDashboard.GitHub;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 
@@ -163,6 +164,14 @@ public class SplashWindow : Form
 
     public void ShowError(string message)
         => ExecScript($"typeof setError==='function'&&setError('{EscJs(message)}')");
+
+    public void ShowError(PreCheckException ex)
+    {
+        if (ex.FixCommand != null)
+            ExecScript($"typeof setError==='function'&&setError('{EscJs(ex.Message)}','{EscJs(ex.FixCommand)}')");
+        else
+            ShowError(ex.Message);
+    }
 
     // ── Internals ────────────────────────────────────────────────────────────
 

@@ -17,7 +17,8 @@ public static class PreChecks
 
         if (!found)
             throw new PreCheckException(
-                "gh não encontrado no PATH.\nInstale o GitHub CLI: https://cli.github.com");
+                "gh não encontrado no PATH.\nInstale o GitHub CLI: https://cli.github.com",
+                fixCommand: "winget install --id GitHub.cli");
     }
 
     private static async Task EnsureAuthenticatedAsync(string hostname, CancellationToken ct)
@@ -25,12 +26,14 @@ public static class PreChecks
         var (_, error, code) = await GhRunner.RunAsync("auth status", hostname, ct);
         if (code != 0)
             throw new PreCheckException(
-                $"gh auth status falhou. Execute: gh auth login\n\nDetalhe: {error.Trim()}");
+                $"gh auth status falhou.\n\nDetalhe: {error.Trim()}",
+                fixCommand: "gh auth login");
 
         if (error.Contains("GH_TOKEN") || error.Contains("GITHUB_TOKEN"))
             throw new PreCheckException(
                 "Variável de ambiente GH_TOKEN ou GITHUB_TOKEN detectada.\n" +
-                "Ela sobrescreve o login do gh CLI. Remova-a ou ajuste conforme necessário.");
+                "Ela sobrescreve o login do gh CLI. Remova-a ou ajuste conforme necessário.",
+                fixCommand: "Remove the GH_TOKEN / GITHUB_TOKEN environment variable");
     }
 
     private static async Task<string> GetLoginAsync(string hostname, CancellationToken ct)
@@ -44,4 +47,7 @@ public static class PreChecks
     }
 }
 
-public class PreCheckException(string message) : Exception(message);
+public class PreCheckException(string message, string? fixCommand = null) : Exception(message)
+{
+    public string? FixCommand { get; } = fixCommand;
+}

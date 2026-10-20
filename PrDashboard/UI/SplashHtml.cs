@@ -22,7 +22,7 @@ public static class SplashHtml
           var bgMode=localStorage.getItem('prd-bg')==='1';
           if(autoLaunch&&!bgMode){PD.launchFired=true;wv('launch');}
         }
-        function setError(m){PD.phase='error';PD.err=m;}
+        function setError(m,fixCmd){PD.phase='error';PD.err=m;PD.fixCmd=fixCmd||'';}
         function setStopped(){PD.phase='stopped';}
         function addLog(){}
         wv('jsReady'); // startup pode começar agora
@@ -309,15 +309,22 @@ public static class SplashHtml
           stopBtn.classList.remove('flex');
         }
 
-        function setError(msg) {
+        function setError(msg, fixCmd) {
           const bar = document.getElementById('progress-bar');
           bar.style.width      = '100%';
           bar.style.background = 'linear-gradient(90deg,#7f1d1d,#ef4444)';
           bar.style.boxShadow  = '0 0 10px rgba(239,68,68,.5)';
           document.getElementById('progress-pct').textContent = 'ERR';
           document.getElementById('progress-pct').style.color = '#f87171';
-          document.getElementById('splash-status-text').textContent = msg;
-          document.getElementById('splash-status-text').style.color = '#f87171';
+          const statusEl = document.getElementById('splash-status-text');
+          statusEl.textContent = msg;
+          statusEl.style.color = '#f87171';
+          if (fixCmd) {
+            const fix = document.createElement('div');
+            fix.style.cssText = 'font-family:monospace;font-size:11px;color:#8b949e;margin-top:4px';
+            fix.textContent = 'Execute: ' + fixCmd;
+            statusEl.insertAdjacentElement('afterend', fix);
+          }
           document.getElementById('footer-status').textContent = 'Startup error';
           document.querySelectorAll('.status-ping').forEach(el => { el.style.animation = 'none'; el.style.background = '#ef4444'; el.style.boxShadow = '0 0 6px rgba(239,68,68,.6)'; });
           addLog(msg, 'error');
@@ -341,7 +348,7 @@ public static class SplashHtml
         updatePort(PD.port);
         updateProgress(PD.pct, PD.text);
         if (PD.phase === 'ready')        setReady(PD.login);
-        else if (PD.phase === 'error')   setError(PD.err);
+        else if (PD.phase === 'error')   setError(PD.err, PD.fixCmd);
         else if (PD.phase === 'stopped') setStopped();
         </script>
         </body>

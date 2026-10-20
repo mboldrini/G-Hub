@@ -55,7 +55,7 @@ if (args.Length == 0)
             catch (PreCheckException ex)
             {
                 AppLogger.Instance?.Info($"PreCheck falhou: {ex.Message}");
-                splash?.ShowError(ex.Message);
+                splash?.ShowError(ex);
             }
             catch (Exception ex)
             {
@@ -160,6 +160,8 @@ try
 catch (PreCheckException ex)
 {
     AnsiConsole.MarkupLine($"[red]Erro de configuração:[/]\n{Markup.Escape(ex.Message)}");
+    if (ex.FixCommand != null)
+        AnsiConsole.MarkupLine($"[grey]Execute:[/] [bold]{Markup.Escape(ex.FixCommand)}[/]");
     WaitKeyIfDoubleClick();
     return 1;
 }
