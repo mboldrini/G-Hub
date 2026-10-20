@@ -26,6 +26,7 @@ public class PullRequest
     public int Deletions { get; set; }
     public int ChangedFiles { get; set; }
     public List<StatusCheck> StatusChecks { get; set; } = [];
+    public List<string> Assignees { get; set; } = [];
     public string? OverallCiStatus { get; set; }
     public string? Author { get; set; }
     public string Body { get; set; } = "";
@@ -109,6 +110,7 @@ public class CiStatus
 {
     public CiState State { get; set; }
     public string? FailingCheck { get; set; }
+    public List<string> FailingChecks { get; set; } = [];
 }
 
 public class MergeStatus

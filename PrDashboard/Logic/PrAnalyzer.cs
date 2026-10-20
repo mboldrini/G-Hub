@@ -122,7 +122,12 @@ public static class PrAnalyzer
             var failingCheck = pr.StatusChecks
                 .FirstOrDefault(c => c.Conclusion?.ToUpperInvariant() is "FAILURE" or "TIMED_OUT" or "STARTUP_FAILURE"
                                   || c.State?.ToUpperInvariant() is "FAILURE" or "ERROR");
-            return new CiStatus { State = CiState.Failing, FailingCheck = failingCheck?.Name };
+            var allFailing = pr.StatusChecks
+                .Where(c => (c.Conclusion ?? c.State ?? "").ToUpperInvariant() is "FAILURE" or "TIMED_OUT" or "STARTUP_FAILURE" or "ERROR")
+                .Select(c => c.Name)
+                .Where(n => !string.IsNullOrWhiteSpace(n))
+                .ToList();
+            return new CiStatus { State = CiState.Failing, FailingCheck = failingCheck?.Name, FailingChecks = allFailing };
         }
 
         if (overallState == "PENDING" || overallState == "EXPECTED" || overallState == "WAITING" || overallState == "IN_PROGRESS" || overallState == "QUEUED")
@@ -136,7 +141,12 @@ public static class PrAnalyzer
         if (conclusions.Any(c => c is "FAILURE" or "TIMED_OUT" or "STARTUP_FAILURE" or "ERROR"))
         {
             var failingCheck = pr.StatusChecks.FirstOrDefault(c => (c.Conclusion ?? c.State ?? "").ToUpperInvariant() is "FAILURE" or "TIMED_OUT" or "ERROR");
-            return new CiStatus { State = CiState.Failing, FailingCheck = failingCheck?.Name };
+            var allFailing = pr.StatusChecks
+                .Where(c => (c.Conclusion ?? c.State ?? "").ToUpperInvariant() is "FAILURE" or "TIMED_OUT" or "STARTUP_FAILURE" or "ERROR")
+                .Select(c => c.Name)
+                .Where(n => !string.IsNullOrWhiteSpace(n))
+                .ToList();
+            return new CiStatus { State = CiState.Failing, FailingCheck = failingCheck?.Name, FailingChecks = allFailing };
         }
         if (conclusions.Any(c => c is "PENDING" or "IN_PROGRESS" or "QUEUED" or "WAITING" or "EXPECTED"))
             return new CiStatus { State = CiState.Pending };
