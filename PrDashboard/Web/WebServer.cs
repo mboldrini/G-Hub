@@ -21,7 +21,7 @@ public class WebServer(PrsDataService dataService, AppConfig config)
         PropertyNameCaseInsensitive = true,
     };
 
-    public async Task RunAsync(CancellationToken ct)
+    public async Task RunAsync(CancellationToken ct, bool silent = false)
     {
         var builder = WebApplication.CreateBuilder();
         builder.WebHost.UseUrls($"http://localhost:{config.WebPort}");
@@ -97,11 +97,14 @@ public class WebServer(PrsDataService dataService, AppConfig config)
 
         app.Lifetime.ApplicationStarted.Register(() =>
         {
-            var url = $"http://localhost:{config.WebPort}";
-            Console.WriteLine($"Dashboard rodando em {url}");
-            Console.WriteLine("Pressione CTRL+C para encerrar.");
-            try { Process.Start(new ProcessStartInfo(url) { UseShellExecute = true }); }
-            catch { }
+            if (!silent)
+            {
+                var url = $"http://localhost:{config.WebPort}";
+                Console.WriteLine($"Dashboard rodando em {url}");
+                Console.WriteLine("Pressione CTRL+C para encerrar.");
+                try { Process.Start(new ProcessStartInfo(url) { UseShellExecute = true }); }
+                catch { }
+            }
         });
 
         dataService.StartBackgroundRefresh(ct);

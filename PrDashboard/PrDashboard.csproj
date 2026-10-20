@@ -1,8 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>net8.0</TargetFramework>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <AssemblyName>PrDashboard</AssemblyName>
@@ -20,9 +21,13 @@
     <Version>0.0.1</Version>
     <FileVersion>0.0.1.0</FileVersion>
     <AssemblyVersion>0.0.1.0</AssemblyVersion>
+
+    <!-- Single-file: include native DLLs (WebView2Loader.dll, etc.) no bundle -->
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2849.39" />
     <PackageReference Include="Spectre.Console" Version="0.49.1" />
     <PackageReference Include="System.Text.Json" Version="10.0.12" />
   </ItemGroup>

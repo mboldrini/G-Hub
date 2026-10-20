@@ -5,6 +5,7 @@ artifacts/
 publish/
 publish-demo/
 ..publish/
+..dist/
 
 # Sensitive / generated output — never commit
 out/

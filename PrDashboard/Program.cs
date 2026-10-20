@@ -1,13 +1,93 @@
 using System.Text.Json;
+using System.Windows.Forms;
 using PrDashboard.Config;
 using PrDashboard.GitHub;
 using PrDashboard.IO;
 using PrDashboard.Models;
+using PrDashboard.UI;
 using PrDashboard.Web;
 using Spectre.Console;
+using SpectrePanel = Spectre.Console.Panel;
 
 var configPath = Path.Combine(AppContext.BaseDirectory, "config.json");
 var config = ConfigLoader.Load(configPath);
+
+// ── GUI mode: double-click / no flags ──────────────────────────────────────
+if (args.Length == 0)
+{
+    AppLogger.Initialize(WeeklyFolder.GetPath(Path.GetFullPath(config.OutputDir), DateTime.Now));
+
+    // SDK Web inicializa o thread principal como MTA; WinForms/WebView2 exige STA.
+    var staThread = new Thread(() =>
+    {
+        Application.EnableVisualStyles();
+        Application.SetCompatibleTextRenderingDefault(false);
+
+        using var cts = new CancellationTokenSource();
+        SplashWindow? splash = null;
+
+        async Task RunStartupAsync()
+        {
+            try
+            {
+                splash?.UpdateStatus("Checking gh CLI in PATH...", 15);
+                var login = await PreChecks.RunAllAsync(config.Hostname, cts.Token);
+
+                splash?.UpdateStatus($"Authenticated as {login} — fetching PRs...", 45);
+                var client = new GhApiClient(config.Hostname);
+                var dataService = new PrsDataService(client, login, config, demoMode: false);
+                await dataService.InitAsync(cts.Token);
+
+                splash?.UpdateStatus("Starting web server...", 80);
+                var server = new WebServer(dataService, config);
+                _ = Task.Run(async () =>
+                {
+                    try { await server.RunAsync(cts.Token, silent: true); }
+                    catch (OperationCanceledException) { }
+                    catch (Exception ex) { AppLogger.Instance?.Error(ex); }
+                });
+
+                splash?.UpdateStatus("Server ready", 95);
+                AppLogger.Instance?.Info($"Servidor iniciado — login={login} port={config.WebPort}");
+                splash?.SetReady(login, config.WebPort);
+            }
+            catch (OperationCanceledException) { }
+            catch (PreCheckException ex)
+            {
+                AppLogger.Instance?.Info($"PreCheck falhou: {ex.Message}");
+                splash?.ShowError(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Instance?.Error(ex);
+                splash?.ShowError(ex.Message);
+            }
+        }
+
+        splash = new SplashWindow(RunStartupAsync, cts);
+        Application.Run(splash);
+        cts.Cancel();
+    });
+    staThread.SetApartmentState(ApartmentState.STA);
+    staThread.Name = "GUI";
+    staThread.Start();
+    staThread.Join();
+    return 0;
+}
+
+// ── CLI mode: qualquer flag → re-attach ao console do pai ─────────────────
+bool attached = NativeMethods.AttachConsole(-1);
+if (!attached) NativeMethods.AllocConsole();
+try
+{
+    var cout = new FileStream("CONOUT$", FileMode.Open, FileAccess.Write, FileShare.ReadWrite);
+    var writer = new StreamWriter(cout) { AutoFlush = true };
+    Console.SetOut(writer);
+    Console.SetError(writer);
+    var cin = new FileStream("CONIN$", FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+    Console.SetIn(new StreamReader(cin));
+}
+catch { }
 
 AppLogger.Initialize(WeeklyFolder.GetPath(Path.GetFullPath(config.OutputDir), DateTime.Now));
 
@@ -27,7 +107,6 @@ for (int i = 0; i < args.Length; i++)
         case "--demo":
             demo = true;
             break;
-
         case "--once":
             once = true;
             break;
@@ -51,7 +130,6 @@ if (intervalArg != null && int.TryParse(intervalArg, out int iv)) config.Interva
 
 _ = noEmoji;
 
-// --demo: web server with fake data, no pre-checks or API calls
 if (demo)
 {
     using var demoCts = new CancellationTokenSource();
@@ -72,7 +150,6 @@ if (demo)
     return 0;
 }
 
-// Pre-checks
 string login;
 try
 {
@@ -110,19 +187,18 @@ if (once)
     return await runner.RunAsync(onceCts.Token);
 }
 
-// Default: web dashboard
-using var cts = new CancellationTokenSource();
-Console.CancelKeyPress += (_, e) => { e.Cancel = true; cts.Cancel(); };
-AppDomain.CurrentDomain.ProcessExit += (_, _) => { try { cts.Cancel(); } catch (ObjectDisposedException) { } };
+using var mainCts = new CancellationTokenSource();
+Console.CancelKeyPress += (_, e) => { e.Cancel = true; mainCts.Cancel(); };
+AppDomain.CurrentDomain.ProcessExit += (_, _) => { try { mainCts.Cancel(); } catch (ObjectDisposedException) { } };
 
 AnsiConsole.MarkupLine($"[grey]Iniciando dashboard web em http://localhost:{config.WebPort} ...[/]");
 
 var dataService = new PrsDataService(client, login, config, demoMode: false);
-await dataService.InitAsync(cts.Token);
+await dataService.InitAsync(mainCts.Token);
 
 var webServer = new WebServer(dataService, config);
-try { await webServer.RunAsync(cts.Token); }
-catch (OperationCanceledException) { /* normal exit via Ctrl+C */ }
+try { await webServer.RunAsync(mainCts.Token); }
+catch (OperationCanceledException) { }
 catch (Exception ex)
 {
     AnsiConsole.MarkupLine($"[red]Erro fatal:[/] {Markup.Escape(ex.Message)}");
@@ -134,14 +210,14 @@ return 0;
 
 static void PrintHelp()
 {
-    AnsiConsole.Write(new Panel("""
+    AnsiConsole.Write(new SpectrePanel("""
         [bold]PrDashboard[/] — Dashboard de Pull Requests do GitHub
 
         [bold]Uso:[/]
           PrDashboard [opções]
 
         [bold]Opções:[/]
-          (sem args)          Abre dashboard web em http://localhost:5555
+          (sem args)          Abre janela de launcher gráfico
           --once              Busca uma vez, salva arquivos, sai
           --demo              Dashboard web com dados falsos (sem chamar a API)
           --interval <seg>    Intervalo de atualização (sobrescreve config.json)

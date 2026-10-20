@@ -3,6 +3,8 @@ using PrDashboard.Models;
 using Spectre.Console;
 using Spectre.Console.Rendering;
 using System.Globalization;
+using SpectreColor = Spectre.Console.Color;
+using SpectrePanel = Spectre.Console.Panel;
 
 namespace PrDashboard.UI;
 
@@ -90,9 +92,9 @@ public class PrRenderer(bool useEmoji, bool useLinks)
                 $"[green]{Markup.Escape(barFull)}[/][grey]{Markup.Escape(barEmpty)}[/]  [grey]{percent}% precisa de ação[/]"),
         ]);
 
-        return new Panel(content)
+        return new SpectrePanel(content)
             .Border(BoxBorder.Rounded)
-            .BorderStyle(new Style(Color.Grey));
+            .BorderStyle(new Style(SpectreColor.Grey));
     }
 
     // ── Repo section ──────────────────────────────────────────────────────────
@@ -115,10 +117,10 @@ public class PrRenderer(bool useEmoji, bool useLinks)
         }
         prRows.Add(new Text(""));
 
-        return new Panel(new Rows(prRows))
+        return new SpectrePanel(new Rows(prRows))
             .Header($"[bold]{Markup.Escape(repo)}[/]  [grey]{countLabel}[/]")
             .Border(BoxBorder.Heavy)
-            .BorderStyle(new Style(Color.Grey));
+            .BorderStyle(new Style(SpectreColor.Grey));
     }
 
     // ── PR entry (verbose or compact) ────────────────────────────────────────
@@ -279,10 +281,10 @@ public class PrRenderer(bool useEmoji, bool useLinks)
         List<PullRequest> reviewPrs, int selectedIndex, int navOffset, DateTimeOffset now)
     {
         if (!reviewPrs.Any())
-            return new Panel(new Markup("[grey]  Nenhum review pendente.[/]"))
+            return new SpectrePanel(new Markup("[grey]  Nenhum review pendente.[/]"))
                 .Header("[bold]REVIEWS PEDIDOS A MIM[/]")
                 .Border(BoxBorder.Heavy)
-                .BorderStyle(new Style(Color.Grey));
+                .BorderStyle(new Style(SpectreColor.Grey));
 
         var rows = new List<IRenderable>();
         for (int i = 0; i < reviewPrs.Count; i++)
@@ -325,10 +327,10 @@ public class PrRenderer(bool useEmoji, bool useLinks)
             rows.Add(new Markup(sb.ToString()));
         }
 
-        return new Panel(new Rows(rows))
+        return new SpectrePanel(new Rows(rows))
             .Header($"[bold]REVIEWS PEDIDOS A MIM[/]  [grey]{reviewPrs.Count}[/]")
             .Border(BoxBorder.Heavy)
-            .BorderStyle(new Style(Color.Grey));
+            .BorderStyle(new Style(SpectreColor.Grey));
     }
 
     // ── Concluded section ─────────────────────────────────────────────────────
@@ -352,10 +354,10 @@ public class PrRenderer(bool useEmoji, bool useLinks)
                 $"[grey]{Markup.Escape(dayStr)} · levou {Markup.Escape(duration)}[/]");
         }).ToList();
 
-        return new Panel(new Rows(rows))
+        return new SpectrePanel(new Rows(rows))
             .Header($"[bold]CONCLUÍDOS ESTA SEMANA[/]  [grey]{thisWeek.Count} mergeados[/]")
             .Border(BoxBorder.Heavy)
-            .BorderStyle(new Style(Color.Grey));
+            .BorderStyle(new Style(SpectreColor.Grey));
     }
 
     // ── Footer / status ───────────────────────────────────────────────────────
