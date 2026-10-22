@@ -36,6 +36,7 @@ The dashboard auto-refreshes every 5 minutes (configurable).
 {
   "intervalSeconds": 300,
   "outputDir": "./out",
+  "cacheDir": "./cache",
   "historyDays": 30,
   "hostname": "github.com",
   "ignoredOrgs": [],
@@ -48,7 +49,8 @@ The dashboard auto-refreshes every 5 minutes (configurable).
 | Field | Default | Description |
 |-------|---------|-------------|
 | `intervalSeconds` | `300` | Auto-refresh interval in seconds |
-| `outputDir` | `./out` | Directory for Markdown reports and state JSON |
+| `outputDir` | `./out` | Directory for Markdown reports |
+| `cacheDir` | `./cache` | Directory for per-repo PR cache (JSON files) |
 | `historyDays` | `30` | How many days back to fetch merged PRs |
 | `hostname` | `github.com` | Override for GitHub Enterprise |
 | `ignoredOrgs` | `[]` | Orgs to exclude |
@@ -82,9 +84,12 @@ Output in `./out/`:
 
 | File | Description |
 |------|-------------|
-| `meus-prs.md` | PRs abertos + mergeados recentemente |
-| `historico.md` | Histórico completo de merges |
-| `standup-YYYY-MM-DD.md` | Snapshot diário do standup |
+| `standups/YYYY-MM/YYYY-MM-DD.md` | Daily standup snapshot — your open PRs with full context |
+| `review-queue/YYYY-MM/YYYY-MM-DD.md` | PRs from others requesting your review |
+| `prs/dashboard.md` | Overview table — open PRs, review requests, recent history |
+| `prs/history.md` | Full merged and closed PR history |
+
+Per-repo PR data is cached in `./cache/repos/` as JSON files and updated incrementally — only PRs with a changed `updated_at` are re-fetched from the GitHub API. Bot and CI comments (GitHub Actions, Dependabot, Copilot) are excluded from the cache.
 
 ## Audio Notifications
 

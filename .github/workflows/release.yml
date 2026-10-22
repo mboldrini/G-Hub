@@ -84,15 +84,15 @@ jobs:
         with:
           tag_name: ${{ steps.ver.outputs.VERSION }}
           name: "PrDashboard ${{ steps.ver.outputs.VERSION }}"
+          generate_release_notes: true
           body: |
-            **Commit:** `${{ github.sha }}`
-
             | Download | Description |
             |----------|-------------|
             | `PrDashboard-${{ steps.ver.outputs.VERSION }}.zip` | Standard — requires `gh` CLI authenticated |
             | `PrDashboard-demo-${{ steps.ver.outputs.VERSION }}.zip` | Demo — fake data, no GitHub auth required |
 
             **Quick start:** extract → run `PrDashboard.exe` → open [http://localhost:5555](http://localhost:5555)
+
           files: |
             PrDashboard-${{ steps.ver.outputs.VERSION }}.zip
             PrDashboard-demo-${{ steps.ver.outputs.VERSION }}.zip

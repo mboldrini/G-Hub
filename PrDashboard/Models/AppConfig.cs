@@ -6,6 +6,7 @@ public class AppConfig
 {
     [JsonPropertyName("intervalSeconds")] public int IntervalSeconds { get; set; } = 300;
     [JsonPropertyName("outputDir")] public string OutputDir { get; set; } = "./out";
+    [JsonPropertyName("cacheDir")] public string CacheDir { get; set; } = "./cache";
     [JsonPropertyName("historyDays")] public int HistoryDays { get; set; } = 30;
     [JsonPropertyName("hostname")] public string Hostname { get; set; } = "github.com";
     [JsonPropertyName("ignoredOrgs")] public List<string> IgnoredOrgs { get; set; } = [];

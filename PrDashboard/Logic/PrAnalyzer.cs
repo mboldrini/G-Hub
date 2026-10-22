@@ -5,7 +5,7 @@ namespace PrDashboard.Logic;
 public static class PrAnalyzer
 {
     private static readonly HashSet<string> BotSuffixes = ["[bot]", "-bot", "_bot"];
-    private static readonly HashSet<string> BotLogins = ["dependabot", "renovate", "github-actions", "snyk-bot", "codecov-commenter"];
+    private static readonly HashSet<string> BotLogins = ["dependabot", "renovate", "github-actions", "snyk-bot", "codecov-commenter", "copilot-swe-agent"];
 
     public static PrStatus Analyze(PullRequest pr, string myLogin, DateTimeOffset now)
     {

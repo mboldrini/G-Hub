@@ -1,6 +1,7 @@
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using PrDashboard.Logic;
 using PrDashboard.Models;
 
 namespace PrDashboard.GitHub;
@@ -313,9 +314,11 @@ public class GhApiClient(string hostname)
         foreach (var n in arr)
         {
             if (n is null) continue;
+            var author = n["author"]?["login"]?.GetValue<string>() ?? "";
+            if (PrAnalyzer.IsBot(author)) continue;
             list.Add(new Comment
             {
-                Author = n["author"]?["login"]?.GetValue<string>() ?? "",
+                Author = author,
                 CreatedAt = ParseDate(n["createdAt"]),
                 Body = n["body"]?.GetValue<string>() ?? "",
             });

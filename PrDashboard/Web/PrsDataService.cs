@@ -140,10 +140,10 @@ public class PrsDataService(GhApiClient client, string login, AppConfig config, 
         try
         {
             var outDir = Path.GetFullPath(config.OutputDir);
-            var weeklyDir = WeeklyFolder.GetPath(outDir, DateTime.Now);
-            var reviewsDir = Path.Combine(weeklyDir, "reviews");
-            Directory.CreateDirectory(reviewsDir);
-            var path = Path.Combine(reviewsDir, $"{now.ToLocalTime():yyyy-MM-dd}.md");
+            var monthFolder = now.ToLocalTime().ToString("yyyy-MM");
+            var reviewQueueDir = Path.Combine(outDir, "review-queue", monthFolder);
+            Directory.CreateDirectory(reviewQueueDir);
+            var path = Path.Combine(reviewQueueDir, $"{now.ToLocalTime():yyyy-MM-dd}.md");
             var content = MarkdownWriter.BuildReviews(reviewPrs, now);
             StateStore.WriteAtomic(path, content);
         }
@@ -155,9 +155,10 @@ public class PrsDataService(GhApiClient client, string login, AppConfig config, 
         try
         {
             var outDir = Path.GetFullPath(config.OutputDir);
-            var weeklyDir = WeeklyFolder.GetPath(outDir, DateTime.Now);
-            Directory.CreateDirectory(weeklyDir);
-            var path = Path.Combine(weeklyDir, $"standup-{now.ToLocalTime():yyyy-MM-dd}.md");
+            var monthFolder = now.ToLocalTime().ToString("yyyy-MM");
+            var standupDir = Path.Combine(outDir, "standups", monthFolder);
+            Directory.CreateDirectory(standupDir);
+            var path = Path.Combine(standupDir, $"{now.ToLocalTime():yyyy-MM-dd}.md");
             var content = MarkdownWriter.BuildStandup(myPrs, mergedPrs, now);
             StateStore.WriteAtomic(path, content);
         }
