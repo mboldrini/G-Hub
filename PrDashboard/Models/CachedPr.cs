@@ -34,3 +34,23 @@ public class CacheMetadata
 {
     [JsonPropertyName("lastUpdated")] public Dictionary<string, DateTimeOffset> LastUpdated { get; set; } = [];
 }
+
+public class PrSnapshot
+{
+    [JsonPropertyName("repo")] public string Repo { get; set; } = "";
+    [JsonPropertyName("number")] public int Number { get; set; }
+    [JsonPropertyName("title")] public string Title { get; set; } = "";
+    [JsonPropertyName("body")] public string Body { get; set; } = "";
+    [JsonPropertyName("url")] public string Url { get; set; } = "";
+    [JsonPropertyName("author")] public string Author { get; set; } = "";
+    [JsonPropertyName("headRef")] public string HeadRef { get; set; } = "";
+    [JsonPropertyName("baseRef")] public string BaseRef { get; set; } = "";
+    [JsonPropertyName("additions")] public int Additions { get; set; }
+    [JsonPropertyName("deletions")] public int Deletions { get; set; }
+    [JsonPropertyName("changedFiles")] public int ChangedFiles { get; set; }
+    [JsonPropertyName("createdAt")] public DateTimeOffset CreatedAt { get; set; }
+    [JsonPropertyName("mergedAt")] public DateTimeOffset MergedAt { get; set; }
+    [JsonPropertyName("reviewers")] public List<string> Reviewers { get; set; } = [];
+    [JsonPropertyName("jiraTickets")] public List<string> JiraTickets { get; set; } = [];
+    [JsonPropertyName("generatedAt")] public DateTimeOffset GeneratedAt { get; set; }
+}

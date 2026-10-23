@@ -144,6 +144,34 @@ public static class GraphQLQueries
         }
         """;
 
+    public const string BackfillMergedPrs = """
+        query($query: String!, $cursor: String) {
+          search(query: $query, type: ISSUE, first: 25, after: $cursor) {
+            pageInfo { hasNextPage endCursor }
+            nodes {
+              ... on PullRequest {
+                number
+                title
+                body
+                url
+                author { login }
+                headRefName
+                baseRefName
+                additions
+                deletions
+                changedFiles
+                createdAt
+                mergedAt
+                repository { nameWithOwner }
+                latestReviews(first: 10) {
+                  nodes { author { login } state }
+                }
+              }
+            }
+          }
+        }
+        """;
+
     public const string ClosedUnmergedPrs = """
         query($query: String!, $cursor: String) {
           search(query: $query, type: ISSUE, first: 25, after: $cursor) {

@@ -1,15 +1,17 @@
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using PrDashboard.GitHub;
 using PrDashboard.IO;
 using PrDashboard.Models;
 
 namespace PrDashboard.Web;
 
-public class WebServer(PrsDataService dataService, AppConfig config, NotificationLogger? notificationLogger = null)
+public class WebServer(PrsDataService dataService, AppConfig config, NotificationLogger? notificationLogger = null, GhApiClient? client = null, string? login = null)
 {
     private static readonly JsonSerializerOptions JsonOpts = new()
     {
@@ -95,6 +97,47 @@ public class WebServer(PrsDataService dataService, AppConfig config, Notificatio
             return Results.NoContent();
         });
 
+        app.MapPost("/api/backfill/start", async (HttpContext ctx) =>
+        {
+            if (client == null || login == null)
+                return Results.Problem("Backfill não disponível no modo demo.", statusCode: 503);
+
+            using var reader = new System.IO.StreamReader(ctx.Request.Body);
+            var json = await reader.ReadToEndAsync();
+            var body = JsonSerializer.Deserialize<BackfillStartBody>(json, ReadOpts);
+            if (body?.Month is not { Length: > 0 } month)
+                return Results.BadRequest("Campo 'month' obrigatório (ex: 2026-10)");
+
+            if (!DateOnly.TryParseExact($"{month}-01", "yyyy-MM-dd", null, System.Globalization.DateTimeStyles.None, out var startDate))
+                return Results.BadRequest("Formato inválido. Use YYYY-MM.");
+
+            var jobId = Guid.NewGuid().ToString("N")[..8];
+            var progress = new BackfillProgress();
+            _backfillJobs[jobId] = progress;
+
+            _ = Task.Run(() => RunBackfillAsync(jobId, progress, startDate, ct));
+
+            return Results.Json(new { jobId }, JsonOpts);
+        });
+
+        app.MapGet("/api/backfill/status/{id}", (string id) =>
+        {
+            if (!_backfillJobs.TryGetValue(id, out var prog))
+                return Results.NotFound();
+
+            lock (prog.Lock)
+            {
+                return Results.Json(new
+                {
+                    lines = prog.Lines.ToArray(),
+                    current = prog.Current,
+                    total = prog.Total,
+                    done = prog.Done,
+                    error = prog.Error,
+                }, JsonOpts);
+            }
+        });
+
         app.MapGet("/favicon.svg", () =>
         {
             var exeDir = Path.GetDirectoryName(Environment.ProcessPath) ?? AppContext.BaseDirectory;
@@ -144,6 +187,110 @@ public class WebServer(PrsDataService dataService, AppConfig config, Notificatio
         catch { }
     }
 
+    private readonly ConcurrentDictionary<string, BackfillProgress> _backfillJobs = new();
+
+    private sealed class BackfillProgress
+    {
+        public List<string> Lines { get; } = [];
+        public int Current { get; set; }
+        public int Total { get; set; }
+        public bool Done { get; set; }
+        public string? Error { get; set; }
+        public readonly object Lock = new();
+    }
+
+    private async Task RunBackfillAsync(string jobId, BackfillProgress prog, DateOnly startDate, CancellationToken ct)
+    {
+        try
+        {
+            var lastDay = startDate.AddMonths(1).AddDays(-1);
+            var monthFolder = startDate.ToString("yyyy-MM");
+            var store = new SnapshotStore(Path.GetFullPath(config.OutputDir));
+
+            // ── Phase 1: merged PRs ──────────────────────────────────
+            lock (prog.Lock) { prog.Lines.Add($"🔄 Buscando PRs mergeados em {monthFolder}..."); }
+
+            List<PrSnapshot> mergedSnapshots;
+            try { mergedSnapshots = await client!.FetchSnapshotsInRangeAsync(login!, startDate, lastDay, ct); }
+            catch (Exception ex)
+            {
+                lock (prog.Lock) { prog.Lines.Add($"❌ Erro: {ex.Message}"); prog.Error = ex.Message; prog.Done = true; }
+                return;
+            }
+
+            // ── Phase 2: open PRs ────────────────────────────────────
+            lock (prog.Lock) { prog.Lines.Add($"🔄 Buscando PRs abertos atualmente..."); }
+
+            List<PullRequest> openPrs;
+            try { openPrs = await client!.FetchMyOpenPrsAsync(login!, config, ct); }
+            catch (Exception ex)
+            {
+                lock (prog.Lock) { prog.Lines.Add($"⚠️ Não foi possível buscar PRs abertos: {ex.Message}"); }
+                openPrs = [];
+            }
+
+            lock (prog.Lock)
+            {
+                prog.Lines.Add($"✓ {mergedSnapshots.Count} mergeado(s), {openPrs.Count} aberto(s). Salvando...");
+                prog.Total = mergedSnapshots.Count + openPrs.Count;
+            }
+
+            // ── Save merged ──────────────────────────────────────────
+            int mSaved = 0, mSkipped = 0;
+            foreach (var snap in mergedSnapshots)
+            {
+                ct.ThrowIfCancellationRequested();
+                if (store.ExistsMerged(snap.Repo, snap.Number, monthFolder))
+                {
+                    mSkipped++;
+                    lock (prog.Lock) { prog.Lines.Add($"→ {snap.Repo} #{snap.Number}: já existe, pulado."); prog.Current++; }
+                    continue;
+                }
+                store.SaveMerged(snap);
+                mSaved++;
+                lock (prog.Lock) { prog.Lines.Add($"✓ {snap.Repo} #{snap.Number}: \"{Trunc(snap.Title)}\" — salvo."); prog.Current++; }
+            }
+
+            // ── Save open ────────────────────────────────────────────
+            foreach (var pr in openPrs)
+            {
+                ct.ThrowIfCancellationRequested();
+                store.SaveOpen(new PrSnapshot
+                {
+                    Repo = pr.Repo, Number = pr.Number, Title = pr.Title, Body = pr.Body,
+                    Url = pr.Url, Author = pr.Author ?? "", HeadRef = pr.HeadRef, BaseRef = pr.BaseRef,
+                    Additions = pr.Additions, Deletions = pr.Deletions, ChangedFiles = pr.ChangedFiles,
+                    CreatedAt = pr.CreatedAt, GeneratedAt = DateTimeOffset.UtcNow,
+                    Reviewers = pr.LatestReviews.Select(r => r.Author).ToList(),
+                    JiraTickets = IO.RepoCacheStore.ExtractJiraTickets(pr.Body),
+                });
+                lock (prog.Lock) { prog.Lines.Add($"✓ {pr.Repo} #{pr.Number}: \"{Trunc(pr.Title)}\" (aberto) — salvo."); prog.Current++; }
+            }
+
+            lock (prog.Lock)
+            {
+                var parts = new List<string>();
+                if (mSaved > 0) parts.Add($"{mSaved} mergeado(s) salvo(s)");
+                if (mSkipped > 0) parts.Add($"{mSkipped} já existia(m)");
+                if (openPrs.Count > 0) parts.Add($"{openPrs.Count} aberto(s) salvo(s)");
+                prog.Lines.Add($"✅ Concluído! {string.Join(", ", parts)}.");
+                prog.Done = true;
+            }
+
+            _ = Task.Delay(TimeSpan.FromMinutes(5)).ContinueWith(t => { _backfillJobs.TryRemove(jobId, out _); });
+        }
+        catch (OperationCanceledException)
+        {
+            lock (prog.Lock) { prog.Lines.Add("⚠️ Operação cancelada."); prog.Done = true; }
+        }
+        catch (Exception ex)
+        {
+            lock (prog.Lock) { prog.Lines.Add($"❌ Erro inesperado: {ex.Message}"); prog.Error = ex.Message; prog.Done = true; }
+        }
+    }
+
+    private static string Trunc(string s) => s.Length <= 60 ? s : s[..60] + "…";
+
     private record SettingsBody(
         string? Theme, string? Language,
         List<string>? CollapsedRepos, string? MyPrsFilter,
@@ -156,4 +303,5 @@ public class WebServer(PrsDataService dataService, AppConfig config, Notificatio
         int? IntervalSeconds, bool? HideBotReviews);
 
     private record NotifyLogBody(string Type, string Repo, int PrNumber, string PrTitle);
+    private record BackfillStartBody(string? Month);
 }

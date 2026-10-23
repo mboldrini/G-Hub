@@ -42,20 +42,21 @@ The dashboard auto-refreshes every 5 minutes (configurable).
   "ignoredOrgs": [],
   "ignoredRepos": ["org/noisy-repo"],
   "hideDrafts": false,
-  "visibleColumns": ["repo","number","title","review","ci","comment","merge","age"]
+  "webPort": 5555
 }
 ```
 
 | Field | Default | Description |
 |-------|---------|-------------|
 | `intervalSeconds` | `300` | Auto-refresh interval in seconds |
-| `outputDir` | `./out` | Directory for Markdown reports |
-| `cacheDir` | `./cache` | Directory for per-repo PR cache (JSON files) |
+| `outputDir` | `./out` | Output directory for reports and PR snapshots |
+| `cacheDir` | `./cache` | Per-repo PR cache (JSON, updated incrementally) |
 | `historyDays` | `30` | How many days back to fetch merged PRs |
 | `hostname` | `github.com` | Override for GitHub Enterprise |
 | `ignoredOrgs` | `[]` | Orgs to exclude |
 | `ignoredRepos` | `[]` | Repos to exclude, e.g. `["org/repo"]` |
 | `hideDrafts` | `false` | Hide draft PRs |
+| `webPort` | `5555` | Local port for the web UI |
 
 ## CLI Flags
 
@@ -82,14 +83,27 @@ PrDashboard.exe --once
 
 Output in `./out/`:
 
-| File | Description |
-|------|-------------|
+| File/Folder | Description |
+|-------------|-------------|
 | `standups/YYYY-MM/YYYY-MM-DD.md` | Daily standup snapshot — your open PRs with full context |
 | `review-queue/YYYY-MM/YYYY-MM-DD.md` | PRs from others requesting your review |
 | `prs/dashboard.md` | Overview table — open PRs, review requests, recent history |
 | `prs/history.md` | Full merged and closed PR history |
+| `prs/merged/YYYY-MM/<repo>--<number>.json` | Per-PR snapshots for merged PRs (generated via backfill) |
+| `prs/open/<repo>--<number>.json` | Per-PR snapshots for currently open PRs (generated via backfill) |
 
 Per-repo PR data is cached in `./cache/repos/` as JSON files and updated incrementally — only PRs with a changed `updated_at` are re-fetched from the GitHub API. Bot and CI comments (GitHub Actions, Dependabot, Copilot) are excluded from the cache.
+
+## PR Backfill
+
+The web UI includes a **Backfill PRs** option in the user menu. It opens a modal where you can:
+
+1. Select a month (current month included)
+2. Fetch all PRs **authored by you** that were merged in that month
+3. Save each as an individual JSON file under `out/prs/merged/YYYY-MM/`
+4. Also save all your currently open PRs to `out/prs/open/`
+
+Files that already exist are skipped automatically. A progress bar and scrollable log show what is happening in real time. Switching months resets the modal state. Each JSON contains full PR metadata: title, body, author, branch names, additions/deletions, reviewers, Jira ticket references, and timestamps.
 
 ## Audio Notifications
 
@@ -99,6 +113,7 @@ Place these files next to `PrDashboard.exe`:
 |------|-------------|
 | `message.mp3` | A new comment appears on one of your PRs |
 | `error.mp3` | A CI failure is detected |
+| `done.mp3` | A PR you authored is merged |
 
 ## Building from Source
 

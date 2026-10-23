@@ -35,6 +35,44 @@ public class GhApiClient(string hostname)
         return await FetchPaginatedAsync(GraphQLQueries.MergedPrs, query, ParseMergedPr, null, ct);
     }
 
+    public async Task<List<Models.PrSnapshot>> FetchSnapshotsInRangeAsync(string login, DateOnly from, DateOnly to, CancellationToken ct = default)
+    {
+        var query = $"is:pr is:merged author:{login} merged:{from:yyyy-MM-dd}..{to:yyyy-MM-dd}";
+        return await FetchPaginatedAsync(GraphQLQueries.BackfillMergedPrs, query, ParsePrSnapshot, null, ct);
+    }
+
+    private static Models.PrSnapshot? ParsePrSnapshot(JsonNode node)
+    {
+        try
+        {
+            var body = node["body"]?.GetValue<string>() ?? "";
+            var snapshot = new Models.PrSnapshot
+            {
+                Repo = node["repository"]?["nameWithOwner"]?.GetValue<string>() ?? "",
+                Number = node["number"]?.GetValue<int>() ?? 0,
+                Title = node["title"]?.GetValue<string>() ?? "",
+                Body = body,
+                Url = node["url"]?.GetValue<string>() ?? "",
+                Author = node["author"]?["login"]?.GetValue<string>() ?? "",
+                HeadRef = node["headRefName"]?.GetValue<string>() ?? "",
+                BaseRef = node["baseRefName"]?.GetValue<string>() ?? "",
+                Additions = node["additions"]?.GetValue<int>() ?? 0,
+                Deletions = node["deletions"]?.GetValue<int>() ?? 0,
+                ChangedFiles = node["changedFiles"]?.GetValue<int>() ?? 0,
+                CreatedAt = ParseDate(node["createdAt"]),
+                MergedAt = ParseDate(node["mergedAt"]),
+                GeneratedAt = DateTimeOffset.UtcNow,
+            };
+            snapshot.Reviewers = node["latestReviews"]?["nodes"]?.AsArray()
+                .Select(n => n?["author"]?["login"]?.GetValue<string>())
+                .OfType<string>()
+                .ToList() ?? [];
+            snapshot.JiraTickets = IO.RepoCacheStore.ExtractJiraTickets(body);
+            return snapshot;
+        }
+        catch { return null; }
+    }
+
     public async Task<List<ClosedPr>> FetchClosedUnmergedPrsAsync(string login, int days, CancellationToken ct = default)
     {
         var since = DateTimeOffset.UtcNow.AddDays(-days).ToString("yyyy-MM-dd");

@@ -152,6 +152,34 @@ public static class WebAssets
         <body>
         <div id="nstack"></div>
 
+        <!-- ── BACKFILL MODAL ─────────────────────────────────────── -->
+        <div id="backfill-overlay" onclick="if(event.target===this)closeBackfillModal()" style="display:none;position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.6);align-items:center;justify-content:center">
+          <div style="background:var(--surf);border:1px solid var(--border);border-radius:14px;padding:24px;width:460px;max-width:calc(100vw - 32px);box-shadow:0 8px 40px rgba(0,0,0,.4)">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+              <span style="font-size:15px;font-weight:600;color:var(--text)">📅 <span data-i18n="backfillTitle">Histórico do mês</span></span>
+              <button onclick="closeBackfillModal()" style="background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;padding:0 4px;line-height:1;border-radius:4px" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--muted)'">×</button>
+            </div>
+            <div style="margin-bottom:16px">
+              <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);display:block;margin-bottom:6px" data-i18n="backfillMonth">Mês</label>
+              <select id="backfill-month" onchange="resetBackfillState()" style="width:100%;padding:7px 10px;border-radius:6px;border:1px solid var(--border);background:var(--subtle);color:var(--text);font-size:13px;font-family:inherit"></select>
+            </div>
+            <div id="backfill-progress-wrap" style="display:none;margin-bottom:14px">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px">
+                <span style="font-size:11px;color:var(--muted)" data-i18n="backfillProgress">Progresso</span>
+                <span id="backfill-pct" style="font-size:11px;font-family:monospace;color:var(--muted)"></span>
+              </div>
+              <div style="height:6px;border-radius:9999px;background:var(--subtle);overflow:hidden">
+                <div id="backfill-bar" style="height:100%;border-radius:9999px;background:var(--indigo);width:0%;transition:width .3s ease"></div>
+              </div>
+            </div>
+            <div id="backfill-log" style="display:none;background:var(--subtle);border:1px solid var(--border);border-radius:8px;padding:10px 12px;max-height:180px;overflow-y:auto;font-size:11px;font-family:monospace;color:var(--text);margin-bottom:16px"></div>
+            <div style="display:flex;gap:8px;justify-content:flex-end">
+              <button id="backfill-start-btn" onclick="startBackfill()" style="padding:7px 20px;border-radius:6px;border:1px solid var(--indigo-bd);background:var(--indigo-bg);color:var(--indigo);font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;transition:all .12s" data-i18n="backfillStart">Iniciar</button>
+              <button onclick="closeBackfillModal()" style="padding:7px 16px;border-radius:6px;border:1px solid var(--border);background:none;color:var(--muted);font-size:13px;cursor:pointer;font-family:inherit" data-i18n="backfillClose">Fechar</button>
+            </div>
+          </div>
+        </div>
+
         <!-- ── HEADER ─────────────────────────────────────────────── -->
         <header style="position:sticky;top:0;z-index:40;background:var(--surf);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:10px 24px">
           <div style="max-width:1280px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
@@ -247,6 +275,9 @@ public static class WebAssets
                       <span style="font-size:12px;color:var(--muted)" data-i18n="menuSecs">seg</span>
                     </div>
                     <button onclick="saveInterval()" style="width:100%;padding:6px 0;border-radius:6px;border:1px solid var(--indigo-bd);background:var(--indigo-bg);color:var(--indigo);font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;transition:all .12s" data-i18n="menuSave">Salvar</button>
+                  </div>
+                  <div style="padding:8px 14px 10px;border-top:1px solid var(--border)">
+                    <button onclick="openBackfillModal();closeUserMenu()" style="display:flex;align-items:center;gap:8px;width:100%;padding:6px 0;font-size:12px;color:var(--text);background:none;border:none;cursor:pointer;font-family:inherit;text-align:left" onmouseover="this.style.color='var(--indigo)'" onmouseout="this.style.color='var(--text)'">📅 <span data-i18n="menuBackfill">Histórico do mês</span></button>
                   </div>
                 </div>
               </div>
@@ -410,6 +441,8 @@ public static class WebAssets
             notifComment:'Novo comentário', notifCi:'CI com erro', notifMerged:'PR mergeado', notifApproved:'PR aprovado', notifReady:'PR pronto p/ review',
             notifVisual:'👁 Aviso', notifAudio:'🔊 Som',
             hideBots:'Ocultar bots',
+            menuBackfill:'Histórico do mês',
+            backfillTitle:'Histórico do mês',backfillMonth:'Mês',backfillProgress:'Progresso',backfillStart:'Iniciar',backfillClose:'Fechar',backfillRunning:'Executando...',backfillDone:'Concluído ✅',backfillRetry:'Tentar novamente',
             searchPlaceholder:'Filtrar por título ou repo...',
             tabNotif:'Notificações',
             notifHistoryTitle:'Eventos recentes nesta sessão',
@@ -445,6 +478,8 @@ public static class WebAssets
             notifComment:'New comment', notifCi:'CI error', notifMerged:'PR merged', notifApproved:'PR approved', notifReady:'PR ready for review',
             notifVisual:'👁 Alert', notifAudio:'🔊 Sound',
             hideBots:'Hide bots',
+            menuBackfill:'Month history',
+            backfillTitle:'Month history',backfillMonth:'Month',backfillProgress:'Progress',backfillStart:'Start',backfillClose:'Close',backfillRunning:'Running...',backfillDone:'Done ✅',backfillRetry:'Retry',
             searchPlaceholder:'Filter by title or repo...',
             tabNotif:'Notifications',
             notifHistoryTitle:'Recent events this session',
@@ -1176,6 +1211,85 @@ public static class WebAssets
           }catch(ex){
             const err=document.getElementById('err');err.style.display='';err.textContent=(currentLang==='en-US'?'Error: ':'Falha: ')+ex.message;go();
           }finally{setTimeout(()=>{icon.style.animation=''},750)}
+        }
+
+        // ── Backfill modal ─────────────────────────────────────────────
+        let _bfJobId=null,_bfPollTmr=null;
+        function buildMonthOptions(){
+          const sel=document.getElementById('backfill-month');
+          if(!sel||sel.options.length>0)return;
+          const now=new Date();
+          for(let i=0;i<=13;i++){
+            const d=new Date(now.getFullYear(),now.getMonth()-i,1);
+            const val=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+            const lbl=d.toLocaleDateString(currentLang,{month:'long',year:'numeric'});
+            const opt=document.createElement('option');
+            opt.value=val;opt.textContent=lbl.charAt(0).toUpperCase()+lbl.slice(1);
+            sel.appendChild(opt);
+          }
+        }
+        function resetBackfillState(){
+          clearTimeout(_bfPollTmr);_bfJobId=null;
+          document.getElementById('backfill-progress-wrap').style.display='none';
+          document.getElementById('backfill-log').style.display='none';
+          document.getElementById('backfill-log').innerHTML='';
+          const bar=document.getElementById('backfill-bar');if(bar)bar.style.width='0%';
+          const pct=document.getElementById('backfill-pct');if(pct)pct.textContent='';
+          const btn=document.getElementById('backfill-start-btn');if(btn){btn.disabled=false;btn.textContent=t('backfillStart');}
+        }
+        function openBackfillModal(){
+          buildMonthOptions();
+          const ov=document.getElementById('backfill-overlay');if(!ov)return;
+          _bfJobId=null;clearTimeout(_bfPollTmr);
+          document.getElementById('backfill-progress-wrap').style.display='none';
+          document.getElementById('backfill-log').style.display='none';
+          document.getElementById('backfill-log').innerHTML='';
+          const bar=document.getElementById('backfill-bar');if(bar)bar.style.width='0%';
+          const pct=document.getElementById('backfill-pct');if(pct)pct.textContent='';
+          const btn=document.getElementById('backfill-start-btn');if(btn){btn.disabled=false;btn.textContent=t('backfillStart');}
+          ov.style.display='flex';
+        }
+        function closeBackfillModal(){
+          clearTimeout(_bfPollTmr);_bfJobId=null;
+          const ov=document.getElementById('backfill-overlay');if(ov)ov.style.display='none';
+        }
+        async function startBackfill(){
+          const month=document.getElementById('backfill-month')?.value;if(!month)return;
+          const btn=document.getElementById('backfill-start-btn');
+          btn.disabled=true;btn.textContent=t('backfillRunning');
+          document.getElementById('backfill-progress-wrap').style.display='';
+          document.getElementById('backfill-log').style.display='';
+          document.getElementById('backfill-log').innerHTML='';
+          try{
+            const r=await fetch('/api/backfill/start',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({month})});
+            if(!r.ok){const txt=await r.text();bfLog('❌ '+txt);btn.disabled=false;btn.textContent=t('backfillRetry');return;}
+            const {jobId}=await r.json();_bfJobId=jobId;
+            pollBackfill(jobId);
+          }catch(ex){bfLog('❌ '+ex.message);btn.disabled=false;btn.textContent=t('backfillRetry');}
+        }
+        function bfLog(text){
+          const log=document.getElementById('backfill-log');if(!log)return;
+          const div=document.createElement('div');
+          div.style.cssText='padding:2px 0;border-bottom:1px solid rgba(128,128,128,.15)';
+          div.textContent=text;log.appendChild(div);log.scrollTop=log.scrollHeight;
+        }
+        function pollBackfill(jobId){
+          if(_bfJobId!==jobId)return;
+          fetch('/api/backfill/status/'+jobId).then(r=>r.json()).then(data=>{
+            const log=document.getElementById('backfill-log');
+            if(log){const cur=log.children.length;for(let i=cur;i<data.lines.length;i++)bfLog(data.lines[i]);}
+            const bar=document.getElementById('backfill-bar');
+            const pct=document.getElementById('backfill-pct');
+            if(data.total>0){
+              const p=Math.round(data.current/data.total*100);
+              if(bar)bar.style.width=p+'%';
+              if(pct)pct.textContent=data.current+' / '+data.total;
+            }else if(data.done){if(bar)bar.style.width='100%';if(pct)pct.textContent='—';}
+            if(data.done){
+              const btn=document.getElementById('backfill-start-btn');
+              if(btn)btn.textContent=t('backfillDone');
+            }else if(_bfJobId===jobId){_bfPollTmr=setTimeout(()=>pollBackfill(jobId),600);}
+          }).catch(()=>{if(_bfJobId===jobId)_bfPollTmr=setTimeout(()=>pollBackfill(jobId),1000);});
         }
 
         // Init i18n immediately with cached lang

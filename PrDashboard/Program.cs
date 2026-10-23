@@ -40,7 +40,7 @@ if (args.Length == 0)
                 await dataService.InitAsync(cts.Token);
 
                 splash?.UpdateStatus("Starting web server...", 80);
-                var server = new WebServer(dataService, config, NotificationLogger.Instance);
+                var server = new WebServer(dataService, config, NotificationLogger.Instance, client, login);
                 _ = Task.Run(async () =>
                 {
                     try { await server.RunAsync(cts.Token, silent: true); }
@@ -200,7 +200,7 @@ AnsiConsole.MarkupLine($"[grey]Iniciando dashboard web em http://localhost:{conf
 var dataService = new PrsDataService(client, login, config, demoMode: false);
 await dataService.InitAsync(mainCts.Token);
 
-var webServer = new WebServer(dataService, config, NotificationLogger.Instance);
+var webServer = new WebServer(dataService, config, NotificationLogger.Instance, client, login);
 try { await webServer.RunAsync(mainCts.Token); }
 catch (OperationCanceledException) { }
 catch (Exception ex)
