@@ -40,6 +40,7 @@ public class Review
     public string Author { get; set; } = "";
     public string State { get; set; } = "";
     public DateTimeOffset SubmittedAt { get; set; }
+    public string Body { get; set; } = "";
 }
 
 public class ReviewRequest

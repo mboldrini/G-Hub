@@ -60,6 +60,9 @@ public class PrDto
     public string MergeState { get; set; } = "";
     public string HeadRef { get; set; } = "";
     public List<string> Assignees { get; set; } = [];
+    public string Body { get; set; } = "";
+    public string? LastCommentBody { get; set; }
+    public List<PrCommentDto> Comments { get; set; } = [];
 }
 
 public class ReviewPrDto
@@ -82,6 +85,16 @@ public class ReviewPrDto
     public string? LastCommentAgo { get; set; }
     public int OpenThreads { get; set; }
     public string MergeState { get; set; } = "";
+    public string Body { get; set; } = "";
+    public string? LastCommentBody { get; set; }
+    public List<PrCommentDto> Comments { get; set; } = [];
+}
+
+public class PrCommentDto
+{
+    public string Author { get; set; } = "";
+    public string Ago { get; set; } = "";
+    public string Body { get; set; } = "";
 }
 
 public class MergedPrDto
@@ -127,6 +140,17 @@ public static class PrsApiDtos
             MergeState = s?.Merge.State.ToString() ?? "Unknown",
             HeadRef = pr.HeadRef,
             Assignees = pr.Assignees,
+            Body = pr.Body,
+            LastCommentBody = pr.RecentComments.OrderByDescending(c => c.CreatedAt).FirstOrDefault()?.Body,
+            Comments = pr.RecentComments
+                .Select(c => (At: c.CreatedAt, Dto: new PrCommentDto { Author = c.Author, Ago = TimeFormatter.Ago(c.CreatedAt, now, lang), Body = c.Body }))
+                .Concat(pr.RecentReviews
+                    .Where(r => !PrAnalyzer.IsBot(r.Author) &&
+                               (!string.IsNullOrWhiteSpace(r.Body) || r.State is "APPROVED" or "CHANGES_REQUESTED" or "DISMISSED"))
+                    .Select(r => (At: r.SubmittedAt, Dto: new PrCommentDto { Author = r.Author, Ago = TimeFormatter.Ago(r.SubmittedAt, now, lang), Body = !string.IsNullOrWhiteSpace(r.Body) ? r.Body : ReviewStateLabel(r.State, lang) })))
+                .OrderByDescending(x => x.At)
+                .Select(x => x.Dto)
+                .ToList(),
         };
     }
 
@@ -154,8 +178,30 @@ public static class PrsApiDtos
             LastCommentAgo = s?.Comment.Since is { } cs ? $"{TimeFormatter.Duration(cs, lang)} {suffix}" : null,
             OpenThreads = s?.Comment.OpenThreads ?? 0,
             MergeState = s?.Merge.State.ToString() ?? "Unknown",
+            Body = pr.Body,
+            LastCommentBody = pr.RecentComments.OrderByDescending(c => c.CreatedAt).FirstOrDefault()?.Body,
+            Comments = pr.RecentComments
+                .Select(c => (At: c.CreatedAt, Dto: new PrCommentDto { Author = c.Author, Ago = TimeFormatter.Ago(c.CreatedAt, now, lang), Body = c.Body }))
+                .Concat(pr.RecentReviews
+                    .Where(r => !PrAnalyzer.IsBot(r.Author) &&
+                               (!string.IsNullOrWhiteSpace(r.Body) || r.State is "APPROVED" or "CHANGES_REQUESTED" or "DISMISSED"))
+                    .Select(r => (At: r.SubmittedAt, Dto: new PrCommentDto { Author = r.Author, Ago = TimeFormatter.Ago(r.SubmittedAt, now, lang), Body = !string.IsNullOrWhiteSpace(r.Body) ? r.Body : ReviewStateLabel(r.State, lang) })))
+                .OrderByDescending(x => x.At)
+                .Select(x => x.Dto)
+                .ToList(),
         };
     }
+
+    private static string ReviewStateLabel(string state, string lang) => (state, lang) switch
+    {
+        ("APPROVED", "pt-BR") => "*aprovado*",
+        ("APPROVED", _) => "*approved*",
+        ("CHANGES_REQUESTED", "pt-BR") => "*solicitou mudanças*",
+        ("CHANGES_REQUESTED", _) => "*requested changes*",
+        ("DISMISSED", "pt-BR") => "*review descartado*",
+        ("DISMISSED", _) => "*review dismissed*",
+        _ => ""
+    };
 
     public static MergedPrDto MapMergedPr(MergedPr pr, DateTimeOffset now, string lang = "pt-BR") => new()
     {

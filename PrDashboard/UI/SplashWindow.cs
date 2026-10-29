@@ -28,13 +28,14 @@ public class SplashWindow : Form
         FormBorderStyle = FormBorderStyle.None;
         Size = new Size(524, 580);
         StartPosition = FormStartPosition.CenterScreen;
-        BackColor = Color.FromArgb(22, 27, 34);
+        BackColor = Color.FromArgb(30, 30, 46); // #1e1e2e Catppuccin Mocha Base
         Text = "PrDashboard";
 
         try
         {
-            var ico = Path.Combine(AppContext.BaseDirectory, "github.ico");
-            if (File.Exists(ico)) Icon = new Icon(ico);
+            using var stream = System.Reflection.Assembly.GetExecutingAssembly()
+                .GetManifestResourceStream("PrDashboard.github.ico");
+            if (stream != null) Icon = new Icon(stream);
         }
         catch { }
 

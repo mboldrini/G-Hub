@@ -320,6 +320,7 @@ public class GhApiClient(string hostname)
                 Author = n["author"]?["login"]?.GetValue<string>() ?? "",
                 State = n["state"]?.GetValue<string>() ?? "",
                 SubmittedAt = ParseDate(n["submittedAt"]),
+                Body = n["body"]?.GetValue<string>() ?? "",
             });
         }
         return list;

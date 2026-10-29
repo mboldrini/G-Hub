@@ -67,7 +67,7 @@ public static class GraphQLQueries
                   nodes { author { login } createdAt body }
                 }
                 reviews(last: 10) {
-                  nodes { author { login } state submittedAt }
+                  nodes { author { login } state submittedAt body }
                 }
                 reviewThreads(first: 50) {
                   nodes {
@@ -117,8 +117,11 @@ public static class GraphQLQueries
                     }
                   }
                 }
-                comments(last: 1) {
+                comments(last: 5) {
                   nodes { author { login } createdAt body }
+                }
+                reviews(last: 5) {
+                  nodes { author { login } state submittedAt body }
                 }
               }
             }

@@ -12,57 +12,61 @@ public static class WebAssets
         <link rel="icon" type="image/svg+xml" href="/favicon.svg">
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
         <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/marked@14/marked.min.js"></script>
         <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
         <script>
           tailwind.config={darkMode:'class',theme:{extend:{fontFamily:{
             sans:['Inter','system-ui','-apple-system','sans-serif'],
-            mono:['ui-monospace','SFMono-Regular','Menlo','Monaco','Consolas','monospace']
+            mono:['JetBrains Mono','ui-monospace','SFMono-Regular','monospace']
           }}}}
         </script>
         <style>
         /* ── Design tokens ─────────────────────────────────────────── */
         :root{
-          --bg:#f8fafc;--surf:#ffffff;--subtle:#f1f5f9;--border:#e2e8f0;--text:#0f172a;--muted:#64748b;--hover:#f8fafc;
+          --bg:#f8fafc;--surf:#ffffff;--subtle:#f1f5f9;--border:#e2e8f0;--text:#0f172a;--muted:#64748b;--hover:#f0f4f8;
           --red:#dc2626;--red-bg:#fef2f2;--red-bd:#fecaca;
           --amber:#b45309;--amber-bg:#fffbeb;--amber-bd:#fde68a;
           --green:#059669;--green-bg:#f0fdf4;--green-bd:#a7f3d0;
           --indigo:#4f46e5;--indigo-bg:#eef2ff;--indigo-bd:#c7d2fe;
           --violet:#7c3aed;--violet-bg:#faf5ff;--violet-bd:#e9d5ff;
           --gray-bg:#f1f5f9;--gray-text:#64748b;
+          --header-bg:rgba(248,250,252,.92);
         }
         .dark{
-          --bg:#0d1117;--surf:#161b22;--subtle:#21262d;--border:#30363d;--text:#f0f6fc;--muted:#8b949e;--hover:#1c2128;
-          --red:#f87171;--red-bg:rgba(248,113,113,.1);--red-bd:rgba(248,113,113,.3);
-          --amber:#fbbf24;--amber-bg:rgba(245,158,11,.1);--amber-bd:rgba(245,158,11,.3);
-          --green:#4ade80;--green-bg:rgba(74,222,128,.1);--green-bd:rgba(74,222,128,.3);
-          --indigo:#818cf8;--indigo-bg:rgba(129,140,248,.1);--indigo-bd:rgba(129,140,248,.3);
-          --violet:#c084fc;--violet-bg:rgba(192,132,252,.1);--violet-bd:rgba(192,132,252,.3);
-          --gray-bg:#21262d;--gray-text:#8b949e;
+          --bg:#1e1e2e;--surf:#252537;--subtle:#181825;--border:#313244;--text:#cdd6f4;--muted:#6c7086;--hover:#2a2a3d;
+          --red:#f38ba8;--red-bg:rgba(243,139,168,.15);--red-bd:rgba(243,139,168,.35);
+          --amber:#f9e2af;--amber-bg:rgba(249,226,175,.15);--amber-bd:rgba(249,226,175,.35);
+          --green:#a6e3a1;--green-bg:rgba(166,227,161,.15);--green-bd:rgba(166,227,161,.35);
+          --indigo:#cba6f7;--indigo-bg:rgba(203,166,247,.15);--indigo-bd:rgba(203,166,247,.35);
+          --violet:#b4befe;--violet-bg:rgba(180,190,254,.15);--violet-bd:rgba(180,190,254,.35);
+          --gray-bg:#313244;--gray-text:#6c7086;
+          --header-bg:rgba(30,30,46,.92);
         }
         *{box-sizing:border-box;margin:0;padding:0}
         body{font-family:'Inter',system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px}
 
-        ::-webkit-scrollbar{width:6px;height:6px}
-        ::-webkit-scrollbar-track{background:var(--bg)}
+        ::-webkit-scrollbar{width:4px;height:4px}
+        ::-webkit-scrollbar-track{background:transparent}
         ::-webkit-scrollbar-thumb{background:var(--border);border-radius:9999px}
         ::-webkit-scrollbar-thumb:hover{background:var(--muted)}
 
-        .content-grid{display:grid;grid-template-columns:1fr 300px;gap:24px;align-items:start}
+        .content-grid{display:grid;grid-template-columns:1fr 280px;gap:20px;align-items:start}
         .content-grid.sidebar-closed{grid-template-columns:1fr}
         .content-grid.sidebar-closed .c-sidebar{display:none}
         @media(max-width:520px){.content-grid{grid-template-columns:1fr !important}.c-sidebar{display:none !important}}
 
-        .rgroup{background:var(--surf);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
-        .rgroup-hdr{background:var(--subtle);border-bottom:1px solid var(--border);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;transition:background .12s}
+        .rgroup{background:var(--surf);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:12px;box-shadow:0 2px 12px rgba(0,0,0,.25)}
+        .rgroup-hdr{background:var(--hover);border-bottom:1px solid var(--border);padding:11px 18px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;transition:background .12s}
         .rgroup-hdr:hover{background:var(--border)}
-        .rgroup-name{font-family:ui-monospace,monospace;font-size:12px;font-weight:600;color:var(--text)}
-        .rgroup-sub{font-family:ui-monospace,monospace;font-size:11px;color:var(--muted)}
+        .rgroup-name{font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12px;font-weight:600;color:var(--text)}
+        .rgroup-sub{font-family:'JetBrains Mono',ui-monospace,monospace;font-size:11px;color:var(--muted)}
         .rg-chevron{transition:transform .2s ease;color:var(--muted);flex-shrink:0}
 
-        .prc{padding:14px 16px;border-left:4px solid transparent;transition:background .12s}
-        .prc:not(:last-child){border-bottom:1px solid var(--subtle)}
+        .prc{padding:12px 18px;border-left:3px solid transparent;transition:background .12s}
+        .prc:not(:last-child){border-bottom:1px solid var(--border)}
         .prc:hover{background:var(--hover)}
         .prc.u-ci,.prc.u-ch{border-left-color:var(--red)}
         .prc.u-cp{border-left-color:var(--amber)}
@@ -71,57 +75,81 @@ public static class WebAssets
         .prc.is-draft{opacity:.6}
         .prc-row{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
         .prc-left{flex:1;min-width:0}
-        .prc-trow{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;margin-bottom:6px}
-        .prc-num{font-family:ui-monospace,monospace;font-size:11px;font-weight:600;color:var(--muted);flex-shrink:0}
-        .prc-link{font-size:13px;font-weight:600;color:var(--text);text-decoration:none;line-height:1.35}
+        .prc-trow{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;margin-bottom:5px}
+        .prc-num{font-family:'JetBrains Mono',ui-monospace,monospace;font-size:11px;font-weight:600;color:var(--indigo);flex-shrink:0}
+        .prc-link{font-size:13px;font-weight:500;color:var(--text);text-decoration:none;line-height:1.35}
         .prc-link:hover{color:var(--indigo)}
         .prc-meta{display:flex;align-items:center;gap:5px;flex-wrap:wrap;font-size:11px;color:var(--muted)}
-        .prc-right{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0;padding-top:2px}
+        .prc-right{display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:4px;flex-shrink:0;padding-top:2px}
+        .prc-expand-btn{display:flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:6px;background:none;border:none;cursor:pointer;color:var(--muted);transition:all .15s;flex-shrink:0;align-self:center}
+        .prc-expand-btn:hover{color:var(--text);background:var(--hover)}
+        .prc-expand-btn svg{transition:transform .2s}
+        .prc-expand-btn.expanded svg{transform:rotate(90deg)}
+        .prc-detail{border-top:1px solid var(--subtle);margin-top:10px;padding-top:10px;display:none}
+        .prc-detail-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:6px}
+        .prc-detail-body{font-size:12px;color:var(--text);word-break:break-word;max-height:360px;overflow-y:auto;line-height:1.55}
+        .prc-detail-body p{margin-bottom:6px}.prc-detail-body p:last-child{margin-bottom:0}
+        .prc-detail-body h1,.prc-detail-body h2,.prc-detail-body h3{font-size:12px;font-weight:600;margin-bottom:4px;color:var(--text)}
+        .prc-detail-body code{font-family:'JetBrains Mono',monospace;background:var(--subtle);padding:1px 4px;border-radius:3px;font-size:11px}
+        .prc-detail-body pre{background:var(--subtle);padding:8px 10px;border-radius:6px;overflow-x:auto;font-size:11px;margin-bottom:6px;border:1px solid var(--border)}
+        .prc-detail-body pre code{background:none;padding:0}
+        .prc-detail-body a{color:var(--indigo);text-decoration:none}.prc-detail-body a:hover{text-decoration:underline}
+        .prc-detail-body ul,.prc-detail-body ol{padding-left:16px;margin-bottom:6px}
+        .prc-detail-body li{margin-bottom:2px}
+        .prc-detail-body blockquote{border-left:2px solid var(--border);padding-left:8px;color:var(--muted);margin-bottom:6px}
+        .prc-detail-body hr{border:none;border-top:1px solid var(--border);margin:8px 0}
+        .prc-detail-body img{max-width:100%;border-radius:4px}
+        .prc-cmt-entry{margin-bottom:6px;padding-bottom:6px}.prc-cmt-entry:last-child{margin-bottom:0;padding-bottom:0}
+        .prc-more-btn{margin-top:6px;font-size:11px;color:var(--indigo);background:none;border:none;cursor:pointer;padding:2px 0;font-family:inherit;display:block;line-height:1.4}
+        .prc-more-btn:hover{text-decoration:underline}
 
-        .b{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:500;white-space:nowrap;border:1px solid transparent}
+        .b{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:6px;font-size:11px;font-weight:500;white-space:nowrap;border:1px solid transparent}
         .br{background:var(--red-bg);color:var(--red);border-color:var(--red-bd)}
         .by{background:var(--amber-bg);color:var(--amber);border-color:var(--amber-bd)}
         .bg{background:var(--green-bg);color:var(--green);border-color:var(--green-bd)}
         .bi{background:var(--indigo-bg);color:var(--indigo);border-color:var(--indigo-bd)}
         .bv{background:var(--violet-bg);color:var(--violet);border-color:var(--violet-bd)}
         .bx{background:var(--gray-bg);color:var(--gray-text);border-color:var(--border)}
-        .branch{display:inline-flex;align-items:center;gap:4px;font-family:ui-monospace,monospace;font-size:10px;padding:2px 7px;border-radius:5px;background:var(--subtle);color:var(--text);border:1px solid var(--border)}
+        .branch{display:inline-flex;align-items:center;gap:3px;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:10px;padding:2px 6px;border-radius:5px;background:var(--subtle);color:var(--muted);border:1px solid var(--border)}
 
-        .mcard{background:var(--surf);border:1px solid var(--border);border-radius:12px;padding:14px 16px;transition:border-color .15s;box-shadow:0 1px 3px rgba(0,0,0,.04)}
-        .mcard:hover{border-color:var(--muted)}
-        .mlabel{font-size:12px;color:var(--muted);margin-bottom:6px;display:flex;align-items:center;justify-content:space-between}
-        .mval{font-size:22px;font-weight:600;letter-spacing:-.02em;color:var(--text)}
-        .msub{font-size:11px;font-family:ui-monospace,monospace;color:var(--muted);margin-left:6px}
+        .mcard{background:var(--surf);border:1px solid var(--border);border-radius:14px;padding:16px 18px;transition:border-color .15s,background .15s;box-shadow:0 2px 12px rgba(0,0,0,.2);position:relative;overflow:hidden}
+        .mcard:hover{background:var(--hover);border-color:var(--muted)}
+        .mlabel{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:8px;display:flex;align-items:center;justify-content:space-between}
+        .mval{font-size:26px;font-weight:700;letter-spacing:-.03em;color:var(--text);line-height:1.1}
+        .msub{font-size:11px;font-family:'JetBrains Mono',ui-monospace,monospace;color:var(--muted);margin-left:6px}
+        .mprog{width:100%;height:3px;border-radius:9999px;background:var(--subtle);margin-top:14px;overflow:hidden}
+        .mprog-bar{height:100%;border-radius:9999px;transition:width .5s ease}
 
-        .tab-btn{padding:0 4px 12px;border-bottom:2px solid transparent;font-size:13px;font-weight:500;color:var(--muted);background:none;border-top:none;border-left:none;border-right:none;cursor:pointer;transition:color .15s,border-color .15s;white-space:nowrap;display:inline-flex;align-items:center;gap:6px}
-        .tab-btn:hover{color:var(--text)}
-        .tab-btn.active{color:var(--text);border-bottom-color:#4ade80}
+        .tab-btn{padding:6px 12px;border-radius:9px;font-size:13px;font-weight:500;color:var(--muted);background:none;border:none;cursor:pointer;transition:all .15s;white-space:nowrap;display:inline-flex;align-items:center;gap:6px;font-family:inherit}
+        .tab-btn:hover{color:var(--text);background:var(--subtle)}
+        .tab-btn.active{color:var(--text);background:var(--hover);box-shadow:0 0 0 1px var(--border)}
         .tab-panel{display:none}
         .tab-panel.active{display:block}
-        .tcnt{font-size:11px;font-family:monospace;padding:1px 7px;border-radius:9999px;border:1px solid var(--border);background:var(--subtle);color:var(--muted)}
-        .tcnt-amber{border-color:rgba(245,158,11,.4);background:rgba(245,158,11,.1);color:var(--amber)}
+        .tcnt{font-size:10px;font-family:'JetBrains Mono',monospace;padding:1px 6px;border-radius:9999px;border:1px solid var(--border);background:var(--subtle);color:var(--muted)}
+        .tcnt-amber{border-color:rgba(251,191,36,.4);background:rgba(251,191,36,.1);color:var(--amber)}
+        .tcnt-indigo{border-color:var(--indigo-bd);background:var(--indigo-bg);color:var(--indigo)}
 
-        .sc{background:var(--surf);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
-        .sc-hdr{display:flex;align-items:center;justify-content:space-between;padding-bottom:10px;border-bottom:1px solid var(--subtle);margin-bottom:12px}
-        .sc-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text);display:flex;align-items:center;gap:6px}
-        .srev{padding:8px 10px;border-radius:8px;border:1px solid var(--border);margin-bottom:8px;transition:background .12s}
+        .sc{background:var(--surf);border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:14px;box-shadow:0 2px 12px rgba(0,0,0,.18)}
+        .sc-hdr{display:flex;align-items:center;justify-content:space-between;padding-bottom:8px;border-bottom:1px solid var(--subtle);margin-bottom:10px}
+        .sc-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text);display:flex;align-items:center;gap:6px}
+        .srev{padding:8px 10px;border-radius:8px;border:1px solid var(--border);margin-bottom:6px;transition:background .12s}
         .srev:last-child{margin-bottom:0}
         .srev:hover{background:var(--hover)}
-        .srev-repo{font-family:ui-monospace,monospace;font-size:11px;color:var(--muted);margin-bottom:3px}
-        .srev-link{font-size:12px;font-weight:500;color:var(--text);text-decoration:none;display:block;margin-bottom:6px;line-height:1.3}
+        .srev-repo{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:3px}
+        .srev-link{font-size:12px;font-weight:500;color:var(--text);text-decoration:none;display:block;margin-bottom:5px;line-height:1.3}
         .srev-link:hover{color:var(--indigo)}
-        .smerge-item{display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px solid var(--subtle)}
+        .smerge-item{display:flex;align-items:flex-start;gap:8px;padding:5px 0;border-bottom:1px solid var(--subtle)}
         .smerge-item:last-child{border-bottom:none}
-        .smerge-icon{width:18px;height:18px;border-radius:9999px;background:var(--indigo-bg);border:1px solid var(--indigo-bd);color:var(--indigo);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+        .smerge-icon{width:18px;height:18px;border-radius:9999px;background:var(--green-bg);border:1px solid var(--green-bd);color:var(--green);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
         .smerge-link{font-size:12px;font-weight:500;color:var(--text);text-decoration:none;display:block;line-height:1.3}
         .smerge-link:hover{color:var(--indigo)}
         .smerge-sub{font-size:11px;color:var(--muted);margin-top:2px}
 
-        .ebanner{background:var(--red-bg);border:1px solid var(--red-bd);border-radius:8px;padding:10px 16px;margin-bottom:16px;color:var(--red);display:none;font-size:13px}
+        .ebanner{background:var(--red-bg);border:1px solid var(--red-bd);border-radius:10px;padding:10px 16px;margin-bottom:16px;color:var(--red);display:none;font-size:13px}
         .empty{color:var(--muted);text-align:center;padding:40px;font-style:italic;font-size:13px}
 
-        #nstack{position:fixed;top:16px;right:16px;z-index:1000;display:flex;flex-direction:column;gap:8px;max-width:320px;pointer-events:none}
-        .notif{background:var(--surf);border:1px solid var(--border);border-radius:10px;padding:12px 36px 12px 14px;box-shadow:0 4px 20px rgba(0,0,0,.25);animation:slideIn .2s ease;pointer-events:all;position:relative}
+        #nstack{position:fixed;top:80px;right:16px;z-index:1000;display:flex;flex-direction:column;gap:8px;max-width:320px;pointer-events:none}
+        .notif{background:var(--surf);border:1px solid var(--border);border-radius:12px;padding:12px 36px 12px 14px;box-shadow:0 6px 28px rgba(0,0,0,.45);animation:slideIn .2s ease;pointer-events:all;position:relative}
         .notif.comment{border-left:3px solid var(--amber)}
         .notif.ci{border-left:3px solid var(--red)}
         .notif.merged{border-left:3px solid var(--green)}
@@ -133,20 +161,31 @@ public static class WebAssets
         .nbody{font-size:12px;color:var(--muted)}
         @keyframes slideIn{from{transform:translateX(24px);opacity:0}to{transform:none;opacity:1}}
 
-        .stoggle{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:500;color:var(--muted);background:none;border:1px solid var(--border);border-radius:6px;padding:3px 10px;cursor:pointer;transition:all .15s}
+        .stoggle{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:500;color:var(--muted);background:none;border:1px solid var(--border);border-radius:8px;padding:4px 10px;cursor:pointer;transition:all .15s}
         .stoggle:hover{color:var(--text);border-color:var(--muted)}
-        .view-seg{display:inline-flex;border:1px solid var(--border);border-radius:6px;overflow:hidden}
-        .view-btn{padding:3px 10px;font-size:11px;font-weight:500;border:none;background:none;color:var(--muted);cursor:pointer;transition:background .12s,color .12s;font-family:inherit}
-        .view-btn.active{background:var(--subtle);color:var(--text)}
-        .fchip{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:6px;font-size:11px;font-weight:500;border:1px solid var(--border);background:none;color:var(--muted);cursor:pointer;transition:border-color .12s,color .12s;font-family:inherit}
+        .view-seg{display:inline-flex;border:1px solid var(--border);border-radius:8px;overflow:hidden;background:var(--subtle)}
+        .view-btn{padding:4px 10px;font-size:11px;font-weight:500;border:none;background:none;color:var(--muted);cursor:pointer;transition:background .12s,color .12s;font-family:inherit}
+        .view-btn.active{background:var(--hover);color:var(--text)}
+        .fchip{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:8px;font-size:11px;font-weight:500;border:1px solid var(--border);background:none;color:var(--muted);cursor:pointer;transition:border-color .12s,color .12s;font-family:inherit}
         .fchip:hover{border-color:var(--muted);color:var(--text)}
+        .tab-toolbar{background:var(--surf);border:1px solid var(--border);border-radius:12px;margin-bottom:16px;box-shadow:0 2px 8px rgba(0,0,0,.18);overflow:hidden;transition:border-color .15s}
+        .tab-toolbar:focus-within{border-color:var(--indigo)}
+        .toolbar-search{width:100%;padding:9px 12px;border:none;background:var(--subtle) !important;color:var(--text) !important;font-size:13px;font-family:inherit;outline:none;display:block;-webkit-appearance:none;appearance:none;forced-color-adjust:none;caret-color:var(--text)}
+        .toolbar-search::placeholder{color:var(--muted)}
+        .toolbar-search::-webkit-search-decoration,.toolbar-search::-webkit-search-cancel-button{-webkit-appearance:none}
+        .toolbar-divider{height:1px;background:var(--border)}
+        .toolbar-controls{display:flex;align-items:center;gap:8px;padding:8px 12px;flex-wrap:wrap}
 
         @media(max-width:640px){.metrics-grid{grid-template-columns:repeat(2,1fr) !important}}
         @keyframes ping{0%{transform:scale(1);opacity:.7}75%,100%{transform:scale(2);opacity:0}}
         @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 
-        .npref-btn{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:9999px;font-size:11px;font-weight:500;border:1px solid var(--border);background:var(--subtle);color:var(--muted);cursor:pointer;transition:all .15s;font-family:inherit;opacity:.55}
+        .npref-btn{display:inline-flex;align-items:center;padding:2px 9px;border-radius:9999px;font-size:11px;font-weight:500;border:1px solid var(--border);background:var(--subtle);color:var(--muted);cursor:pointer;transition:all .15s;font-family:inherit;opacity:.5}
         .npref-btn.on{border-color:var(--green-bd);background:var(--green-bg);color:var(--green);opacity:1}
+        .dd-test-btn{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:9999px;font-size:11px;font-weight:500;border:1px solid var(--border);background:var(--subtle);color:var(--muted);cursor:pointer;font-family:inherit;transition:all .15s}
+        .dd-test-btn:hover{border-color:var(--indigo);color:var(--indigo);background:var(--indigo-bg)}
+
+        .sdot{display:inline-block;border-radius:9999px;flex-shrink:0}
         </style>
         </head>
         <body>
@@ -181,103 +220,102 @@ public static class WebAssets
         </div>
 
         <!-- ── HEADER ─────────────────────────────────────────────── -->
-        <header style="position:sticky;top:0;z-index:40;background:var(--surf);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:10px 24px">
-          <div style="max-width:1280px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
-            <div style="display:flex;align-items:center;gap:10px">
-              <img src="/favicon.svg" width="28" height="28" style="border-radius:6px;flex-shrink:0" alt="">
-              <span style="font-size:15px;font-weight:600;letter-spacing:-.015em;color:var(--text)">PrDashboard</span>
-              <span style="font-size:11px;font-family:monospace;padding:2px 8px;border-radius:9999px;border:1px solid var(--border);background:var(--subtle);color:var(--muted)">.NET 8 / gh CLI</span>
+        <header style="position:sticky;top:0;z-index:40;background:var(--header-bg);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-bottom:1px solid var(--border)">
+          <div style="max-width:1280px;margin:0 auto;height:64px;padding:0 24px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+            <div style="display:flex;align-items:center;gap:14px">
+              <!-- Logo -->
+              <div style="display:flex;align-items:center;gap:8px">
+                <img src="/favicon.svg" width="22" height="22" style="border-radius:5px;flex-shrink:0" alt="">
+                <span style="font-size:16px;font-weight:700;letter-spacing:-.02em;color:var(--text)">PrDashboard</span>
+              </div>
             </div>
-            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-              <!-- Sync indicator -->
-              <div style="display:inline-flex;align-items:center;gap:8px;padding:5px 10px;border-radius:6px;background:var(--subtle);border:1px solid var(--border);font-size:12px;color:var(--muted)">
-                <span style="position:relative;width:8px;height:8px;flex-shrink:0">
-                  <span id="dot-ping" style="position:absolute;inset:0;border-radius:9999px;background:#10b981;animation:ping 1.2s cubic-bezier(0,0,.2,1) infinite;opacity:.7"></span>
-                  <span id="dot-core" style="position:relative;display:block;width:8px;height:8px;border-radius:9999px;background:#10b981"></span>
-                </span>
-                <span id="rlabel" style="font-variant-numeric:tabular-nums">—</span>
+            <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+              <!-- Sync countdown -->
+              <div style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:8px;background:var(--subtle);border:1px solid var(--border);font-size:12px;color:var(--muted)">
+                <span id="rlabel" style="font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;min-width:28px">—</span>
               </div>
               <!-- Refresh -->
-              <button onclick="manual()" style="display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:6px;font-size:12px;font-weight:500;color:var(--text);background:var(--subtle);border:1px solid var(--border);cursor:pointer;transition:border-color .15s" onmouseover="this.style.borderColor='var(--muted)'" onmouseout="this.style.borderColor='var(--border)'">
-                <svg id="ricon" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+              <button onclick="manual()" style="display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:8px;font-size:12px;font-weight:500;color:var(--muted);background:var(--subtle);border:1px solid var(--border);cursor:pointer;transition:all .15s" onmouseover="this.style.borderColor='var(--indigo)';this.style.color='var(--indigo)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">
+                <svg id="ricon" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
                   <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
                 </svg>
                 <span data-i18n="refresh">Atualizar</span>
               </button>
               <div style="width:1px;height:16px;background:var(--border)"></div>
               <!-- Language toggle -->
-              <button onclick="toggleLanguage()" id="lang-btn" title="Toggle language" style="display:inline-flex;align-items:center;justify-content:center;padding:4px 8px;border-radius:6px;background:var(--subtle);border:1px solid var(--border);cursor:pointer;font-size:11px;font-weight:600;font-family:monospace;color:var(--muted);transition:border-color .15s;letter-spacing:.04em" onmouseover="this.style.borderColor='var(--muted)'" onmouseout="this.style.borderColor='var(--border)'">
+              <button onclick="toggleLanguage()" id="lang-btn" title="Toggle language" style="display:inline-flex;align-items:center;justify-content:center;padding:5px 10px;border-radius:8px;background:var(--subtle);border:1px solid var(--border);cursor:pointer;font-size:11px;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--muted);transition:all .15s;letter-spacing:.05em" onmouseover="this.style.borderColor='var(--indigo)';this.style.color='var(--indigo)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">
                 <span id="lang-display">PT</span>
               </button>
               <!-- Theme toggle -->
-              <button onclick="toggleTheme()" title="Toggle theme" style="display:inline-flex;align-items:center;justify-content:center;padding:5px;border-radius:6px;background:var(--subtle);border:1px solid var(--border);cursor:pointer;transition:border-color .15s" onmouseover="this.style.borderColor='var(--muted)'" onmouseout="this.style.borderColor='var(--border)'">
+              <button onclick="toggleTheme()" title="Toggle theme" style="display:inline-flex;align-items:center;justify-content:center;padding:5px;border-radius:8px;background:var(--subtle);border:1px solid var(--border);cursor:pointer;transition:all .15s" onmouseover="this.style.borderColor='var(--indigo)'" onmouseout="this.style.borderColor='var(--border)'">
                 <svg id="icon-sun" width="16" height="16" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" style="display:none"><circle cx="12" cy="12" r="5"/><path d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72l1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
-                <svg id="icon-moon" width="16" height="16" fill="#818cf8" viewBox="0 0 24 24"><path d="M12 3a9 9 0 109 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 01-4.4 2.26 5.403 5.403 0 01-5.4-5.4c0-1.81.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z"/></svg>
+                <svg id="icon-moon" width="16" height="16" fill="var(--indigo)" viewBox="0 0 24 24"><path d="M12 3a9 9 0 109 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 01-4.4 2.26 5.403 5.403 0 01-5.4-5.4c0-1.81.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z"/></svg>
               </button>
               <!-- User menu -->
               <div style="position:relative;display:inline-block" id="user-menu-wrap">
-                <div id="upill" onclick="toggleUserMenu()" title="" style="width:28px;height:28px;border-radius:9999px;background:linear-gradient(135deg,#4f46e5,#0ea5e9);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;flex-shrink:0;cursor:pointer;box-shadow:0 0 0 2px var(--surf)">—</div>
-                <div id="user-dd" style="display:none;position:absolute;right:0;top:calc(100% + 8px);background:var(--surf);border:1px solid var(--border);border-radius:10px;min-width:240px;box-shadow:0 4px 20px rgba(0,0,0,.3);z-index:200;overflow:hidden">
-                  <div style="padding:10px 14px 8px;border-bottom:1px solid var(--border)">
-                    <div style="font-size:10px;color:var(--muted);margin-bottom:2px;text-transform:uppercase;letter-spacing:.05em">GitHub</div>
-                    <div id="user-dd-name" style="font-size:13px;font-weight:600;color:var(--text)">—</div>
-                  </div>
-                  <div style="padding:4px 0;border-bottom:1px solid var(--border)">
-                    <div style="padding:6px 14px 3px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)" data-i18n="menuTestNotifs">Testar notificações</div>
-                    <button onclick="testNotif('comment');closeUserMenu()" style="display:flex;align-items:center;gap:8px;width:100%;padding:7px 14px;font-size:12px;color:var(--text);background:none;border:none;cursor:pointer;font-family:inherit;transition:background .12s;text-align:left" onmouseover="this.style.background='var(--subtle)'" onmouseout="this.style.background='none'">🔔 <span data-i18n="testComment">Novo comentário</span></button>
-                    <button onclick="testNotif('ci');closeUserMenu()" style="display:flex;align-items:center;gap:8px;width:100%;padding:7px 14px;font-size:12px;color:var(--text);background:none;border:none;cursor:pointer;font-family:inherit;transition:background .12s;text-align:left" onmouseover="this.style.background='var(--subtle)'" onmouseout="this.style.background='none'">⚠️ <span data-i18n="testCi">CI com erro</span></button>
-                    <button onclick="testNotif('merged');closeUserMenu()" style="display:flex;align-items:center;gap:8px;width:100%;padding:7px 14px;font-size:12px;color:var(--text);background:none;border:none;cursor:pointer;font-family:inherit;transition:background .12s;text-align:left" onmouseover="this.style.background='var(--subtle)'" onmouseout="this.style.background='none'">🎉 <span data-i18n="testMerged">PR mergeado</span></button>
-                    <button onclick="testNotif('approved');closeUserMenu()" style="display:flex;align-items:center;gap:8px;width:100%;padding:7px 14px;font-size:12px;color:var(--text);background:none;border:none;cursor:pointer;font-family:inherit;transition:background .12s;text-align:left" onmouseover="this.style.background='var(--subtle)'" onmouseout="this.style.background='none'">✅ <span data-i18n="testApproved">PR aprovado</span></button>
-                    <button onclick="testNotif('ready');closeUserMenu()" style="display:flex;align-items:center;gap:8px;width:100%;padding:7px 14px;font-size:12px;color:var(--text);background:none;border:none;cursor:pointer;font-family:inherit;transition:background .12s;text-align:left" onmouseover="this.style.background='var(--subtle)'" onmouseout="this.style.background='none'">🔵 <span data-i18n="testReady">PR saiu de Draft</span></button>
-                  </div>
-                  <div style="padding:6px 0;border-bottom:1px solid var(--border)">
-                    <div style="padding:4px 14px 6px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)" data-i18n="menuConfigNotifs">Notificações</div>
-                    <div style="padding:4px 14px 8px">
-                      <div style="font-size:12px;font-weight:500;color:var(--text);margin-bottom:5px">🔔 <span data-i18n="notifComment">Novo comentário</span></div>
-                      <div style="display:flex;gap:6px">
-                        <button id="npref-comment-visual" class="npref-btn" onclick="toggleNotifPref('comment','visual')"><span data-i18n="notifVisual">👁 Aviso</span></button>
-                        <button id="npref-comment-audio" class="npref-btn" onclick="toggleNotifPref('comment','audio')"><span data-i18n="notifAudio">🔊 Som</span></button>
-                      </div>
-                    </div>
-                    <div style="padding:4px 14px 8px">
-                      <div style="font-size:12px;font-weight:500;color:var(--text);margin-bottom:5px">⚠️ <span data-i18n="notifCi">CI com erro</span></div>
-                      <div style="display:flex;gap:6px">
-                        <button id="npref-ci-visual" class="npref-btn" onclick="toggleNotifPref('ci','visual')"><span data-i18n="notifVisual">👁 Aviso</span></button>
-                        <button id="npref-ci-audio" class="npref-btn" onclick="toggleNotifPref('ci','audio')"><span data-i18n="notifAudio">🔊 Som</span></button>
-                      </div>
-                    </div>
-                    <div style="padding:4px 14px 4px">
-                      <div style="font-size:12px;font-weight:500;color:var(--text);margin-bottom:5px">🎉 <span data-i18n="notifMerged">PR mergeado</span></div>
-                      <div style="display:flex;gap:6px">
-                        <button id="npref-merged-visual" class="npref-btn" onclick="toggleNotifPref('merged','visual')"><span data-i18n="notifVisual">👁 Aviso</span></button>
-                        <button id="npref-merged-audio" class="npref-btn" onclick="toggleNotifPref('merged','audio')"><span data-i18n="notifAudio">🔊 Som</span></button>
-                      </div>
-                    </div>
-                    <div style="padding:4px 14px 8px">
-                      <div style="font-size:12px;font-weight:500;color:var(--text);margin-bottom:5px">✅ <span data-i18n="notifApproved">PR aprovado</span></div>
-                      <div style="display:flex;gap:6px">
-                        <button id="npref-approved-visual" class="npref-btn" onclick="toggleNotifPref('approved','visual')"><span data-i18n="notifVisual">👁 Aviso</span></button>
-                        <button id="npref-approved-audio" class="npref-btn" onclick="toggleNotifPref('approved','audio')"><span data-i18n="notifAudio">🔊 Som</span></button>
-                      </div>
-                    </div>
-                    <div style="padding:4px 14px 4px">
-                      <div style="font-size:12px;font-weight:500;color:var(--text);margin-bottom:5px">🔵 <span data-i18n="notifReady">PR pronto p/ review</span></div>
-                      <div style="display:flex;gap:6px">
-                        <button id="npref-ready-visual" class="npref-btn" onclick="toggleNotifPref('ready','visual')"><span data-i18n="notifVisual">👁 Aviso</span></button>
-                        <button id="npref-ready-audio" class="npref-btn" onclick="toggleNotifPref('ready','audio')"><span data-i18n="notifAudio">🔊 Som</span></button>
-                      </div>
+                <div id="upill" onclick="toggleUserMenu()" title="" style="width:32px;height:32px;border-radius:9999px;background:linear-gradient(135deg,var(--indigo),var(--violet));color:var(--bg);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;flex-shrink:0;cursor:pointer;box-shadow:0 0 0 2px var(--bg),0 0 12px rgba(212,187,255,.25)">—</div>
+                <div id="user-dd" style="display:none;position:absolute;right:0;top:calc(100% + 8px);background:var(--surf);border:1px solid var(--border);border-radius:14px;min-width:278px;box-shadow:0 8px 40px rgba(0,0,0,.55);z-index:200;overflow:hidden">
+                  <!-- Identity -->
+                  <div style="padding:12px 14px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border)">
+                    <div id="user-dd-avatar" style="width:36px;height:36px;border-radius:9999px;background:linear-gradient(135deg,var(--indigo),var(--violet));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:var(--bg);flex-shrink:0;box-shadow:0 0 10px rgba(203,166,247,.2)">—</div>
+                    <div style="min-width:0">
+                      <div id="user-dd-name" style="font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">—</div>
+                      <div style="font-size:11px;color:var(--muted);margin-top:1px">GitHub · Connected</div>
                     </div>
                   </div>
+                  <!-- Notifications config -->
+                  <div style="padding:8px 0;border-bottom:1px solid var(--border)">
+                    <div style="padding:4px 14px 6px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)" data-i18n="menuConfigNotifs">Notificações</div>
+                    <div style="display:flex;align-items:center;gap:6px;padding:3px 14px">
+                      <span style="flex:1;font-size:12px;color:var(--text)">🔔 <span data-i18n="notifComment">Novo comentário</span></span>
+                      <button id="npref-comment-visual" class="npref-btn" onclick="toggleNotifPref('comment','visual')"><span data-i18n="notifVisual">Aviso</span></button>
+                      <button id="npref-comment-audio" class="npref-btn" onclick="toggleNotifPref('comment','audio')"><span data-i18n="notifAudio">Som</span></button>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:6px;padding:3px 14px">
+                      <span style="flex:1;font-size:12px;color:var(--text)">⚠️ <span data-i18n="notifCi">CI com erro</span></span>
+                      <button id="npref-ci-visual" class="npref-btn" onclick="toggleNotifPref('ci','visual')"><span data-i18n="notifVisual">Aviso</span></button>
+                      <button id="npref-ci-audio" class="npref-btn" onclick="toggleNotifPref('ci','audio')"><span data-i18n="notifAudio">Som</span></button>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:6px;padding:3px 14px">
+                      <span style="flex:1;font-size:12px;color:var(--text)">🎉 <span data-i18n="notifMerged">PR mergeado</span></span>
+                      <button id="npref-merged-visual" class="npref-btn" onclick="toggleNotifPref('merged','visual')"><span data-i18n="notifVisual">Aviso</span></button>
+                      <button id="npref-merged-audio" class="npref-btn" onclick="toggleNotifPref('merged','audio')"><span data-i18n="notifAudio">Som</span></button>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:6px;padding:3px 14px">
+                      <span style="flex:1;font-size:12px;color:var(--text)">✅ <span data-i18n="notifApproved">PR aprovado</span></span>
+                      <button id="npref-approved-visual" class="npref-btn" onclick="toggleNotifPref('approved','visual')"><span data-i18n="notifVisual">Aviso</span></button>
+                      <button id="npref-approved-audio" class="npref-btn" onclick="toggleNotifPref('approved','audio')"><span data-i18n="notifAudio">Som</span></button>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:6px;padding:3px 14px">
+                      <span style="flex:1;font-size:12px;color:var(--text)">🔵 <span data-i18n="notifReady">Pronto p/ review</span></span>
+                      <button id="npref-ready-visual" class="npref-btn" onclick="toggleNotifPref('ready','visual')"><span data-i18n="notifVisual">Aviso</span></button>
+                      <button id="npref-ready-audio" class="npref-btn" onclick="toggleNotifPref('ready','audio')"><span data-i18n="notifAudio">Som</span></button>
+                    </div>
+                  </div>
+                  <!-- Test notifications -->
+                  <div style="padding:8px 0;border-bottom:1px solid var(--border)">
+                    <div style="padding:4px 14px 6px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)" data-i18n="menuTestNotifs">Testar</div>
+                    <div style="padding:2px 14px 4px;display:flex;flex-wrap:wrap;gap:5px">
+                      <button onclick="testNotif('comment');closeUserMenu()" class="dd-test-btn">🔔 <span data-i18n="testComment">Comentário</span></button>
+                      <button onclick="testNotif('ci');closeUserMenu()" class="dd-test-btn">⚠️ <span data-i18n="testCi">CI</span></button>
+                      <button onclick="testNotif('merged');closeUserMenu()" class="dd-test-btn">🎉 <span data-i18n="testMerged">Merge</span></button>
+                      <button onclick="testNotif('approved');closeUserMenu()" class="dd-test-btn">✅ <span data-i18n="testApproved">Aprovado</span></button>
+                      <button onclick="testNotif('ready');closeUserMenu()" class="dd-test-btn">🔵 <span data-i18n="testReady">Draft</span></button>
+                    </div>
+                  </div>
+                  <!-- Settings: interval + backfill -->
                   <div style="padding:10px 14px 12px">
-                    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px" data-i18n="menuInterval">Intervalo de atualização</div>
-                    <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">
-                      <input id="interval-input" type="number" min="30" max="3600" value="300" style="width:70px;padding:4px 8px;border-radius:5px;border:1px solid var(--border);background:var(--subtle);color:var(--text);font-size:13px;font-family:inherit">
+                    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:8px" data-i18n="menuInterval">Intervalo de atualização</div>
+                    <div style="display:flex;align-items:center;gap:8px">
+                      <input id="interval-input" type="number" min="30" max="3600" value="300" style="width:64px;padding:4px 8px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:13px;font-family:'JetBrains Mono',monospace">
                       <span style="font-size:12px;color:var(--muted)" data-i18n="menuSecs">seg</span>
+                      <button onclick="saveInterval()" style="margin-left:auto;padding:4px 12px;border-radius:6px;border:1px solid var(--indigo-bd);background:var(--indigo-bg);color:var(--indigo);font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .12s" data-i18n="menuSave">Salvar</button>
                     </div>
-                    <button onclick="saveInterval()" style="width:100%;padding:6px 0;border-radius:6px;border:1px solid var(--indigo-bd);background:var(--indigo-bg);color:var(--indigo);font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;transition:all .12s" data-i18n="menuSave">Salvar</button>
-                  </div>
-                  <div style="padding:8px 14px 10px;border-top:1px solid var(--border)">
-                    <button onclick="openBackfillModal();closeUserMenu()" style="display:flex;align-items:center;gap:8px;width:100%;padding:6px 0;font-size:12px;color:var(--text);background:none;border:none;cursor:pointer;font-family:inherit;text-align:left" onmouseover="this.style.color='var(--indigo)'" onmouseout="this.style.color='var(--text)'">📅 <span data-i18n="menuBackfill">Histórico do mês</span></button>
+                    <div style="height:1px;background:var(--border);margin:10px 0 8px"></div>
+                    <button onclick="openBackfillModal();closeUserMenu()" style="display:flex;align-items:center;gap:7px;padding:4px 0;font-size:12px;color:var(--muted);background:none;border:none;cursor:pointer;font-family:inherit;transition:color .12s" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--muted)'">
+                      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                      <span data-i18n="menuBackfill">Histórico do mês</span>
+                    </button>
                   </div>
                 </div>
               </div>
@@ -285,76 +323,110 @@ public static class WebAssets
           </div>
         </header>
 
-        <main style="max-width:1280px;margin:0 auto;padding:24px">
+        <main style="max-width:1280px;margin:0 auto;padding:28px 24px">
           <div class="ebanner" id="err"></div>
           <div class="empty" id="loading" data-i18n="loading">Carregando...</div>
 
           <div id="content" style="display:none">
             <!-- ── METRICS ── -->
-            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px" class="metrics-grid">
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:28px" class="metrics-grid">
+
               <div class="mcard">
-                <div class="mlabel"><span data-i18n="metricsMyPrs">Meus PRs Abertos</span> <span style="width:7px;height:7px;border-radius:9999px;background:#10b981;display:inline-block"></span></div>
-                <div><span class="mval" id="m-open">—</span><span class="msub" id="m-open-sub"></span></div>
+                <div style="position:absolute;right:-20px;bottom:-20px;width:80px;height:80px;border-radius:9999px;background:var(--green-bg);filter:blur(20px);pointer-events:none"></div>
+                <div class="mlabel">
+                  <span style="display:flex;align-items:center;gap:6px"><span class="sdot" style="width:7px;height:7px;background:var(--green);box-shadow:0 0 6px var(--green)"></span><span data-i18n="metricsMyPrs">Meus PRs Abertos</span></span>
+                  <svg width="15" height="15" fill="none" stroke="var(--green)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                </div>
+                <div style="display:flex;align-items:baseline;gap:6px;margin-top:4px">
+                  <span class="mval" id="m-open">—</span><span class="msub" id="m-open-sub"></span>
+                </div>
+                <div class="mprog"><div class="mprog-bar" id="m-open-bar" style="background:var(--green);width:0%"></div></div>
               </div>
+
               <div class="mcard">
-                <div class="mlabel"><span data-i18n="metricsCi">CI com Falha</span> <span style="width:7px;height:7px;border-radius:9999px;background:#f87171;display:inline-block"></span></div>
-                <div><span class="mval" id="m-ci" style="color:var(--red)">—</span><span class="msub" id="m-ci-sub" style="color:var(--red)"></span></div>
+                <div style="position:absolute;right:-20px;bottom:-20px;width:80px;height:80px;border-radius:9999px;background:var(--red-bg);filter:blur(20px);pointer-events:none"></div>
+                <div class="mlabel">
+                  <span style="display:flex;align-items:center;gap:6px"><span class="sdot" style="width:7px;height:7px;background:var(--red);box-shadow:0 0 6px var(--red)"></span><span data-i18n="metricsCi">CI com Falha</span></span>
+                  <svg width="15" height="15" fill="none" stroke="var(--red)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+                </div>
+                <div style="display:flex;align-items:baseline;gap:6px;margin-top:4px">
+                  <span class="mval" id="m-ci" style="color:var(--red)">—</span><span class="msub" id="m-ci-sub" style="color:var(--red)"></span>
+                </div>
+                <div class="mprog"><div class="mprog-bar" id="m-ci-bar" style="background:var(--red);width:0%"></div></div>
               </div>
+
               <div class="mcard">
-                <div class="mlabel"><span data-i18n="metricsReviews">Reviews a Mim</span> <span style="width:7px;height:7px;border-radius:9999px;background:#fbbf24;display:inline-block"></span></div>
-                <div><span class="mval" id="m-rev" style="color:var(--amber)">—</span><span class="msub" id="m-rev-sub" style="color:var(--amber)"></span></div>
+                <div style="position:absolute;right:-20px;bottom:-20px;width:80px;height:80px;border-radius:9999px;background:var(--amber-bg);filter:blur(20px);pointer-events:none"></div>
+                <div class="mlabel">
+                  <span style="display:flex;align-items:center;gap:6px"><span class="sdot" style="width:7px;height:7px;background:var(--amber);box-shadow:0 0 6px var(--amber)"></span><span data-i18n="metricsReviews">Reviews a Mim</span></span>
+                  <svg width="15" height="15" fill="none" stroke="var(--amber)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                </div>
+                <div style="display:flex;align-items:baseline;gap:6px;margin-top:4px">
+                  <span class="mval" id="m-rev" style="color:var(--amber)">—</span><span class="msub" id="m-rev-sub" style="color:var(--amber)"></span>
+                </div>
+                <div class="mprog"><div class="mprog-bar" id="m-rev-bar" style="background:var(--amber);width:0%"></div></div>
               </div>
+
               <div class="mcard">
-                <div class="mlabel"><span data-i18n="metricsMerged">Mergeados Recentes</span> <span style="width:7px;height:7px;border-radius:9999px;background:#818cf8;display:inline-block"></span></div>
-                <div><span class="mval" id="m-mrg">—</span><span class="msub" id="m-mrg-sub"></span></div>
+                <div style="position:absolute;right:-20px;bottom:-20px;width:80px;height:80px;border-radius:9999px;background:var(--indigo-bg);filter:blur(20px);pointer-events:none"></div>
+                <div class="mlabel">
+                  <span style="display:flex;align-items:center;gap:6px"><span class="sdot" style="width:7px;height:7px;background:var(--indigo);box-shadow:0 0 6px var(--indigo)"></span><span data-i18n="metricsMerged">Mergeados Recentes</span></span>
+                  <svg width="15" height="15" fill="none" stroke="var(--indigo)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M8 5v8a2 2 0 002 2h8m-2 2l2-2-2-2"/><circle cx="6" cy="18" r="2"/><circle cx="6" cy="6" r="2"/></svg>
+                </div>
+                <div style="display:flex;align-items:baseline;gap:6px;margin-top:4px">
+                  <span class="mval" id="m-mrg" style="color:var(--indigo)">—</span><span class="msub" id="m-mrg-sub"></span>
+                </div>
+                <div class="mprog"><div class="mprog-bar" id="m-mrg-bar" style="background:var(--indigo);width:0%"></div></div>
               </div>
+
             </div>
 
             <!-- ── TABS ── -->
-            <div style="border-bottom:1px solid var(--border);display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:24px;gap:8px;flex-wrap:wrap">
-              <nav style="display:flex;gap:8px">
-                <button class="tab-btn" data-tab="my" onclick="setTab('my')">
-                  <span data-i18n="tabMyPrs">Meus PRs</span> <span id="tc-my" class="tcnt">0</span>
-                </button>
-                <button class="tab-btn" data-tab="rev" onclick="setTab('rev')">
-                  <span data-i18n="tabReviews">Reviews Solicitados</span> <span id="tc-rev" class="tcnt tcnt-amber">0</span>
-                </button>
-                <button class="tab-btn" data-tab="mrg" onclick="setTab('mrg')">
-                  <span data-i18n="tabMerged">Mergeados</span> <span id="tc-mrg" class="tcnt">0</span>
-                </button>
-                <button class="tab-btn" data-tab="notif" onclick="setTab('notif')">
-                  <span data-i18n="tabNotif">Notificações</span>
-                  <span id="tc-notif" class="tcnt">0</span>
-                </button>
-              </nav>
-              <div style="padding-bottom:12px">
-                <button class="stoggle" id="stoggle-btn" onclick="toggleSidebar()">
-                  <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M4 6h16M4 12h10M4 18h7"/></svg>
-                  <span id="stoggle-label" data-i18n="closeSidebar">Fechar painel</span>
-                </button>
+            <div style="background:var(--surf);border:1px solid var(--border);border-radius:14px;padding:14px 18px;margin-bottom:24px;box-shadow:0 2px 12px rgba(0,0,0,.2)">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">
+                <nav style="display:flex;gap:2px">
+                  <button class="tab-btn" data-tab="my" onclick="setTab('my')">
+                    <span data-i18n="tabMyPrs">Meus PRs</span> <span id="tc-my" class="tcnt tcnt-indigo">0</span>
+                  </button>
+                  <button class="tab-btn" data-tab="rev" onclick="setTab('rev')">
+                    <span data-i18n="tabReviews">Reviews Solicitados</span> <span id="tc-rev" class="tcnt tcnt-amber">0</span>
+                  </button>
+                  <button class="tab-btn" data-tab="mrg" onclick="setTab('mrg')">
+                    <span data-i18n="tabMerged">Mergeados</span> <span id="tc-mrg" class="tcnt">0</span>
+                  </button>
+                  <button class="tab-btn" data-tab="notif" onclick="setTab('notif')">
+                    <span data-i18n="tabNotif">Notificações</span>
+                    <span id="tc-notif" class="tcnt">0</span>
+                  </button>
+                </nav>
+                <div>
+                  <button class="stoggle" id="stoggle-btn" onclick="toggleSidebar()">
+                    <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M4 6h16M4 12h10M4 18h7"/></svg>
+                    <span id="stoggle-label" data-i18n="closeSidebar">Fechar painel</span>
+                  </button>
+                </div>
               </div>
             </div>
 
             <!-- ── TAB: MEUS PRs ── -->
             <div id="tab-my" class="tab-panel">
-              <div style="margin-bottom:12px">
-                <input id="my-search" type="search" placeholder="" data-i18n-ph="searchPlaceholder"
-                  oninput="setMySearch(this.value)"
-                  style="width:100%;padding:6px 10px;border-radius:6px;border:1px solid var(--border);background:var(--subtle);color:var(--text);font-size:13px;font-family:inherit;outline:none">
-              </div>
-              <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
-                <span style="font-size:11px;color:var(--muted)" data-i18n="groupBy">Agrupar por</span>
-                <div class="view-seg">
-                  <button class="view-btn active" id="vbtn-repo" onclick="setMyView('repo')" data-i18n="groupByRepo">Repositório</button>
-                  <button class="view-btn" id="vbtn-status" onclick="setMyView('status')" data-i18n="groupByStatus">Status</button>
-                </div>
-                <div style="width:1px;height:16px;background:var(--border)"></div>
-                <div class="view-seg">
-                  <button class="view-btn" id="collapse-all-btn" onclick="toggleAllRepos()" style="display:inline-flex;align-items:center;gap:4px">
-                    <svg class="icon-collapse" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M5 12l7-7 7 7M5 19l7-7 7 7"/></svg>
-                    <svg class="icon-expand" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" style="display:none"><path d="M5 5l7 7 7-7M5 12l7 7 7-7"/></svg>
-                    <span id="collapse-all-label">Recolher todos</span>
-                  </button>
+              <div class="tab-toolbar">
+                <input id="my-search" type="search" class="toolbar-search" placeholder="" data-i18n-ph="searchPlaceholder" oninput="setMySearch(this.value)">
+                <div class="toolbar-divider"></div>
+                <div class="toolbar-controls">
+                  <span style="font-size:11px;color:var(--muted)" data-i18n="groupBy">Agrupar por</span>
+                  <div class="view-seg">
+                    <button class="view-btn active" id="vbtn-repo" onclick="setMyView('repo')" data-i18n="groupByRepo">Repositório</button>
+                    <button class="view-btn" id="vbtn-status" onclick="setMyView('status')" data-i18n="groupByStatus">Status</button>
+                  </div>
+                  <div style="width:1px;height:16px;background:var(--border)"></div>
+                  <div class="view-seg">
+                    <button class="view-btn" id="collapse-all-btn" onclick="toggleAllRepos()" style="display:inline-flex;align-items:center;gap:4px">
+                      <svg class="icon-collapse" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M5 12l7-7 7 7M5 19l7-7 7 7"/></svg>
+                      <svg class="icon-expand" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" style="display:none"><path d="M5 5l7 7 7-7M5 12l7 7 7-7"/></svg>
+                      <span id="collapse-all-label">Recolher todos</span>
+                    </button>
+                  </div>
                 </div>
               </div>
               <div id="s-my-filters" style="margin-bottom:16px"></div>
@@ -372,20 +444,19 @@ public static class WebAssets
             </div>
 
             <div id="tab-rev" class="tab-panel">
-              <div style="margin-bottom:12px">
-                <input id="rev-search" type="search" placeholder="" data-i18n-ph="searchPlaceholder"
-                  oninput="setRevSearch(this.value)"
-                  style="width:100%;padding:6px 10px;border-radius:6px;border:1px solid var(--border);background:var(--subtle);color:var(--text);font-size:13px;font-family:inherit;outline:none">
-              </div>
-              <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap">
-                <button id="rev-hide-bots-btn" class="fchip" onclick="toggleRevHideBots()"><span data-i18n="hideBots">Ocultar bots</span></button>
-                <div style="width:1px;height:16px;background:var(--border)"></div>
-                <div class="view-seg">
-                  <button id="rev-collapse-all-btn" class="view-btn" onclick="toggleAllRevRepos()" style="display:inline-flex;align-items:center;gap:4px">
-                    <svg class="rev-icon-collapse" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M5 12l7-7 7 7M5 19l7-7 7 7"/></svg>
-                    <svg class="rev-icon-expand" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" style="display:none"><path d="M5 5l7 7 7-7M5 12l7 7 7-7"/></svg>
-                    <span id="rev-collapse-all-label" data-i18n="collapseAll">Recolher todos</span>
-                  </button>
+              <div class="tab-toolbar">
+                <input id="rev-search" type="search" class="toolbar-search" placeholder="" data-i18n-ph="searchPlaceholder" oninput="setRevSearch(this.value)">
+                <div class="toolbar-divider"></div>
+                <div class="toolbar-controls">
+                  <button id="rev-hide-bots-btn" class="fchip" onclick="toggleRevHideBots()"><span data-i18n="hideBots">Ocultar bots</span></button>
+                  <div style="width:1px;height:16px;background:var(--border)"></div>
+                  <div class="view-seg">
+                    <button id="rev-collapse-all-btn" class="view-btn" onclick="toggleAllRevRepos()" style="display:inline-flex;align-items:center;gap:4px">
+                      <svg class="rev-icon-collapse" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M5 12l7-7 7 7M5 19l7-7 7 7"/></svg>
+                      <svg class="rev-icon-expand" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" style="display:none"><path d="M5 5l7 7 7-7M5 12l7 7 7-7"/></svg>
+                      <span id="rev-collapse-all-label" data-i18n="collapseAll">Recolher todos</span>
+                    </button>
+                  </div>
                 </div>
               </div>
               <div id="s-rev-filters" style="margin-bottom:10px"></div>
@@ -395,7 +466,7 @@ public static class WebAssets
               <div style="margin-bottom:12px">
                 <input id="mrg-search" type="search" placeholder="" data-i18n-ph="searchPlaceholder"
                   oninput="setMrgSearch(this.value)"
-                  style="width:100%;padding:6px 10px;border-radius:6px;border:1px solid var(--border);background:var(--subtle);color:var(--text);font-size:13px;font-family:inherit;outline:none">
+                  style="width:100%;padding:8px 12px;border-radius:10px;border:1px solid var(--border);background:var(--subtle);color:var(--text);font-size:13px;font-family:inherit;outline:none;transition:border-color .15s" onfocus="this.style.borderColor='var(--indigo)'" onblur="this.style.borderColor='var(--border)'">
               </div>
               <div id="s-mrg-full"></div>
             </div>
@@ -435,11 +506,11 @@ public static class WebAssets
             groupBy:'Agrupar por', groupByRepo:'Repositório', groupByStatus:'Status',
             stCiFailing:'CI com Falha', stChangesRequested:'Mudanças Pedidas', stCommentsPending:'Novos Comentários', stAwaitingReview:'Aguardando Review', stApproved:'Aprovado', stNormal:'Sem Ação',
             collapseAll:'Recolher todos', expandAll:'Expandir todos',
-            testComment:'Novo comentário', testCi:'CI com erro', testMerged:'PR mergeado', testApproved:'PR aprovado', testReady:'PR saiu de Draft',
-            menuTestNotifs:'Testar notificações', menuConfigNotifs:'Notificações',
+            testComment:'Comentário', testCi:'CI', testMerged:'Merge', testApproved:'Aprovado', testReady:'Draft',
+            menuTestNotifs:'Testar', menuConfigNotifs:'Notificações',
             menuInterval:'Intervalo de atualização', menuSecs:'seg', menuSave:'Salvar',
             notifComment:'Novo comentário', notifCi:'CI com erro', notifMerged:'PR mergeado', notifApproved:'PR aprovado', notifReady:'PR pronto p/ review',
-            notifVisual:'👁 Aviso', notifAudio:'🔊 Som',
+            notifVisual:'Aviso', notifAudio:'Som',
             hideBots:'Ocultar bots',
             menuBackfill:'Histórico do mês',
             backfillTitle:'Histórico do mês',backfillMonth:'Mês',backfillProgress:'Progresso',backfillStart:'Iniciar',backfillClose:'Fechar',backfillRunning:'Executando...',backfillDone:'Concluído ✅',backfillRetry:'Tentar novamente',
@@ -448,6 +519,9 @@ public static class WebAssets
             notifHistoryTitle:'Eventos recentes nesta sessão',
             notifHistoryEmpty:'Nenhuma notificação ainda.',
             clearHistory:'Limpar',
+            prDesc:'Descrição', lastCmt:'Comentários', noDesc:'Sem descrição', noCmt:'Sem comentários',
+            moreCmts:'mais', hideOlder:'Recolher',
+            filterByStatus:'Urgência', filterByAuthor:'Por Autor',
           },
           'en-US':{
             refresh:'Refresh',
@@ -472,11 +546,11 @@ public static class WebAssets
             groupBy:'Group by', groupByRepo:'Repository', groupByStatus:'Status',
             stCiFailing:'CI Failing', stChangesRequested:'Changes Requested', stCommentsPending:'New Comments', stAwaitingReview:'Awaiting Review', stApproved:'Approved', stNormal:'No Action',
             collapseAll:'Collapse all', expandAll:'Expand all',
-            testComment:'New comment', testCi:'CI error', testMerged:'PR merged', testApproved:'PR approved', testReady:'PR left Draft',
-            menuTestNotifs:'Test notifications', menuConfigNotifs:'Notifications',
+            testComment:'Comment', testCi:'CI', testMerged:'Merge', testApproved:'Approved', testReady:'Draft',
+            menuTestNotifs:'Test', menuConfigNotifs:'Notifications',
             menuInterval:'Update interval', menuSecs:'sec', menuSave:'Save',
             notifComment:'New comment', notifCi:'CI error', notifMerged:'PR merged', notifApproved:'PR approved', notifReady:'PR ready for review',
-            notifVisual:'👁 Alert', notifAudio:'🔊 Sound',
+            notifVisual:'Alert', notifAudio:'Sound',
             hideBots:'Hide bots',
             menuBackfill:'Month history',
             backfillTitle:'Month history',backfillMonth:'Month',backfillProgress:'Progress',backfillStart:'Start',backfillClose:'Close',backfillRunning:'Running...',backfillDone:'Done ✅',backfillRetry:'Retry',
@@ -485,6 +559,9 @@ public static class WebAssets
             notifHistoryTitle:'Recent events this session',
             notifHistoryEmpty:'No notifications yet.',
             clearHistory:'Clear',
+            prDesc:'Description', lastCmt:'Comments', noDesc:'No description', noCmt:'No comments',
+            moreCmts:'more', hideOlder:'Collapse',
+            filterByStatus:'Urgency', filterByAuthor:'By Author',
           }
         };
         let currentLang=localStorage.getItem('prd-lang')||'pt-BR';
@@ -901,43 +978,117 @@ public static class WebAssets
         }
 
         // ── PR card renderers ──────────────────────────────────────────
+        function renderMd(text){
+          if(!text)return '';
+          try{return typeof marked!=='undefined'?marked.parse(text):e(text).replace(/\n/g,'<br>')}
+          catch(_){return e(text).replace(/\n/g,'<br>')}
+        }
+        function togglePrcDetail(btn){
+          const prc=btn.closest('.prc');
+          const detail=prc.querySelector('.prc-detail');
+          const expanded=btn.classList.contains('expanded');
+          if(expanded){detail.style.display='none';btn.classList.remove('expanded');btn.innerHTML=EXPAND_SVG;return;}
+          btn.innerHTML=SPINNER_SVG;btn.disabled=true;
+          setTimeout(()=>{
+            if(!detail.dataset.rendered){
+              const data=_prcData[prc.dataset.pk]||{};
+              const noDesc=`<em style="color:var(--muted);font-size:12px">${t('noDesc')}</em>`;
+              const bodyEl=detail.querySelector('.prc-md-desc');
+              const cmtEl=detail.querySelector('.prc-md-cmt');
+              if(bodyEl)bodyEl.innerHTML=data.body?renderMd(data.body):noDesc;
+              if(cmtEl)cmtEl.innerHTML=renderComments(data.comments);
+              detail.dataset.rendered='1';
+            }
+            detail.style.display='block';btn.innerHTML=EXPAND_SVG;btn.disabled=false;btn.classList.add('expanded');
+          },30);
+        }
+        const EXPAND_SVG=`<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg>`;
+        const SPINNER_SVG=`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="animation:spin .7s linear infinite"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>`;
+        const _prcData={};
+
+        function renderComments(cmts){
+          if(!cmts||!cmts.length)return`<em style="color:var(--muted);font-size:12px">${t('noCmt')}</em>`;
+          const item=c=>`<div class="prc-cmt-entry"><div style="display:flex;align-items:center;gap:5px;margin-bottom:3px"><span class="b bx" style="font-size:10px;padding:1px 5px">${e(c.author)}</span><span style="font-size:10px;color:var(--muted)">${e(c.ago)}</span></div><div>${renderMd(c.body)}</div></div>`;
+          if(cmts.length===1)return item(cmts[0]);
+          const n=cmts.length-1;
+          const rest=cmts.slice(1).map(item).join('<div style="height:1px;background:var(--subtle);margin:4px 0"></div>');
+          return`${item(cmts[0])}<div class="prc-older-cmts" style="display:none">${rest}</div><button class="prc-more-btn" onclick="toggleMoreCmts(this)">+ ${n} ${t('moreCmts')}</button>`;
+        }
+        function toggleMoreCmts(btn){
+          const wrap=btn.previousElementSibling;
+          const hidden=wrap.style.display==='none';
+          wrap.style.display=hidden?'block':'none';
+          const n=wrap.querySelectorAll('.prc-cmt-entry').length;
+          btn.textContent=hidden?t('hideOlder'):`+ ${n} ${t('moreCmts')}`;
+        }
+
         function renderMyCard(p){
           const cls=(UCLS[p.urgency]||'')+(p.isDraft?' is-draft':'');
-          return `<div class="prc ${cls}">
-            <div class="prc-row">
-              <div class="prc-left">
-                <div class="prc-trow"><span class="prc-num">#${p.number}</span><a class="prc-link" href="${e(p.url)}" target="_blank" rel="noopener">${e(p.title)}</a></div>
-                <div class="prc-meta">${p.isDraft?b('bx',t('draft')):''}${bBranch(p.headRef)}${(p.assignees||[]).map(a=>`<span class="b bx">→ ${e(a)}</span>`).join('')}<span class="b ${ageBadgeCls(p.createdAtIso)}">${e(p.ageAgo)}</span></div>
-                ${bRevMeta(p)}
+          const _k=`${p.repo}/${p.number}`;_prcData[_k]={body:p.body||'',comments:p.comments||[]};
+          return `<div class="prc ${cls}" data-pk="${_k}">
+            <div style="display:flex;align-items:flex-start;gap:8px">
+              <button class="prc-expand-btn" onclick="togglePrcDetail(this)">${EXPAND_SVG}</button>
+              <div class="prc-row" style="flex:1;min-width:0">
+                <div class="prc-left">
+                  <div class="prc-trow"><span class="prc-num">#${p.number}</span><a class="prc-link" href="${e(p.url)}" target="_blank" rel="noopener">${e(p.title)}</a></div>
+                  <div class="prc-meta">${p.isDraft?b('bx',t('draft')):''}${bBranch(p.headRef)}${(p.assignees||[]).map(a=>`<span class="b bx">→ ${e(a)}</span>`).join('')}<span class="b ${ageBadgeCls(p.createdAtIso)}">${e(p.ageAgo)}</span></div>
+                  ${bRevMeta(p)}
+                </div>
+                <div class="prc-right">${bRev(p)}${bCI(p.ciState,p.failingCheck,p.failingChecks)}${bCmt(p)}${bMrg(p.mergeState)}</div>
               </div>
-              <div class="prc-right">${bRev(p)}${bCI(p.ciState,p.failingCheck,p.failingChecks)}${bCmt(p)}${bMrg(p.mergeState)}</div>
+            </div>
+            <div class="prc-detail">
+              <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0">
+                <div style="padding-right:14px;border-right:1px solid var(--border)"><div class="prc-detail-label">${t('prDesc')}</div><div class="prc-detail-body prc-md-desc"></div></div>
+                <div style="padding-left:14px"><div class="prc-detail-label">${t('lastCmt')}</div><div class="prc-detail-body prc-md-cmt"></div></div>
+              </div>
             </div>
           </div>`;
         }
 
         function renderRevCard(p){
           const cls=(UCLS[p.urgency]||'')+(p.isDraft?' is-draft':'');
-          return `<div class="prc ${cls}">
-            <div class="prc-row">
-              <div class="prc-left">
-                <div class="prc-trow"><span class="prc-num">#${p.number}</span><a class="prc-link" href="${e(p.url)}" target="_blank" rel="noopener">${e(p.title)}</a></div>
-                <div class="prc-meta">${b('bx',p.author)}${p.isDraft?b('bx',t('draft')):''}${bBranch(p.headRef)}<span class="b ${ageBadgeCls(p.createdAtIso)}">${e(p.ageAgo)}</span></div>
+          const _k=`${p.repo}/${p.number}`;_prcData[_k]={body:p.body||'',comments:p.comments||[]};
+          return `<div class="prc ${cls}" data-pk="${_k}">
+            <div style="display:flex;align-items:flex-start;gap:8px">
+              <button class="prc-expand-btn" onclick="togglePrcDetail(this)">${EXPAND_SVG}</button>
+              <div class="prc-row" style="flex:1;min-width:0">
+                <div class="prc-left">
+                  <div class="prc-trow"><span class="prc-num">#${p.number}</span><a class="prc-link" href="${e(p.url)}" target="_blank" rel="noopener">${e(p.title)}</a></div>
+                  <div class="prc-meta">${b('bx',p.author)}${p.isDraft?b('bx',t('draft')):''}${bBranch(p.headRef)}<span class="b ${ageBadgeCls(p.createdAtIso)}">${e(p.ageAgo)}</span></div>
+                </div>
+                <div class="prc-right">${bCI(p.ciState,p.failingCheck,p.failingChecks)}${bCmt(p)}${bMrg(p.mergeState)}</div>
               </div>
-              <div class="prc-right">${bCI(p.ciState,p.failingCheck,p.failingChecks)}${bCmt(p)}${bMrg(p.mergeState)}</div>
+            </div>
+            <div class="prc-detail">
+              <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0">
+                <div style="padding-right:14px;border-right:1px solid var(--border)"><div class="prc-detail-label">${t('prDesc')}</div><div class="prc-detail-body prc-md-desc"></div></div>
+                <div style="padding-left:14px"><div class="prc-detail-label">${t('lastCmt')}</div><div class="prc-detail-body prc-md-cmt"></div></div>
+              </div>
             </div>
           </div>`;
         }
 
         function renderMyCardWithRepo(p){
           const cls=(UCLS[p.urgency]||'')+(p.isDraft?' is-draft':'');
-          return `<div class="prc ${cls}">
-            <div class="prc-row">
-              <div class="prc-left">
-                <div class="prc-trow"><span class="prc-num">#${p.number}</span><a class="prc-link" href="${e(p.url)}" target="_blank" rel="noopener">${e(p.title)}</a></div>
-                <div class="prc-meta"><span class="branch">${e(p.repo)}</span>${p.isDraft?b('bx',t('draft')):''}${bBranch(p.headRef)}<span>${e(p.ageAgo)}</span></div>
-                ${bRevMeta(p)}
+          const _k=`${p.repo}/${p.number}`;_prcData[_k]={body:p.body||'',comments:p.comments||[]};
+          return `<div class="prc ${cls}" data-pk="${_k}">
+            <div style="display:flex;align-items:flex-start;gap:8px">
+              <button class="prc-expand-btn" onclick="togglePrcDetail(this)">${EXPAND_SVG}</button>
+              <div class="prc-row" style="flex:1;min-width:0">
+                <div class="prc-left">
+                  <div class="prc-trow"><span class="prc-num">#${p.number}</span><a class="prc-link" href="${e(p.url)}" target="_blank" rel="noopener">${e(p.title)}</a></div>
+                  <div class="prc-meta"><span class="branch">${e(p.repo)}</span>${p.isDraft?b('bx',t('draft')):''}${bBranch(p.headRef)}<span>${e(p.ageAgo)}</span></div>
+                  ${bRevMeta(p)}
+                </div>
+                <div class="prc-right">${bRev(p)}${bCI(p.ciState,p.failingCheck,p.failingChecks)}${bCmt(p)}${bMrg(p.mergeState)}</div>
               </div>
-              <div class="prc-right">${bRev(p)}${bCI(p.ciState,p.failingCheck,p.failingChecks)}${bCmt(p)}${bMrg(p.mergeState)}</div>
+            </div>
+            <div class="prc-detail">
+              <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0">
+                <div style="padding-right:14px;border-right:1px solid var(--border)"><div class="prc-detail-label">${t('prDesc')}</div><div class="prc-detail-body prc-md-desc"></div></div>
+                <div style="padding-left:14px"><div class="prc-detail-label">${t('lastCmt')}</div><div class="prc-detail-body prc-md-cmt"></div></div>
+              </div>
             </div>
           </div>`;
         }
@@ -1007,6 +1158,7 @@ public static class WebAssets
           const cnt={};for(const p of visible)cnt[p.urgency]=(cnt[p.urgency]||0)+1;
           const ORDER=['CiFailing','ChangesRequested','CommentsPending','AwaitingReview','Approved','Normal'];
           const existing=ORDER.filter(u=>cnt[u]);
+          const FLABEL=`font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:5px`;
           if(existing.length){
             const all=revFilter===null;
             const chips=[
@@ -1016,7 +1168,7 @@ public static class WebAssets
                 return `<button class="fchip" style="${active?`border-color:${col};color:${col}`:''}" onclick="setRevFilter('${u}')">${t('st'+u)} <span class="tcnt">${cnt[u]}</span></button>`;
               })
             ];
-            html+=`<div style="display:flex;gap:6px;flex-wrap:wrap">${chips.join('')}</div>`;
+            html+=`<div><div style="${FLABEL}">${t('filterByStatus')}</div><div style="display:flex;gap:6px;flex-wrap:wrap">${chips.join('')}</div></div>`;
           }
           const acnt={};for(const p of visible)if(p.author)acnt[p.author]=(acnt[p.author]||0)+1;
           const authors=Object.keys(acnt).sort((a,b)=>acnt[b]-acnt[a]);
@@ -1029,7 +1181,7 @@ public static class WebAssets
                 return `<button class="fchip" style="${active?'border-color:var(--indigo);color:var(--indigo)':''}" onclick="setRevAuthorFilter('${a}')">${e(a)} <span class="tcnt">${acnt[a]}</span></button>`;
               })
             ];
-            html+=(html?'<div style="height:6px"></div>':'')+`<div style="display:flex;gap:6px;flex-wrap:wrap">${achips.join('')}</div>`;
+            html+=(html?'<div style="height:10px"></div>':'')+`<div><div style="${FLABEL}">${t('filterByAuthor')}</div><div style="display:flex;gap:6px;flex-wrap:wrap">${achips.join('')}</div></div>`;
           }
           el.innerHTML=html;
         }
@@ -1107,6 +1259,7 @@ public static class WebAssets
         }
 
         // ── Metrics ────────────────────────────────────────────────────
+        function setBar(id,pct){const el=document.getElementById(id);if(el)el.style.width=Math.min(100,Math.max(0,pct))+'%'}
         function updateMetrics(data){
           const my=data.myPrs||[];const rev=data.reviewPrs||[];const mrg=data.mergedPrs||[];
           const ci=my.filter(p=>p.ciState==='Failing').length;
@@ -1122,13 +1275,17 @@ public static class WebAssets
           document.getElementById('tc-my').textContent=my.length;
           document.getElementById('tc-rev').textContent=rev.length;
           document.getElementById('tc-mrg').textContent=mrg.length;
+          // progress bars
+          const tot=Math.max(my.length,1);
+          setBar('m-open-bar',my.length>0?Math.max(10,Math.round((my.length-attn)/tot*100)):0);
+          setBar('m-ci-bar',Math.round(ci/tot*100));
+          setBar('m-rev-bar',Math.min(100,rev.length*5));
+          setBar('m-mrg-bar',Math.min(100,mrg.length*10));
         }
 
         // ── Main render ────────────────────────────────────────────────
         function render(data){
-          const dp=document.getElementById('dot-ping');const dc=document.getElementById('dot-core');
-          if(data.isLoading){dp.style.background='#f59e0b';dc.style.background='#f59e0b';return}
-          dp.style.background='';dc.style.background='';
+          if(data.isLoading)return;
 
           // Sync theme + lang from server (authoritative)
           if(data.theme){localStorage.setItem('prd-theme',data.theme);applyTheme(data.theme)}
@@ -1165,6 +1322,7 @@ public static class WebAssets
             const initials=data.login.replace(/-/g,' ').split(' ').map(w=>w[0]?.toUpperCase()||'').join('').slice(0,2)||'—';
             pill.textContent=initials;
             const ddname=document.getElementById('user-dd-name');if(ddname)ddname.textContent=data.login;
+            const ddav=document.getElementById('user-dd-avatar');if(ddav)ddav.textContent=initials;
           }
           const err=document.getElementById('err');
           if(data.error){err.style.display='';err.textContent='Erro: '+data.error}else{err.style.display='none'}
@@ -1190,13 +1348,10 @@ public static class WebAssets
           else{l.textContent=currentLang==='en-US'?'updating...':'atualizando...';go()}
         }
         async function go(){
-          const dp=document.getElementById('dot-ping');const dc=document.getElementById('dot-core');
           try{
             const r=await fetch('/api/prs');if(!r.ok)throw new Error('HTTP '+r.status);
-            dp.style.background='';dc.style.background='';
             render(await r.json());
           }catch(ex){
-            dp.style.background='#f87171';dc.style.background='#f87171';
             const err=document.getElementById('err');err.style.display='';err.textContent=(currentLang==='en-US'?'Connection failed: ':'Falha na conexão: ')+ex.message;
             startCd();
           }
