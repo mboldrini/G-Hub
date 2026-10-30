@@ -19,13 +19,14 @@ Grab the latest build from the [**Releases**](../../releases) tab — no .NET ru
 
 - Windows 10/11 x64
 - [GitHub CLI (`gh`)](https://cli.github.com) on PATH, authenticated via `gh auth login`
+- [Microsoft Edge WebView2 Runtime](https://developer.microsoft.com/en-us/microsoft-edge/webview2/) (already installed on most Windows 11 systems)
 
 ## Quick Start
 
 ```
 1. Extract the ZIP anywhere
-2. Run PrDashboard.exe
-3. Open http://localhost:5555
+2. Run PrDashboard.exe — a splash window shows startup progress
+3. Click Launch when the window turns green
 ```
 
 The dashboard auto-refreshes every 5 minutes (configurable).
@@ -56,7 +57,13 @@ The dashboard auto-refreshes every 5 minutes (configurable).
 | `ignoredOrgs` | `[]` | Orgs to exclude |
 | `ignoredRepos` | `[]` | Repos to exclude, e.g. `["org/repo"]` |
 | `hideDrafts` | `false` | Hide draft PRs |
+| `hideBotReviews` | `false` | Exclude bot/CI review comments from PR cards |
 | `webPort` | `5555` | Local port for the web UI |
+| `notifCommentVisual` / `notifCommentAudio` | `true` | New comment notification (visual toast / audio) |
+| `notifCiVisual` / `notifCiAudio` | `true` | CI failure notification |
+| `notifMergedVisual` / `notifMergedAudio` | `true` | PR merged notification (with confetti) |
+| `notifApprovedVisual` / `notifApprovedAudio` | `true` | PR approved by someone notification |
+| `notifReadyVisual` / `notifReadyAudio` | `true` | PR leaves Draft state notification |
 
 ## CLI Flags
 
@@ -104,6 +111,17 @@ The web UI includes a **Backfill PRs** option in the user menu. It opens a modal
 4. Also save all your currently open PRs to `out/prs/open/`
 
 Files that already exist are skipped automatically. A progress bar and scrollable log show what is happening in real time. Switching months resets the modal state. Each JSON contains full PR metadata: title, body, author, branch names, additions/deletions, reviewers, Jira ticket references, and timestamps.
+
+## PR Cards
+
+Each PR card shows repo, number, title, review state, CI status, open threads, merge state, and age. Click the chevron on the left to expand a card and see:
+
+- **Description** — the PR body rendered as Markdown
+- **Comments** — latest comments and review submissions, newest first; click "+ N more" to expand older ones
+- **Assignees** — shown as badges if the PR has assigned reviewers
+- **CI checks** — hover over a failing CI badge to see the full list of failing check names
+
+Age badges use progressive color: green (< 1 day), yellow (1–3 days), red (> 3 days).
 
 ## Audio Notifications
 

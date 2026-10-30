@@ -38,6 +38,47 @@ public class WebServer(PrsDataService dataService, AppConfig config, Notificatio
         app.MapGet("/", () =>
             Results.Content(WebAssets.Html, "text/html; charset=utf-8"));
 
+        app.MapGet("/api/stats/logs", async () =>
+        {
+            var outDir = Path.GetFullPath(config.OutputDir);
+            var entries = new List<object>();
+            var seen = new HashSet<string>();
+            int fileCount = 0;
+
+            var sources = new (string Dir, string Status, SearchOption Opt)[]
+            {
+                (Path.Combine(outDir, "prs", "merged"), "merged", SearchOption.AllDirectories),
+                (Path.Combine(outDir, "prs", "open"),   "open",   SearchOption.TopDirectoryOnly),
+            };
+
+            foreach (var src in sources)
+            {
+                if (!Directory.Exists(src.Dir)) continue;
+                foreach (var f in Directory.GetFiles(src.Dir, "*.json", src.Opt))
+                {
+                    try
+                    {
+                        var snap = JsonSerializer.Deserialize<PrSnapshot>(await File.ReadAllTextAsync(f));
+                        if (snap == null) continue;
+                        if (!seen.Add($"{snap.Repo}#{snap.Number}")) continue;
+                        entries.Add(new {
+                            repo = snap.Repo, number = snap.Number, title = snap.Title,
+                            body = snap.Body, url = snap.Url, author = snap.Author,
+                            headRef = snap.HeadRef, baseRef = snap.BaseRef,
+                            additions = snap.Additions, deletions = snap.Deletions, changedFiles = snap.ChangedFiles,
+                            createdAt = snap.CreatedAt, mergedAt = snap.MergedAt,
+                            reviewers = snap.Reviewers, jiraTickets = snap.JiraTickets,
+                            status = src.Status,
+                        });
+                        fileCount++;
+                    }
+                    catch { }
+                }
+            }
+
+            return Results.Json(new { entries, _meta = new { files = fileCount, readAt = DateTimeOffset.UtcNow } }, JsonOpts);
+        });
+
         app.MapGet("/api/prs", () =>
         {
             var data = dataService.Cached ?? new PrsApiResponse { IsLoading = true, Language = config.Language, Theme = config.Theme };
@@ -167,6 +208,10 @@ public class WebServer(PrsDataService dataService, AppConfig config, Notificatio
         });
 
         dataService.StartBackgroundRefresh(ct);
+
+        if (client != null && login != null)
+            _ = Task.Run(() => RunAutoBackfillAsync(ct), ct);
+
         await app.RunAsync(ct);
         Console.WriteLine("Encerrado.");
     }
@@ -286,6 +331,20 @@ public class WebServer(PrsDataService dataService, AppConfig config, Notificatio
         catch (Exception ex)
         {
             lock (prog.Lock) { prog.Lines.Add($"❌ Erro inesperado: {ex.Message}"); prog.Error = ex.Message; prog.Done = true; }
+        }
+    }
+
+    private async Task RunAutoBackfillAsync(CancellationToken ct)
+    {
+        var today = DateOnly.FromDateTime(DateTime.Now);
+        for (int i = 0; i < 3; i++)
+        {
+            if (ct.IsCancellationRequested) return;
+            var startDate = new DateOnly(today.Year, today.Month, 1).AddMonths(-i);
+            var jobId = $"auto-{startDate:yyyy-MM}";
+            var prog = new BackfillProgress();
+            _backfillJobs[jobId] = prog;
+            await RunBackfillAsync(jobId, prog, startDate, ct);
         }
     }
 
