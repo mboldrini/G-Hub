@@ -10,7 +10,8 @@ public static class WebAssets
         return reader.ReadToEnd();
     }
 
-    public static string Html => Load("index.html");
-    public static string Css  => Load("app.css");
-    public static string Js   => Load("app.js");
+    public static string Html  => Load("index.html");
+    public static string Css   => Load("app.css");
+    public static string Js    => Load("app.js");
+    public static string Icons => Load("icons.svg");
 }

@@ -38,8 +38,9 @@ public class WebServer(PrsDataService dataService, AppConfig config, Notificatio
         app.MapGet("/", () =>
             Results.Content(WebAssets.Html, "text/html; charset=utf-8"));
 
-        app.MapGet("/app.css", () => Results.Content(WebAssets.Css, "text/css; charset=utf-8"));
-        app.MapGet("/app.js",  () => Results.Content(WebAssets.Js,  "application/javascript; charset=utf-8"));
+        app.MapGet("/app.css",   () => Results.Content(WebAssets.Css,   "text/css; charset=utf-8"));
+        app.MapGet("/app.js",    () => Results.Content(WebAssets.Js,    "application/javascript; charset=utf-8"));
+        app.MapGet("/icons.svg", () => Results.Content(WebAssets.Icons, "image/svg+xml; charset=utf-8"));
 
         app.MapGet("/api/stats/logs", async () =>
         {

@@ -40,7 +40,7 @@ const I18N={
     moreCmts:'mais', hideOlder:'Recolher',
     filterByStatus:'Urgência', filterByAuthor:'Por Autor',
     stFilterRepo:'Repositório', stFilterMonth:'Mês', stFilterWeek:'Semana', stFilterDate:'Período',
-    stShowPRTable:'Mostrar PRs', stClearFilters:'Limpar filtros', stClearPR:'limpar',
+    stShowPRTable:'Tabela de PRs', stClearFilters:'Limpar filtros', stClearPR:'limpar',
     stEmptyTitle:'Nenhum dado encontrado', stEmptySub:'Rode o backfill para gerar os JSONs',
     stStatTotal:'PRs abertos', stStatMerged:'PRs mergeados', stStatCycle:'Tempo médio de ciclo', stStatRepos:'Repos tocados',
     stChartRepos:'Entregas por repositório', stChartCadence:'Cadência por mês', stChartStatus:'Status de entrega', stChartTimeline:'Timeline por mês', stChartReposMes:'Distribuição por mês',
@@ -92,7 +92,7 @@ const I18N={
     moreCmts:'more', hideOlder:'Collapse',
     filterByStatus:'Urgency', filterByAuthor:'By Author',
     stFilterRepo:'Repository', stFilterMonth:'Month', stFilterWeek:'Week', stFilterDate:'Date range',
-    stShowPRTable:'Show PRs', stClearFilters:'Clear filters', stClearPR:'clear',
+    stShowPRTable:'PR Table', stClearFilters:'Clear filters', stClearPR:'clear',
     stEmptyTitle:'No data found', stEmptySub:'Run backfill to generate the JSONs',
     stStatTotal:'PRs opened', stStatMerged:'Merged PRs', stStatCycle:'Avg cycle time', stStatRepos:'Repos touched',
     stChartRepos:'Deliveries by repository', stChartCadence:'Delivery cadence by month', stChartStatus:'Delivery status', stChartTimeline:'Timeline by month', stChartReposMes:'Repo distribution by month',
@@ -111,6 +111,7 @@ function t(key,...args){const v=I18N[currentLang]?.[key]??I18N['pt-BR'][key]??ke
 function applyI18n(){
   document.querySelectorAll('[data-i18n]').forEach(el=>{el.textContent=t(el.dataset.i18n)});
   document.querySelectorAll('[data-i18n-ph]').forEach(el=>{el.placeholder=t(el.dataset.i18nPh)});
+  document.querySelectorAll('[data-i18n-title]').forEach(el=>{el.title=t(el.dataset.i18nTitle)});
   st_syncI18n();if(st_initialized)st_render();
   document.getElementById('lang-display').textContent=currentLang==='pt-BR'?'PT':'EN';
   document.documentElement.lang=currentLang==='pt-BR'?'pt-BR':'en-US';
@@ -406,7 +407,7 @@ function bMrg(s){
 }
 function bBranch(ref){return ref?`<span class="branch">⎇ ${e(ref)}</span>`:''}
 
-const MERGE_SVG=`<svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>`;
+const MERGE_SVG=`<svg class="ti" width="10" height="10"><use href="/icons.svg#ti-check"/></svg>`;
 
 // ── Repo collapse ─────────────────────────────────────────────
 const collapsedRepos=new Set(JSON.parse(localStorage.getItem('prd-collapsed')||'[]'));
@@ -568,7 +569,7 @@ function togglePrcDetail(btn){
     detail.style.display='block';btn.innerHTML=EXPAND_SVG;btn.disabled=false;btn.classList.add('expanded');
   },30);
 }
-const EXPAND_SVG=`<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg>`;
+const EXPAND_SVG=`<svg class="ti" width="14" height="14"><use href="/icons.svg#ti-chevron-right"/></svg>`;
 const SPINNER_SVG=`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="animation:spin .7s linear infinite"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>`;
 const _prcData={};
 
@@ -664,7 +665,7 @@ function renderMyPrsByStatus(prs){
   if(!prs.length){s.innerHTML=`<div class="empty">${t('emptyMyPrs')}</div>`;return}
   const ORDER=['CiFailing','ChangesRequested','CommentsPending','AwaitingReview','Approved','Normal'];
   const groups={};for(const p of prs)(groups[p.urgency]=groups[p.urgency]||[]).push(p);
-  const CHV=`<svg class="rg-chevron" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>`;
+  const CHV=`<svg class="ti rg-chevron" width="12" height="12"><use href="/icons.svg#ti-chevron-down"/></svg>`;
   s.innerHTML=ORDER.filter(u=>groups[u]?.length).map(urgency=>{
     const list=groups[urgency];
     const col=urgencyColor(urgency);
@@ -1098,14 +1099,14 @@ function onFilterChange(){
 function resetFilters(){
   fRepos=[];fMonths=[];fWeeks=[];fDateFrom='';fDateTo='';
   document.getElementById('f-date-from').value='';document.getElementById('f-date-to').value='';
-  showPRTable=false;document.getElementById('f-show-prs').checked=false;
   prSort={col:null,dir:'asc'};prTF={status:'all',repo:'all'};prPage=0;
   syncFilterOptions();st_render();
 }
 function syncWeekOptions(){
   const wrap=document.getElementById('ms-week');
-  if(fMonths.length!==1){wrap.className='ms-wrap ms-disabled';document.getElementById('ms-panel-week').innerHTML='';fWeeks=[];updateMSBtn('week');return;}
-  wrap.className='ms-wrap';
+  const group=document.getElementById('fg-week');
+  if(fMonths.length!==1){wrap.className='ms-wrap ms-disabled';document.getElementById('ms-panel-week').innerHTML='';fWeeks=[];updateMSBtn('week');if(group)group.style.display='none';return;}
+  wrap.className='ms-wrap';if(group)group.style.display='';
   const weeks=[...new Set(DATA.filter(d=>d.month===fMonths[0]).map(d=>d.week))].sort((a,b)=>a-b);
   fWeeks=fWeeks.filter(w=>weeks.includes(w));
   document.getElementById('ms-panel-week').innerHTML=weeks.map(w=>{const d1=(w-1)*7+1,d2=Math.min(w*7,31);return'<div class="ms-item'+(fWeeks.includes(w)?' sel':'')+'" data-val="'+w+'" onclick="toggleMSItem(\'week\','+w+');event.stopPropagation()"><span class="ms-check"></span>Week '+w+' ('+d1+'–'+d2+')</div>';}).join('');

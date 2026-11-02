@@ -113,9 +113,9 @@ These are used as `background` on status badges alongside the semantic text colo
 
 | Token | Value | Usage |
 |---|---|---|
-| Small | `6px` | Chips, badges, inputs |
-| Medium | `10–12px` | Cards, toolbars |
-| Large | `14px` | Repo groups, big cards |
+| Small | `5–6px` | Chips, badges, inputs, buttons |
+| Medium | `8px` | Cards (stat cards, metric cards, chart cards, filter bar) |
+| Large | `14px` | Repo group containers |
 | Full | `9999px` | Pills, avatar rings |
 
 ---
@@ -163,9 +163,47 @@ color: #1e1e2e;
 
 ## Dark vs Light
 
-The web UI supports both light and dark themes. Light mode uses a neutral white/slate palette (Tailwind slate scale). The Catppuccin Mocha palette is applied **only in dark mode** via the `.dark` class on `<html>`.
+The web UI supports both light and dark themes.
+
+- **Dark mode** — Catppuccin Mocha palette, applied via the `.dark` class on `<html>`.
+- **Light mode** — Catppuccin Latte palette for accent/semantic colors; neutral white/slate for structural tokens (bg, surface, border).
+
+### Light mode accent tokens (`:root`)
+
+```css
+:root {
+  --red:    #d20f39;   /* Latte Red    */
+  --amber:  #df8e1d;   /* Latte Yellow */
+  --green:  #40a02b;   /* Latte Green  */
+  --indigo: #8839ef;   /* Latte Mauve  — primary accent */
+  --violet: #7287fd;   /* Latte Lavender */
+}
+```
 
 The desktop splash window is always dark (no light mode toggle).
+
+---
+
+## Icons
+
+All icons use **Tabler Icons** (outline style, `stroke-width: 2`, `viewBox="0 0 24 24"`).
+
+The icon set is bundled as a single SVG sprite (`PrDashboard/Web/icons.svg`) embedded in the assembly — no CDN, no external requests, fully offline.
+
+### Usage
+
+```html
+<svg class="ti" width="16" height="16"><use href="/icons.svg#ti-<name>"/></svg>
+```
+
+The `.ti` class handles `display:inline-block`, `vertical-align:middle`, and `flex-shrink:0`.
+
+### Adding icons
+
+1. Copy the desired name from [tabler.io/icons](https://tabler.io/icons) (outline variant)
+2. Add the name to the `ICONS` array in `build-sprite.js`
+3. Run `node build-sprite.js` from the repo root
+4. Run `dotnet publish` to embed the updated sprite
 
 ---
 
@@ -173,6 +211,7 @@ The desktop splash window is always dark (no light mode toggle).
 
 | File | Scope |
 |---|---|
-| `PrDashboard/Web/WebAssets.cs` | Web UI — full HTML/CSS/JS |
+| `PrDashboard/Web/WebAssets.cs` | Web UI — full HTML/CSS/JS + icons sprite |
+| `PrDashboard/Web/icons.svg` | Tabler Icons sprite (embedded resource) |
 | `PrDashboard/UI/SplashHtml.cs` | Desktop splash — Tailwind + inline CSS |
 | `PrDashboard/UI/SplashWindow.cs` | WinForms host — `BackColor` must match `--bg` |
