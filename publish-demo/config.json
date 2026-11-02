@@ -1,6 +1,7 @@
 {
   "intervalSeconds": 300,
   "outputDir": "./out",
+  "cacheDir": "./cache",
   "historyDays": 30,
   "hostname": "github.com",
   "ignoredOrgs": [],
@@ -20,13 +21,20 @@
   ],
   "language": "en-US",
   "theme": "dark",
-  "collapsedRepos": [
-    "acme/backend",
-    "acme/frontend",
-    "acme/infra",
-    "acme/platform"
-  ],
+  "collapsedRepos": [],
   "myPrsFilter": "",
   "myPrsView": "repo",
-  "sidebarOpen": true
+  "sidebarOpen": true,
+  "repoOrder": [],
+  "notifCommentVisual": true,
+  "notifCommentAudio": true,
+  "notifCiVisual": true,
+  "notifCiAudio": true,
+  "notifMergedVisual": true,
+  "notifMergedAudio": true,
+  "notifApprovedVisual": true,
+  "notifApprovedAudio": true,
+  "notifReadyVisual": true,
+  "notifReadyAudio": true,
+  "hideBotReviews": false
 }

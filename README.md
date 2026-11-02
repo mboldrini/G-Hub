@@ -123,6 +123,16 @@ Each PR card shows repo, number, title, review state, CI status, open threads, m
 
 Age badges use progressive color: green (< 1 day), yellow (1–3 days), red (> 3 days).
 
+## Export Report
+
+From the **Statistics** view, use the **Export** menu to download a report in three formats:
+
+| Format | Description |
+|--------|-------------|
+| CSV | One row per PR — Date, Repo, PR, Title, Status, Lead Time (days), Author |
+| Markdown | Full report with summary table, per-month breakdown, and activity by repository |
+| PDF | Printable A4 report with charts, cover page, and PR descriptions |
+
 ## Audio Notifications
 
 Place these files next to `PrDashboard.exe`:

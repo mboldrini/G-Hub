@@ -56,6 +56,16 @@ PrDashboard.exe --help       # Ajuda
 
 Cache incremental por repo em `./cache/repos/`.
 
+## Exportar Relatório
+
+Na aba **Estatísticas**, o menu **Export** oferece três formatos:
+
+| Formato | Descrição |
+|---------|-----------|
+| CSV | Uma linha por PR — Date, Repo, PR, Title, Status, Lead Time (days), Author |
+| Markdown | Relatório completo com sumário, tabela por mês e atividade por repositório |
+| PDF | Relatório A4 imprimível com gráficos, capa e descrições dos PRs |
+
 ## Publicar como .exe único (self-contained)
 
 ```powershell

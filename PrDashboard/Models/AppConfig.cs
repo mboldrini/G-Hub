@@ -34,4 +34,5 @@ public class AppConfig
     [JsonPropertyName("notifReadyVisual")] public bool NotifReadyVisual { get; set; } = true;
     [JsonPropertyName("notifReadyAudio")] public bool NotifReadyAudio { get; set; } = true;
     [JsonPropertyName("hideBotReviews")] public bool HideBotReviews { get; set; } = false;
+    [JsonPropertyName("displayName")] public string? DisplayName { get; set; }
 }

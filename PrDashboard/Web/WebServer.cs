@@ -38,6 +38,9 @@ public class WebServer(PrsDataService dataService, AppConfig config, Notificatio
         app.MapGet("/", () =>
             Results.Content(WebAssets.Html, "text/html; charset=utf-8"));
 
+        app.MapGet("/app.css", () => Results.Content(WebAssets.Css, "text/css; charset=utf-8"));
+        app.MapGet("/app.js",  () => Results.Content(WebAssets.Js,  "application/javascript; charset=utf-8"));
+
         app.MapGet("/api/stats/logs", async () =>
         {
             var outDir = Path.GetFullPath(config.OutputDir);
@@ -118,6 +121,7 @@ public class WebServer(PrsDataService dataService, AppConfig config, Notificatio
             if (body.NotifReadyAudio is not null) config.NotifReadyAudio = body.NotifReadyAudio.Value;
             if (body.IntervalSeconds is int iv && iv >= 30 && iv <= 3600) config.IntervalSeconds = iv;
             if (body.HideBotReviews is not null) config.HideBotReviews = body.HideBotReviews.Value;
+            if (body.DisplayName is not null) config.DisplayName = body.DisplayName.Length > 0 ? body.DisplayName : null;
 
             dataService.RemapCached(config.Language);
 
@@ -359,7 +363,8 @@ public class WebServer(PrsDataService dataService, AppConfig config, Notificatio
         bool? NotifMergedVisual, bool? NotifMergedAudio,
         bool? NotifApprovedVisual, bool? NotifApprovedAudio,
         bool? NotifReadyVisual, bool? NotifReadyAudio,
-        int? IntervalSeconds, bool? HideBotReviews);
+        int? IntervalSeconds, bool? HideBotReviews,
+        string? DisplayName);
 
     private record NotifyLogBody(string Type, string Repo, int PrNumber, string PrTitle);
     private record BackfillStartBody(string? Month);

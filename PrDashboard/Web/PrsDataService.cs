@@ -78,6 +78,7 @@ public class PrsDataService(GhApiClient client, string login, AppConfig config, 
             _cached = new PrsApiResponse
             {
                 Login = prev?.Login ?? login,
+                DisplayName = config.DisplayName,
                 UpdatedAt = prev?.UpdatedAt ?? "",
                 IntervalSeconds = config.IntervalSeconds,
                 Language = config.Language,
@@ -109,6 +110,7 @@ public class PrsDataService(GhApiClient client, string login, AppConfig config, 
         return new PrsApiResponse
         {
             Login = user,
+            DisplayName = config.DisplayName,
             UpdatedAt = now.ToLocalTime().ToString("HH:mm:ss"),
             IntervalSeconds = config.IntervalSeconds,
             Language = lang,

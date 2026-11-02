@@ -6,6 +6,7 @@ namespace PrDashboard.Web;
 public class PrsApiResponse
 {
     public string Login { get; set; } = "";
+    public string? DisplayName { get; set; }
     public string UpdatedAt { get; set; } = "";
     public int IntervalSeconds { get; set; }
     public bool IsLoading { get; set; }

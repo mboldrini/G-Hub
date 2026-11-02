@@ -28,6 +28,9 @@
 
   <ItemGroup>
     <EmbeddedResource Include="github.ico" LogicalName="PrDashboard.github.ico" />
+    <EmbeddedResource Include="Web\index.html" />
+    <EmbeddedResource Include="Web\app.css" />
+    <EmbeddedResource Include="Web\app.js" />
   </ItemGroup>
 
   <ItemGroup>
