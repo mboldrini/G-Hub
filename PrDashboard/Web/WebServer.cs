@@ -35,13 +35,19 @@ public class WebServer(PrsDataService dataService, AppConfig config, Notificatio
 
         var app = builder.Build();
 
+        // Compute content hashes once at startup for cache-busting query params
+        var jsV  = Math.Abs(WebAssets.Js.GetHashCode()).ToString("X8");
+        var cssV = Math.Abs(WebAssets.Css.GetHashCode()).ToString("X8");
+        var indexHtml = WebAssets.Html
+            .Replace("/app.js\"",  $"/app.js?v={jsV}\"")
+            .Replace("/app.css\"", $"/app.css?v={cssV}\"");
+
         app.MapGet("/", (HttpContext ctx) =>
         {
-            // No cache for HTML - always fetch fresh
             ctx.Response.Headers.CacheControl = "no-cache, no-store, must-revalidate";
             ctx.Response.Headers.Pragma = "no-cache";
             ctx.Response.Headers.Expires = "0";
-            return Results.Content(WebAssets.Html, "text/html; charset=utf-8");
+            return Results.Content(indexHtml, "text/html; charset=utf-8");
         });
 
         app.MapGet("/app.css", (HttpContext ctx) =>
