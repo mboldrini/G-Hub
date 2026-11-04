@@ -6,5 +6,9 @@
   "ignoredOrgs": [],
   "ignoredRepos": [],
   "hideDrafts": false,
-  "visibleColumns": ["repo", "number", "title", "review", "ci", "comment", "merge", "age"]
+  "visibleColumns": ["repo", "number", "title", "review", "ci", "comment", "merge", "age"],
+  "worktreesConfig": {
+    "rootPath": "C:\\",
+    "worktreesPath": "C:\\"
+  }
 }

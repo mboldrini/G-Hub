@@ -1,0 +1,81 @@
+  <div id="view-stats" style="display:none;margin:-28px -24px 0">
+    <div class="filter-bar">
+      <div class="filter-group">
+        <label data-i18n="stFilterRepo">Repository</label>
+        <div class="ms-wrap" id="ms-repo">
+          <button class="ms-btn" onclick="toggleMS('repo',event)"><span class="ms-label" data-i18n="stAllRepos">All repositories</span><span class="ms-arrow">▾</span></button>
+          <div class="ms-panel" id="ms-panel-repo" style="display:none"></div>
+        </div>
+      </div>
+      <div class="filter-group">
+        <label data-i18n="stFilterMonth">Month</label>
+        <div class="ms-wrap" id="ms-month">
+          <button class="ms-btn" onclick="toggleMS('month',event)"><span class="ms-label" data-i18n="stAllMonths">All months</span><span class="ms-arrow">▾</span></button>
+          <div class="ms-panel" id="ms-panel-month" style="display:none"></div>
+        </div>
+      </div>
+      <div class="filter-group" id="fg-week" style="display:none">
+        <label data-i18n="stFilterWeek">Week</label>
+        <div class="ms-wrap" id="ms-week">
+          <button class="ms-btn" onclick="toggleMS('week',event)"><span class="ms-label" data-i18n="stAllWeeks">All weeks</span><span class="ms-arrow">▾</span></button>
+          <div class="ms-panel" id="ms-panel-week" style="display:none"></div>
+        </div>
+      </div>
+      <div class="filter-group">
+        <label data-i18n="stFilterDate">Date range</label>
+        <div style="display:flex;align-items:center;gap:0.35rem">
+          <input type="date" id="f-date-from" class="date-input" onchange="onFilterChange()" title="From">
+          <span class="date-sep">→</span>
+          <input type="date" id="f-date-to" class="date-input" onchange="onFilterChange()" title="To">
+        </div>
+      </div>
+      <label class="filter-toggle">
+        <input type="checkbox" id="f-show-prs" onchange="onFilterChange()" checked>
+        <span class="toggle-track"></span>
+        <span data-i18n="stShowPRTable">PR Table</span>
+      </label>
+      <button class="filter-reset" onclick="resetFilters()" data-i18n-title="stClearFilters" title="Clear filters"><svg class="ti" width="15" height="15"><use href="/icons.svg#ti-filter-x"/></svg></button>
+      <div class="export-wrap" style="margin-left:auto">
+        <button class="export-btn" onclick="toggleExportMenu(event)"><svg class="ti export-icon" width="18" height="18"><use href="/icons.svg#ti-download"/></svg>Export &#9662;</button>
+        <div class="export-menu" id="export-menu" style="display:none">
+          <button onclick="exportCSV()"><svg class="ti" width="14" height="14"><use href="/icons.svg#ti-file-spreadsheet"/></svg> CSV</button>
+          <button onclick="exportMD()"><svg class="ti" width="14" height="14"><use href="/icons.svg#ti-markdown"/></svg> Markdown (.md)</button>
+          <button onclick="exportPDF()"><svg class="ti" width="14" height="14"><use href="/icons.svg#ti-file-description"/></svg> PDF</button>
+        </div>
+      </div>
+    </div>
+    <div id="empty-state" style="display:none">
+      <div class="es-icon">📁</div>
+      <div class="es-title" data-i18n="stEmptyTitle">No data found</div>
+      <div class="es-sub" data-i18n="stEmptySub">Run backfill to generate the JSONs</div>
+    </div>
+    <div id="main-content">
+      <div class="stats">
+        <div class="stat"><div class="stat-val" id="s-entries">—</div><div class="stat-lbl" data-i18n="stStatTotal">PRs opened</div></div>
+        <div class="stat"><div class="stat-val" id="s-merged">—</div><div class="stat-lbl" data-i18n="stStatMerged">Merged PRs</div></div>
+        <div class="stat"><div class="stat-val" id="s-open">—</div><div class="stat-lbl" data-i18n="stStatCycle">Avg cycle time</div></div>
+        <div class="stat"><div class="stat-val" id="s-repos">—</div><div class="stat-lbl" data-i18n="stStatRepos">Repos touched</div></div>
+      </div>
+      <div class="grid" id="charts-grid">
+        <div class="card" id="card-repos"><div class="card-title" data-i18n="stChartRepos">Deliveries by repository</div><div class="chart-wrap h280"><canvas id="repos"></canvas></div></div>
+        <div class="card" id="card-cadencia"><div class="card-title" data-i18n="stChartCadence">Delivery cadence by month</div><div class="chart-wrap h240"><canvas id="cadencia"></canvas></div></div>
+        <div class="card" id="card-status"><div class="card-title" data-i18n="stChartStatus">Delivery status</div><div class="chart-wrap h240"><canvas id="status"></canvas></div></div>
+        <div class="card hidden" id="card-timeline"><div class="card-title" data-i18n="stChartTimeline">Timeline by month</div><div class="chart-wrap h240"><canvas id="timeline"></canvas></div></div>
+        <div class="card" id="card-reposMes"><div class="card-title" data-i18n="stChartReposMes">Repo distribution by month</div><div class="chart-wrap h280"><canvas id="reposMes"></canvas></div></div>
+      </div>
+      <div id="pr-section" style="display:none">
+        <div class="card full">
+          <div style="display:flex;align-items:center;gap:0.75rem">
+            <div class="card-title" id="pr-section-title" style="margin:0">PRs</div>
+            <button id="pr-clear-btn" class="pr-clear-btn" onclick="resetPRFilters()" style="display:none;padding:0.2rem 0.6rem;font-size:0.72rem;background:transparent;border:1px solid #585b70;border-radius:6px;color:#6c7086;cursor:pointer" onmouseover="this.style.borderColor='#cba6f7';this.style.color='#cba6f7'" onmouseout="this.style.borderColor='#585b70';this.style.color='#6c7086'">✕ <span data-i18n="stClearPR">clear</span></button>
+            <input type="text" id="pr-search" class="pr-search-input" placeholder="🔍 search title…" oninput="onPRSearch()" style="margin-left:auto">
+            <span id="pr-count" style="font-size:0.68rem;color:#585b70"></span>
+          </div>
+          <div class="pr-table-wrap">
+            <table class="pr-table"><thead id="pr-thead"></thead><tbody id="pr-tbody"></tbody></table>
+          </div>
+          <div class="pr-pagination" id="pr-pagination"></div>
+        </div>
+      </div>
+    </div>
+  </div>

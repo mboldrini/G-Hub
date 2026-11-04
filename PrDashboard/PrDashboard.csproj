@@ -32,6 +32,29 @@
     <EmbeddedResource Include="Web\app.css" />
     <EmbeddedResource Include="Web\app.js" />
     <EmbeddedResource Include="Web\icons.svg" />
+
+    <!-- Modular structure - CSS -->
+    <EmbeddedResource Include="Web\css\custom.css" />
+
+    <!-- Modular structure - Core JS -->
+    <EmbeddedResource Include="Web\js\i18n.js" />
+    <EmbeddedResource Include="Web\js\api.js" />
+    <EmbeddedResource Include="Web\js\config.js" />
+    <EmbeddedResource Include="Web\js\viewLoader.js" />
+
+    <!-- Modular structure - Components -->
+    <EmbeddedResource Include="Web\js\components\toast.js" />
+    <EmbeddedResource Include="Web\js\components\modal.js" />
+    <EmbeddedResource Include="Web\js\components\dropdown.js" />
+
+    <!-- Modular structure - Views JS -->
+    <EmbeddedResource Include="Web\js\views\dashboard.js" />
+    <EmbeddedResource Include="Web\js\views\statistics.js" />
+
+    <!-- Modular structure - Views HTML -->
+    <EmbeddedResource Include="Web\views\dashboard.html" />
+    <EmbeddedResource Include="Web\views\statistics.html" />
+    <EmbeddedResource Include="Web\views\worktrees.html" />
   </ItemGroup>
 
   <ItemGroup>
@@ -44,18 +67,55 @@
     <None Update="config.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <!-- Incluir config.default.json no build -->
+    <None Update="config.default.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="message.mp3" Condition="Exists('message.mp3')">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </None>
     <None Update="error.mp3" Condition="Exists('error.mp3')">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </None>
     <None Update="done.mp3" Condition="Exists('done.mp3')">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </None>
     <None Update="github.svg" Condition="Exists('github.svg')">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
+
+  <!-- Target customizado: copiar default apenas se config.json não existir ou se estiver em CI -->
+  <Target Name="EnsureConfigFile" AfterTargets="AfterBuild">
+    <PropertyGroup>
+      <IsCI Condition="'$(CI)' == 'true' OR '$(GITHUB_ACTIONS)' == 'true'">true</IsCI>
+      <ConfigPath>$(OutDir)config.json</ConfigPath>
+      <ConfigDefaultPath>$(OutDir)config.default.json</ConfigDefaultPath>
+    </PropertyGroup>
+
+    <!-- Se está no CI, sempre copiar (sobrescrever) -->
+    <Copy Condition="'$(IsCI)' == 'true'"
+          SourceFiles="$(ConfigDefaultPath)"
+          DestinationFiles="$(ConfigPath)"
+          OverwriteReadOnlyFiles="true" />
+
+    <!-- Se não está no CI e config.json não existe, copiar -->
+    <Copy Condition="'$(IsCI)' != 'true' AND !Exists('$(ConfigPath)')"
+          SourceFiles="$(ConfigDefaultPath)"
+          DestinationFiles="$(ConfigPath)" />
+
+    <Message Condition="'$(IsCI)' == 'true'"
+             Text="[CI Build] config.json criado/sobrescrito a partir do default"
+             Importance="high" />
+    <Message Condition="'$(IsCI)' != 'true' AND !Exists('$(ConfigPath)')"
+             Text="[Local Build] config.json criado a partir do default (primeira vez)"
+             Importance="high" />
+    <Message Condition="'$(IsCI)' != 'true' AND Exists('$(ConfigPath)')"
+             Text="[Local Build] config.json existente preservado (não sobrescrito)"
+             Importance="high" />
+  </Target>
 
 </Project>

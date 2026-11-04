@@ -1,0 +1,148 @@
+  <div id="view-worktrees" style="display:none;margin:-1.75rem -1.5rem 0">
+    <!-- Path Info Bar (discrete, footer style) -->
+    <div style="background:var(--surf);border-radius:0.875rem;padding:0.625rem 1.25rem;border:1px solid var(--border);margin:2rem 0 1rem;display:flex;flex-wrap:wrap;align-items:center;gap:1rem;font-size:0.69rem;color:var(--muted);font-family:monospace;box-shadow:0 2px 12px rgba(0,0,0,.2)">
+      <span style="display:flex;align-items:center;gap:0.375rem">
+        <svg class="ti" width="0.8125rem" height="0.8125rem" style="stroke:var(--indigo)"><use href="/icons.svg#ti-folder"/></svg>
+        <span data-i18n="wtLabelRoot">RAIZ:</span>
+        <span id="wt-root-path-info" style="color:var(--text);font-weight:500">C:\</span>
+      </span>
+      <span>•</span>
+      <span style="display:flex;align-items:center;gap:0.375rem">
+        <svg class="ti" width="0.8125rem" height="0.8125rem" style="stroke:var(--blue)"><use href="/icons.svg#ti-folder-down"/></svg>
+        <span data-i18n="wtLabelDestination">DESTINO:</span>
+        <span id="wt-worktrees-path-info" style="color:var(--text);font-weight:500">C:\</span>
+      </span>
+    </div>
+    <!-- Filters & Actions Ribbon Card -->
+    <section style="background:var(--surf);border-radius:0.875rem;padding:1.25rem;border:1px solid var(--border);margin-bottom:1.5rem;box-shadow:0 2px 12px rgba(0,0,0,.2)">
+      <div style="display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:1rem">
+        <!-- Filter Controls -->
+        <div style="display:flex;flex-wrap:wrap;align-items:flex-end;gap:1rem">
+          <!-- Repository Filter -->
+          <div style="display:flex;flex-direction:column;gap:0.375rem;min-width:12.5rem">
+            <label style="font-size:0.69rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)" data-i18n="wtFilterRepo">REPOSITÓRIO</label>
+            <div style="position:relative">
+              <select style="width:100%;appearance:none;background:var(--subtle);border:1px solid var(--border);border-radius:0.375rem;padding:0.5rem 0.75rem;font-size:0.8125rem;font-weight:500;color:var(--text);cursor:pointer;padding-right:2rem">
+                <option selected="" data-i18n="wtAllRepos">Todos os repositórios (14)</option>
+                <option>auth-service</option>
+                <option>billing-api</option>
+                <option>frontend-dashboard</option>
+                <option>notification-worker</option>
+                <option>data-pipeline</option>
+              </select>
+              <svg class="ti" width="0.875rem" height="0.875rem" style="position:absolute;right:0.625rem;top:50%;transform:translateY(-50%);pointer-events:none;stroke:var(--muted)"><use href="/icons.svg#ti-chevron-down"/></svg>
+            </div>
+          </div>
+          <!-- Status Filter -->
+          <div style="display:flex;flex-direction:column;gap:0.375rem;min-width:10.625rem">
+            <label style="font-size:0.69rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)" data-i18n="wtFilterStatus">STATUS DO REPO</label>
+            <div style="position:relative">
+              <select style="width:100%;appearance:none;background:var(--subtle);border:1px solid var(--border);border-radius:0.375rem;padding:0.5rem 0.75rem;font-size:0.8125rem;font-weight:500;color:var(--text);cursor:pointer;padding-right:2rem">
+                <option selected="" data-i18n="wtAllStates">Todos os estados</option>
+                <option data-i18n="wtOutdated">Desatualizados (5)</option>
+                <option data-i18n="wtWithWorktrees">Com Worktrees (4)</option>
+                <option data-i18n="wtWithChanges">Com alterações locais (2)</option>
+                <option data-i18n="wtInConflict">Em conflito (1)</option>
+              </select>
+              <svg class="ti" width="0.875rem" height="0.875rem" style="position:absolute;right:0.625rem;top:50%;transform:translateY(-50%);pointer-events:none;stroke:var(--muted)"><use href="/icons.svg#ti-chevron-down"/></svg>
+            </div>
+          </div>
+          <!-- Search Input -->
+          <div style="display:flex;flex-direction:column;gap:0.375rem">
+            <label style="font-size:0.69rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)" data-i18n="wtFilterSearch">BUSCAR RAMO / REPO</label>
+            <div style="position:relative;width:16.25rem">
+              <input type="search" placeholder="Filtrar por nome ou branch..." data-i18n-ph="wtSearchPlaceholder" class="wt-search-input" style="width:100%;background:var(--subtle);border:1px solid var(--border);border-radius:0.375rem;padding:0.5rem 0.75rem 0.5rem 2.25rem;font-size:0.8125rem;color:var(--text);outline:none">
+              <svg class="ti" width="0.9375rem" height="0.9375rem" style="position:absolute;left:0.75rem;top:50%;transform:translateY(-50%);stroke:var(--muted)"><use href="/icons.svg#ti-search"/></svg>
+            </div>
+          </div>
+          <!-- Worktree View Toggle -->
+          <div style="display:flex;align-items:center;gap:0.75rem;padding-top:1.375rem">
+            <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;user-select:none">
+              <input type="checkbox" checked="" class="wt-checkbox" style="width:1rem;height:1rem;cursor:pointer">
+              <span style="font-size:0.8125rem;color:var(--muted);font-weight:500" data-i18n="wtWorktreeView">Worktree View</span>
+            </label>
+            <button data-i18n-title="wtClearFilters" title="Limpar filtros" class="wt-clear-btn" style="padding:0.5rem;border-radius:0.375rem;background:var(--subtle);border:1px solid var(--border);color:var(--muted);cursor:pointer;transition:all .15s">
+              <svg class="ti" width="1rem" height="1rem"><use href="/icons.svg#ti-filter-x"/></svg>
+            </button>
+          </div>
+        </div>
+        <!-- Export Button -->
+        <div style="display:flex;align-items:center;gap:0.75rem;padding-top:1.375rem">
+          <button class="wt-export-btn" style="display:flex;align-items:center;gap:0.5rem;padding:0.5rem 1rem;border-radius:0.375rem;background:var(--subtle);border:1px solid var(--border);color:var(--text);font-size:0.8125rem;font-weight:500;cursor:pointer;transition:all .15s">
+            <svg class="ti" width="1rem" height="1rem" style="stroke:var(--indigo)"><use href="/icons.svg#ti-download"/></svg>
+            <span data-i18n="wtExportReport">Exportar Relatório</span>
+            <svg class="ti" width="0.875rem" height="0.875rem" style="stroke:var(--muted)"><use href="/icons.svg#ti-chevron-down"/></svg>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- KPI Metric Summary Cards -->
+    <section style="display:grid;grid-template-columns:repeat(auto-fit,minmax(15rem,1fr));gap:0.875rem;margin-bottom:1.5rem">
+      <!-- Card 1 -->
+      <div class="wt-kpi-card wt-kpi-indigo" style="background:var(--surf);border-radius:0.5rem;padding:0.875rem 1rem;border:1px solid var(--border);transition:border-color .15s;box-shadow:0 2px 12px rgba(0,0,0,.2)">
+        <div style="font-size:1.75rem;font-weight:700;color:var(--indigo);margin-bottom:0.25rem">14</div>
+        <div style="font-size:0.72rem;font-weight:500;color:var(--muted)" data-i18n="wtKpiIndexed">Repositórios Indexados</div>
+      </div>
+      <!-- Card 2 -->
+      <div class="wt-kpi-card wt-kpi-blue" style="background:var(--surf);border-radius:0.5rem;padding:0.875rem 1rem;border:1px solid var(--border);transition:border-color .15s;box-shadow:0 2px 12px rgba(0,0,0,.2)">
+        <div style="font-size:1.75rem;font-weight:700;color:var(--blue);margin-bottom:0.25rem">6</div>
+        <div style="font-size:0.72rem;font-weight:500;color:var(--muted)" data-i18n="wtKpiWorktrees">Worktrees Ativas em Disco</div>
+      </div>
+      <!-- Card 3 -->
+      <div class="wt-kpi-card wt-kpi-teal" style="background:var(--surf);border-radius:0.5rem;padding:0.875rem 1rem;border:1px solid var(--border);transition:border-color .15s;box-shadow:0 2px 12px rgba(0,0,0,.2)">
+        <div style="font-size:1.75rem;font-weight:700;color:var(--teal);margin-bottom:0.25rem">5</div>
+        <div style="font-size:0.72rem;font-weight:500;color:var(--muted)" data-i18n="wtKpiPendingUpdates">Repositórios com Atualizações Pendentes</div>
+      </div>
+      <!-- Card 4 -->
+      <div class="wt-kpi-card wt-kpi-green" style="background:var(--surf);border-radius:0.5rem;padding:0.875rem 1rem;border:1px solid var(--border);transition:border-color .15s;box-shadow:0 2px 12px rgba(0,0,0,.2)">
+        <div style="font-size:1.75rem;font-weight:700;color:var(--green);margin-bottom:0.25rem">3.8 GB</div>
+        <div style="font-size:0.72rem;font-weight:500;color:var(--muted)" data-i18n="wtKpiDiskSpace">Espaço Ocupado pelas Pastas</div>
+      </div>
+    </section>
+
+    <!-- Multi-select Batch Actions Bar (visible when items selected) -->
+    <section class="wt-batch-bar" style="background:var(--indigo-bg);border:1px solid var(--indigo-bd);border-radius:0.5rem;padding:0.875rem 1.25rem;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:1.5rem;box-shadow:0 2px 12px rgba(0,0,0,.18)">
+      <div style="display:flex;align-items:center;gap:0.75rem">
+        <div style="width:1.25rem;height:1.25rem;border-radius:0.375rem;background:var(--indigo);display:flex;align-items:center;justify-content:center;color:var(--bg);font-weight:700">
+          <svg class="ti" width="0.9375rem" height="0.9375rem" style="stroke:currentColor"><use href="/icons.svg#ti-check"/></svg>
+        </div>
+        <div style="display:flex;align-items:center;gap:0.5rem;font-size:0.8125rem">
+          <span style="font-weight:600;color:var(--text)" data-i18n="wtSelected">2 selecionados</span>
+          <span style="color:var(--muted);font-family:monospace">(auth-service, billing-api)</span>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:0.625rem">
+        <button class="wt-batch-primary" style="padding:0.5rem 1rem;border-radius:0.375rem;background:var(--indigo);color:var(--bg);font-size:0.8125rem;font-weight:600;cursor:pointer;border:none;transition:all .15s;display:flex;align-items:center;gap:0.5rem;box-shadow:0 2px 8px rgba(180,155,250,0.3)">
+          <svg class="ti" width="1rem" height="1rem" style="stroke:currentColor"><use href="/icons.svg#ti-download"/></svg>
+          <span data-i18n="wtUpdateSelected">Atualizar Selecionados para main (2)</span>
+        </button>
+        <button class="wt-batch-secondary" style="padding:0.5rem 0.875rem;border-radius:0.375rem;background:var(--subtle);border:1px solid var(--border);color:var(--text);font-size:0.8125rem;font-weight:500;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:0.375rem">
+          <svg class="ti" width="1rem" height="1rem" style="stroke:var(--blue)"><use href="/icons.svg#ti-refresh"/></svg>
+          <span data-i18n="wtCheckRemote">Verificar status remoto</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- Main Repositories Accordion Stack -->
+    <section style="display:flex;flex-direction:column;gap:0.875rem;margin-bottom:1.5rem">
+      <!-- Placeholder message -->
+      <div style="background:var(--surf);border-radius:0.5rem;padding:2.5rem;border:1px dashed var(--border);text-align:center;box-shadow:0 2px 12px rgba(0,0,0,.2)">
+        <div style="font-size:3rem;margin-bottom:1rem">🚧</div>
+        <div style="font-size:1rem;font-weight:600;color:var(--text);margin-bottom:0.5rem" data-i18n="wtUnderConstruction">Em construção</div>
+        <div style="font-size:0.8125rem;color:var(--muted)" data-i18n="wtUnderConstructionDesc">A visualização de repositórios e worktrees será implementada em breve.</div>
+      </div>
+    </section>
+
+    <!-- Footer Telemetry Bar -->
+    <footer style="background:var(--surf);border-radius:0.5rem;padding:0.75rem 1.25rem;border:1px solid var(--border);display:flex;flex-wrap:wrap;align-items:center;gap:1rem;font-size:0.75rem;color:var(--muted);font-family:monospace;box-shadow:0 2px 12px rgba(0,0,0,.2)">
+      <span style="display:flex;align-items:center;gap:0.375rem">
+        <span class="sdot" style="width:0.4375rem;height:0.4375rem;border-radius:50%;background:var(--green)"></span>
+        <span data-i18n="wtFooterSynced">14 repositórios sincronizados</span>
+      </span>
+      <span>•</span>
+      <span>Espaço ocupado por worktrees: <strong class="text-emphasis">3.8 GB</strong></span>
+      <span>•</span>
+      <span>SSD Hub Engine: <strong class="text-success">0.14ms</strong></span>
+    </footer>
+  </div>

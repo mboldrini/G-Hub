@@ -1,0 +1,31 @@
+<Project>
+  <!-- Build configuration shared across all projects in this directory tree -->
+
+  <PropertyGroup Label="Build Output">
+    <!-- Default publish directory -->
+    <PublishDir Condition="'$(PublishDir)' == ''">$(MSBuildThisFileDirectory)publish\</PublishDir>
+
+    <!-- Clean output on rebuild -->
+    <CleanOnBuild>true</CleanOnBuild>
+  </PropertyGroup>
+
+  <PropertyGroup Label="Build Optimization">
+    <!-- Enable deterministic builds -->
+    <Deterministic>true</Deterministic>
+    <ContinuousIntegrationBuild Condition="'$(CI)' == 'true' OR '$(GITHUB_ACTIONS)' == 'true'">true</ContinuousIntegrationBuild>
+
+    <!-- Optimize for performance -->
+    <Optimize>true</Optimize>
+    <TieredCompilation>true</TieredCompilation>
+    <TieredCompilationQuickJit>true</TieredCompilationQuickJit>
+  </PropertyGroup>
+
+  <PropertyGroup Label="Package Settings">
+    <!-- Default package metadata (can be overridden in project files) -->
+    <Authors>Matheus Boldrini</Authors>
+    <Company>Matheus Boldrini</Company>
+    <Copyright>© 2026 Matheus Boldrini</Copyright>
+    <NeutralLanguage>en-US</NeutralLanguage>
+  </PropertyGroup>
+
+</Project>

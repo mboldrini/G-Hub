@@ -66,6 +66,23 @@ public class SplashWindow : Form
     {
         base.OnLoad(e);
 
+        // Verificar se deve iniciar minimizado
+        var startMinimized = ReadStartMinimizedSetting();
+        if (startMinimized)
+        {
+            // Esconder janela completamente antes de carregar
+            this.Opacity = 0;
+            this.ShowInTaskbar = false;
+            this.WindowState = FormWindowState.Minimized;
+
+            // Após carregar tudo, esconder para a tray
+            this.Shown += (_, _) =>
+            {
+                this.Hide();
+                _notify.Visible = true;
+            };
+        }
+
         try { int p = 2; DwmSetWindowAttribute(Handle, 33, ref p, sizeof(int)); } catch { }
 
         try
@@ -89,7 +106,13 @@ public class SplashWindow : Form
 
         // jsReady é enviado pelo <head> antes do Tailwind bloquear — startup começa cedo.
         // NavigationCompleted dispara depois (após Tailwind carregar). FireStartup é idempotente.
-        _wv.CoreWebView2.NavigationCompleted += (_, _) => FireStartup();
+        _wv.CoreWebView2.NavigationCompleted += (_, _) =>
+        {
+            FireStartup();
+            // Sincronizar checkbox com config.json
+            var startMin = ReadStartMinimizedSetting();
+            ExecScript($"if(typeof bgCheck!=='undefined'){{bgCheck.checked={startMin.ToString().ToLower()};localStorage.setItem('prd-bg','{(startMin ? "1" : "0")}')}}");
+        };
     }
 
     private void FireStartup()
@@ -103,6 +126,11 @@ public class SplashWindow : Form
     {
         var msg = e.TryGetWebMessageAsString() ?? "";
         if (msg.StartsWith("tray:")) { _toTray = msg[5..] == "1"; return; }
+        if (msg.StartsWith("startMinimized:"))
+        {
+            SaveStartMinimizedSetting(msg[15..] == "1");
+            return;
+        }
 
         switch (msg)
         {
@@ -185,6 +213,66 @@ public class SplashWindow : Form
 
     private static string EscJs(string s)
         => s.Replace("\\", "\\\\").Replace("'", "\\'").Replace("\n", "\\n").Replace("\r", "");
+
+    private bool ReadStartMinimizedSetting()
+    {
+        try
+        {
+            var configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config.json");
+            if (!File.Exists(configPath)) return false;
+
+            var json = File.ReadAllText(configPath);
+            var config = System.Text.Json.JsonSerializer.Deserialize<System.Text.Json.JsonElement>(json);
+
+            if (config.TryGetProperty("startMinimized", out var value))
+                return value.GetBoolean();
+        }
+        catch { }
+
+        return false;
+    }
+
+    private void SaveStartMinimizedSetting(bool value)
+    {
+        try
+        {
+            var configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config.json");
+            if (!File.Exists(configPath)) return;
+
+            var json = File.ReadAllText(configPath);
+            var doc = System.Text.Json.JsonDocument.Parse(json);
+            var root = doc.RootElement;
+
+            using var stream = new MemoryStream();
+            using var writer = new System.Text.Json.Utf8JsonWriter(stream, new System.Text.Json.JsonWriterOptions { Indented = true });
+
+            writer.WriteStartObject();
+            foreach (var prop in root.EnumerateObject())
+            {
+                if (prop.Name == "startMinimized")
+                {
+                    writer.WriteBoolean("startMinimized", value);
+                }
+                else
+                {
+                    prop.WriteTo(writer);
+                }
+            }
+
+            // Se a propriedade não existe, adicionar
+            if (!root.TryGetProperty("startMinimized", out _))
+            {
+                writer.WriteBoolean("startMinimized", value);
+            }
+
+            writer.WriteEndObject();
+            writer.Flush();
+
+            var updatedJson = System.Text.Encoding.UTF8.GetString(stream.ToArray());
+            File.WriteAllText(configPath, updatedJson);
+        }
+        catch { }
+    }
 
     protected override void OnFormClosed(FormClosedEventArgs e)
     {

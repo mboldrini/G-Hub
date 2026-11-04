@@ -9,16 +9,7 @@
   "watchedRepos": [],
   "hideDrafts": false,
   "webPort": 5555,
-  "visibleColumns": [
-    "repo",
-    "number",
-    "title",
-    "review",
-    "ci",
-    "comment",
-    "merge",
-    "age"
-  ],
+  "visibleColumns": ["repo", "number", "title", "review", "ci", "comment", "merge", "age"],
   "language": "en-US",
   "theme": "dark",
   "collapsedRepos": [],
@@ -36,5 +27,11 @@
   "notifApprovedAudio": true,
   "notifReadyVisual": true,
   "notifReadyAudio": true,
-  "hideBotReviews": false
+  "hideBotReviews": false,
+  "displayName": null,
+  "startMinimized": false,
+  "worktreesConfig": {
+    "rootPath": "C:\\",
+    "worktreesPath": "C:\\"
+  }
 }

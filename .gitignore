@@ -13,6 +13,9 @@ fixtures/real/
 **/prs-state.json
 **/logs/
 
+# User-specific configuration (não versionar)
+config.json
+
 # IDE
 .vs/
 *.user
@@ -21,3 +24,18 @@ fixtures/real/
 # OS
 Thumbs.db
 .DS_Store
+
+# Node modules and test coverage
+node_modules/
+coverage/
+*.log
+
+# User audio files (place your own MP3s here, do not commit)
+*.mp3
+
+# Scratch / temp files
+*.backup*
+implementar.html
+PrDashboard/Web/app-refactored.js
+PrDashboard/Web/app.minimal.stub.js
+PrDashboard/Web/test-modules.html

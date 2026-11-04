@@ -1,0 +1,142 @@
+  <div id="content" style="display:none">
+    <!-- ── METRICS ── -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:28px" class="metrics-grid">
+
+      <div class="mcard">
+        <div class="mlabel">
+          <span style="display:flex;align-items:center;gap:6px"><span class="sdot" style="width:7px;height:7px;background:var(--green);box-shadow:0 0 6px var(--green)"></span><span data-i18n="metricsMyPrs">Meus PRs Abertos</span></span>
+        </div>
+        <div style="display:flex;align-items:baseline;gap:0.375rem;margin-top:0.25rem">
+          <span class="mval" id="m-open" style="color:var(--green)">—</span><span class="msub" id="m-open-sub"></span>
+        </div>
+        <div class="mprog"><div class="mprog-bar" id="m-open-bar" style="background:var(--green);width:0%"></div></div>
+      </div>
+
+      <div class="mcard">
+        <div class="mlabel">
+          <span style="display:flex;align-items:center;gap:6px"><span class="sdot" style="width:7px;height:7px;background:var(--red);box-shadow:0 0 6px var(--red)"></span><span data-i18n="metricsCi">CI com Falha</span></span>
+        </div>
+        <div style="display:flex;align-items:baseline;gap:0.375rem;margin-top:0.25rem">
+          <span class="mval" id="m-ci" style="color:var(--red)">—</span><span class="msub" id="m-ci-sub" style="color:var(--red)"></span>
+        </div>
+        <div class="mprog"><div class="mprog-bar" id="m-ci-bar" style="background:var(--red);width:0%"></div></div>
+      </div>
+
+      <div class="mcard">
+        <div class="mlabel">
+          <span style="display:flex;align-items:center;gap:6px"><span class="sdot" style="width:7px;height:7px;background:var(--amber);box-shadow:0 0 6px var(--amber)"></span><span data-i18n="metricsReviews">Reviews a Mim</span></span>
+        </div>
+        <div style="display:flex;align-items:baseline;gap:0.375rem;margin-top:0.25rem">
+          <span class="mval" id="m-rev" style="color:var(--amber)">—</span><span class="msub" id="m-rev-sub" style="color:var(--amber)"></span>
+        </div>
+        <div class="mprog"><div class="mprog-bar" id="m-rev-bar" style="background:var(--amber);width:0%"></div></div>
+      </div>
+
+      <div class="mcard">
+        <div class="mlabel">
+          <span style="display:flex;align-items:center;gap:6px"><span class="sdot" style="width:7px;height:7px;background:var(--indigo);box-shadow:0 0 6px var(--indigo)"></span><span data-i18n="metricsMerged">Mergeados Recentes</span></span>
+        </div>
+        <div style="display:flex;align-items:baseline;gap:0.375rem;margin-top:0.25rem">
+          <span class="mval" id="m-mrg" style="color:var(--indigo)">—</span><span class="msub" id="m-mrg-sub"></span>
+        </div>
+        <div class="mprog"><div class="mprog-bar" id="m-mrg-bar" style="background:var(--indigo);width:0%"></div></div>
+      </div>
+
+    </div>
+
+    <!-- ── TABS ── -->
+    <div style="background:var(--surf);border:1px solid var(--border);border-radius:8px;padding:0.875rem 1.125rem;margin-bottom:1.5rem;box-shadow:0 0.125rem 0.75rem rgba(0,0,0,.2)">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:0.5rem;flex-wrap:wrap">
+        <nav style="display:flex;gap:2px">
+          <button class="tab-btn" data-tab="my" onclick="setTab('my')">
+            <span data-i18n="tabMyPrs">Meus PRs</span> <span id="tc-my" class="tcnt tcnt-indigo">0</span>
+          </button>
+          <button class="tab-btn" data-tab="rev" onclick="setTab('rev')">
+            <span data-i18n="tabReviews">Reviews Solicitados</span> <span id="tc-rev" class="tcnt tcnt-amber">0</span>
+          </button>
+          <button class="tab-btn" data-tab="mrg" onclick="setTab('mrg')">
+            <span data-i18n="tabMerged">Mergeados</span> <span id="tc-mrg" class="tcnt">0</span>
+          </button>
+          <button class="tab-btn" data-tab="notif" onclick="setTab('notif')">
+            <span data-i18n="tabNotif">Notificações</span>
+            <span id="tc-notif" class="tcnt">0</span>
+          </button>
+        </nav>
+        <div>
+          <button class="stoggle" id="stoggle-btn" onclick="toggleSidebar()">
+            <svg class="ti" width="12" height="12"><use href="/icons.svg#ti-list"/></svg>
+            <span id="stoggle-label" data-i18n="closeSidebar">Fechar painel</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── TAB: MEUS PRs ── -->
+    <div id="tab-my" class="tab-panel">
+      <div class="tab-toolbar">
+        <div class="toolbar-controls">
+          <span style="font-size:11px;color:var(--muted)" data-i18n="groupBy">Agrupar por</span>
+          <div class="view-seg">
+            <button class="view-btn active" id="vbtn-repo" onclick="setMyView('repo')" data-i18n="groupByRepo">Repositório</button>
+            <button class="view-btn" id="vbtn-status" onclick="setMyView('status')" data-i18n="groupByStatus">Status</button>
+          </div>
+          <div class="divider-v"></div>
+          <div class="view-seg">
+            <button class="view-btn" id="collapse-all-btn" onclick="toggleAllRepos()" style="display:inline-flex;align-items:center;gap:4px">
+              <svg class="ti icon-collapse" width="11" height="11"><use href="/icons.svg#ti-chevrons-up"/></svg>
+              <svg class="ti icon-expand" width="11" height="11" style="display:none"><use href="/icons.svg#ti-chevrons-down"/></svg>
+              <span id="collapse-all-label">Recolher todos</span>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div id="s-my-filters" style="margin-bottom:16px"></div>
+      <div class="content-grid" id="main-grid">
+        <section id="s-my"></section>
+        <aside class="c-sidebar">
+          <div id="s-rev-side"></div>
+          <div id="s-mrg-side"></div>
+          <div style="border-radius:6px;border:1px dashed var(--border);padding:0.625rem 0.875rem;font-size:0.69rem;color:var(--muted);display:flex;align-items:center;justify-content:space-between">
+            <span style="font-family:monospace;color:var(--text)">gh pr checkout &lt;n&gt;</span>
+            <span data-i18n="quickShortcut">atalho rápido</span>
+          </div>
+        </aside>
+      </div>
+    </div>
+
+    <div id="tab-rev" class="tab-panel">
+      <div class="tab-toolbar">
+        <input id="rev-search" type="search" class="toolbar-search" placeholder="" data-i18n-ph="searchPlaceholder" oninput="setRevSearch(this.value)">
+        <div class="toolbar-divider"></div>
+        <div class="toolbar-controls">
+          <button id="rev-hide-bots-btn" class="fchip" onclick="toggleRevHideBots()"><span data-i18n="hideBots">Ocultar bots</span></button>
+          <div class="divider-v"></div>
+          <div class="view-seg">
+            <button id="rev-collapse-all-btn" class="view-btn" onclick="toggleAllRevRepos()" style="display:inline-flex;align-items:center;gap:4px">
+              <svg class="ti rev-icon-collapse" width="11" height="11"><use href="/icons.svg#ti-chevrons-up"/></svg>
+              <svg class="ti rev-icon-expand" width="11" height="11" style="display:none"><use href="/icons.svg#ti-chevrons-down"/></svg>
+              <span id="rev-collapse-all-label" data-i18n="collapseAll">Recolher todos</span>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div id="s-rev-filters" style="margin-bottom:10px"></div>
+      <div id="s-rev-full"></div>
+    </div>
+    <div id="tab-mrg" class="tab-panel">
+      <div style="margin-bottom:0.75rem">
+        <input id="mrg-search" type="search" placeholder="" data-i18n-ph="searchPlaceholder"
+          oninput="setMrgSearch(this.value)" class="mrg-search-input"
+          style="width:100%;padding:0.5rem 0.75rem;border-radius:6px;border:1px solid var(--border);background:var(--subtle);color:var(--text);font-size:0.8125rem;font-family:inherit;outline:none;transition:border-color .15s">
+      </div>
+      <div id="s-mrg-full"></div>
+    </div>
+    <div id="tab-notif" class="tab-panel">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
+        <span style="font-size:0.69rem;color:var(--muted)" data-i18n="notifHistoryTitle">Eventos recentes nesta sessão</span>
+        <button onclick="clearNotifHistory()" class="notif-clear-btn" style="font-size:0.69rem;padding:0.2rem 0.6rem;border-radius:6px;border:1px solid var(--border);background:none;color:var(--muted);cursor:pointer;font-family:inherit;transition:border-color .15s,color .15s" data-i18n="clearHistory">Limpar</button>
+      </div>
+      <div id="s-notif-list"></div>
+    </div>
+  </div>
+

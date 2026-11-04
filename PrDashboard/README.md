@@ -45,6 +45,23 @@ PrDashboard.exe --help       # Ajuda
 }
 ```
 
+### Arquivos de áudio (MP3)
+
+Para que as notificações de áudio funcionem, você precisa fornecer arquivos MP3 válidos:
+
+| Arquivo | Quando toca | Sugestão |
+|---------|-------------|----------|
+| `message.mp3` | Novo comentário em PR | Som de notificação suave |
+| `done.mp3` | PR mergeado ou aprovado | Som de conclusão/sucesso |
+| `error.mp3` | CI falhou | Som de alerta/erro |
+
+Os arquivos devem estar na mesma pasta do executável. Você pode:
+- Baixar sons gratuitos de [Freesound](https://freesound.org/) ou [Pixabay](https://pixabay.com/sound-effects/)
+- Gravar seus próprios sons curtos (1-2 segundos recomendado)
+- Usar qualquer conversor online para gerar MP3s de outros formatos
+
+> **Nota:** Os arquivos MP3 incluídos no repositório são placeholders vazios (4 bytes) e precisam ser substituídos por arquivos de áudio reais.
+
 ## Arquivos de saída (`./out/`)
 
 | Arquivo/Pasta | Descrição |

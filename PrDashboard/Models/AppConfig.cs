@@ -16,7 +16,7 @@ public class AppConfig
     [JsonPropertyName("webPort")] public int WebPort { get; set; } = 5555;
     [JsonPropertyName("visibleColumns")] public List<string> VisibleColumns { get; set; } =
         ["repo", "number", "title", "review", "ci", "comment", "merge", "age"];
-    [JsonPropertyName("language")] public string Language { get; set; } = "pt-BR";
+    [JsonPropertyName("language")] public string Language { get; set; } = "en-US";
     [JsonPropertyName("theme")] public string Theme { get; set; } = "dark";
     [JsonPropertyName("collapsedRepos")] public List<string> CollapsedRepos { get; set; } = [];
     [JsonPropertyName("myPrsFilter")] public string MyPrsFilter { get; set; } = "";
@@ -35,4 +35,12 @@ public class AppConfig
     [JsonPropertyName("notifReadyAudio")] public bool NotifReadyAudio { get; set; } = true;
     [JsonPropertyName("hideBotReviews")] public bool HideBotReviews { get; set; } = false;
     [JsonPropertyName("displayName")] public string? DisplayName { get; set; }
+    [JsonPropertyName("startMinimized")] public bool StartMinimized { get; set; } = false;
+    [JsonPropertyName("worktreesConfig")] public WorktreesConfig? WorktreesConfig { get; set; }
+}
+
+public class WorktreesConfig
+{
+    [JsonPropertyName("rootPath")] public string RootPath { get; set; } = "C:\\";
+    [JsonPropertyName("worktreesPath")] public string WorktreesPath { get; set; } = "C:\\";
 }

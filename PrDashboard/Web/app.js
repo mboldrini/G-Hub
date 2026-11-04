@@ -6,7 +6,7 @@ const I18N={
     metricsOk:'ok', metricsBlocker:'bloqueador', metricsBlockers:'bloqueadores',
     metricsPending:'pendente', metricsPendings:'pendentes', metricsRecent:'recentes',
     metricsNeedAction:n=>`${n} em atenção`,
-    tabMyPrs:'Meus PRs', tabReviews:'Reviews Solicitados', tabMerged:'Mergeados', tabStats:'Estatísticas',
+    tabDashboard:'Dashboard', tabMyPrs:'Meus PRs', tabReviews:'Reviews Solicitados', tabMerged:'Mergeados', tabWorktrees:'Worktrees & Repos', tabStats:'Estatísticas',
     closeSidebar:'Fechar painel', openSidebar:'Abrir painel',
     draft:'rascunho', noReview:'sem review',
     changesRequested:'✗ mudanças pedidas', awaitingApproval:'⏳ aguardando approval',
@@ -51,6 +51,79 @@ const I18N={
     stNoEntries:'Nenhuma entrada para este filtro.',
     stEntries:n=>`${n} entrada${n===1?'':'s'}`,
     stShowingOf:(a,b)=>`Mostrando ${a} de ${b}`,
+    wtFilterRepo:'REPOSITÓRIO', wtFilterStatus:'STATUS DO REPO', wtFilterSearch:'BUSCAR RAMO / REPO',
+    wtAllRepos:'Todos os repositórios (14)', wtAllStates:'Todos os estados',
+    wtOutdated:'Desatualizados (5)', wtWithWorktrees:'Com Worktrees (4)',
+    wtWithChanges:'Com alterações locais (2)', wtInConflict:'Em conflito (1)',
+    wtSearchPlaceholder:'Filtrar por nome ou branch...', wtWorktreeView:'Worktree View',
+    wtClearFilters:'Limpar filtros', wtExportReport:'Exportar Relatório',
+    wtKpiIndexed:'Repositórios Indexados', wtKpiWorktrees:'Worktrees Ativas em Disco',
+    wtKpiPendingUpdates:'Repositórios com Atualizações Pendentes', wtKpiDiskSpace:'Espaço Ocupado pelas Pastas',
+    wtLabelRoot:'RAIZ:', wtLabelDestination:'DESTINO:', wtChangeFolder:'Alterar pasta',
+    wtSelected:'2 selecionados', wtUpdateSelected:'Atualizar Selecionados para main (2)',
+    wtCheckRemote:'Verificar status remoto',
+    wtUnderConstruction:'Em construção', wtUnderConstructionDesc:'A visualização de repositórios e worktrees será implementada em breve.',
+    wtFooterSynced:'14 repositórios sincronizados', wtFooterSpace:'Espaço ocupado por worktrees: 3.8 GB',
+    wtFooterEngine:'SSD Hub Engine: 0.14ms',
+    wtPromptRoot:'Digite o caminho da pasta raiz:', wtPromptWorktrees:'Digite o caminho da pasta de worktrees:',
+    wtPathUpdated:'Caminho {type} atualizado: {path}', wtPathTypeRoot:'raiz', wtPathTypeWorktrees:'destino',
+    menuWorktrees:'Configurar Pastas', menuRootFolder:'Pasta raiz dos repositórios', menuRootFolderDesc:'Definir localização raiz',
+    menuWorktreesFolder:'Pasta de worktrees', menuWorktreesFolderDesc:'Definir destino das worktrees',
+    wtErrorConfigTitle:'Configuração Incompleta', wtConfigNow:'Configurar Agora',
+    wtErrorRootPath:'A pasta raiz dos repositórios não está configurada.',
+    wtErrorWorktreesPath:'A pasta de destino das worktrees não está configurada.',
+    wtErrorRootPathNotFound:'A pasta raiz configurada não existe no sistema.',
+    wtErrorWorktreesPathNotFound:'A pasta de worktrees configurada não existe no sistema.',
+    wtBatchSelected:'selecionados',
+    wtBatchUpdate:'Atualizar Selecionados',
+    wtBatchDeselect:'Deselecionar',
+    wtStatRepos:'Repositórios Indexados',
+    wtStatWorktrees:'Worktrees Ativas em Disco',
+    wtStatUpdates:'Repositórios com Atualizações Pendentes',
+    wtStatDisk:'Espaço Ocupado pelas Pastas',
+    wtUpdate:'Atualizar',
+    wtCreateWorktree:'+ Worktree',
+    wtOpenVSCode:'VS Code',
+    wtWorktreesLinked:'worktrees',
+    wtCreateFrom:'Criar worktree a partir de branch...',
+    wtOpen:'Abrir',
+    wtTerminal:'Terminal',
+    wtDelete:'Excluir',
+    wtNoWorktrees:'Nenhuma worktree vinculada',
+    wtModalCreateTitle:'Criar Nova Worktree',
+    wtModalName:'Nome da Worktree',
+    wtModalBranch:'Branch',
+    wtModalCreate:'Criar Worktree',
+    wtModalCancel:'Cancelar',
+    wtToastCreated:'Worktree criada com sucesso!',
+    wtToastDeleted:'Worktree excluída com sucesso!',
+    wtToastUpdated:'atualizado com sucesso!',
+    wtToastError:'Erro ao executar operação',
+    wtConfirmDelete:'Tem certeza que deseja excluir a worktree?',
+    wtConfirmDeleteWarning:'Esta ação não pode ser desfeita.',
+    wtStatusUpdated:'Atualizado',
+    wtStatusBehind:'commits atrás',
+    wtStatusAhead:'à frente de origin',
+    wtStatusConflict:'Conflito / Divergente',
+    wtStatusClean:'Limpo',
+    wtStatusUncommitted:'arquivo(s) não commitado(s)',
+    wtWorktreeCount:'worktrees ativas',
+    wtWorktreeCount_one:'worktree ativa',
+    wtSyncStatus:'Git Daemon Local:',
+    wtSyncTime:'sync',
+    settingsTitle:'Configurações',
+    settingsSubtitle:'Ajuste suas preferências',
+    settingsDisplayName:'Nome de Exibição',
+    settingsDisplayNameDesc:'Personalizar seu nome no dashboard',
+    wtSettingsRoot:'Pasta Raiz dos Repositórios',
+    wtSettingsRootDesc:'Local onde seus repositórios estão',
+    wtSettingsWorktrees:'Pasta de Destino das Worktrees',
+    wtSettingsWorktreesDesc:'Onde criar novas worktrees',
+    menuSectionDashboard:'Dashboard',
+    menuSectionStats:'Estatísticas',
+    menuSectionWorktrees:'Repos & Worktrees',
+    menuNoSettings:'Sem configurações disponíveis',
+    menuWtPolling:'Intervalo de atualização',
   },
   'en-US':{
     refresh:'Refresh',
@@ -58,7 +131,7 @@ const I18N={
     metricsOk:'ok', metricsBlocker:'blocker', metricsBlockers:'blockers',
     metricsPending:'pending', metricsPendings:'pending', metricsRecent:'recent',
     metricsNeedAction:n=>`${n} need attention`,
-    tabMyPrs:'My PRs', tabReviews:'Review Requests', tabMerged:'Merged', tabStats:'Statistics',
+    tabDashboard:'Dashboard', tabMyPrs:'My PRs', tabReviews:'Review Requests', tabMerged:'Merged', tabWorktrees:'Worktrees & Repos', tabStats:'Statistics',
     closeSidebar:'Close panel', openSidebar:'Open panel',
     draft:'draft', noReview:'no review',
     changesRequested:'✗ changes requested', awaitingApproval:'⏳ waiting for approval',
@@ -103,9 +176,82 @@ const I18N={
     stNoEntries:'No entries for this filter.',
     stEntries:n=>`${n} entr${n===1?'y':'ies'}`,
     stShowingOf:(a,b)=>`Showing ${a} of ${b}`,
+    wtFilterRepo:'REPOSITORY', wtFilterStatus:'REPO STATUS', wtFilterSearch:'SEARCH BRANCH / REPO',
+    wtAllRepos:'All repositories (14)', wtAllStates:'All states',
+    wtOutdated:'Outdated (5)', wtWithWorktrees:'With Worktrees (4)',
+    wtWithChanges:'With local changes (2)', wtInConflict:'In conflict (1)',
+    wtSearchPlaceholder:'Filter by name or branch...', wtWorktreeView:'Worktree View',
+    wtClearFilters:'Clear filters', wtExportReport:'Export Report',
+    wtKpiIndexed:'Indexed Repositories', wtKpiWorktrees:'Active Worktrees on Disk',
+    wtKpiPendingUpdates:'Repositories with Pending Updates', wtKpiDiskSpace:'Space Used by Folders',
+    wtLabelRoot:'ROOT:', wtLabelDestination:'DESTINATION:', wtChangeFolder:'Change folder',
+    wtSelected:'2 selected', wtUpdateSelected:'Update Selected to main (2)',
+    wtCheckRemote:'Check remote status',
+    wtUnderConstruction:'Under construction', wtUnderConstructionDesc:'Repository and worktree visualization will be implemented soon.',
+    wtFooterSynced:'14 synchronized repositories', wtFooterSpace:'Space used by worktrees: 3.8 GB',
+    wtFooterEngine:'SSD Hub Engine: 0.14ms',
+    wtPromptRoot:'Enter the root folder path:', wtPromptWorktrees:'Enter the worktrees folder path:',
+    wtPathUpdated:'Path {type} updated: {path}', wtPathTypeRoot:'root', wtPathTypeWorktrees:'destination',
+    menuWorktrees:'Configure Folders', menuRootFolder:'Root repository folder', menuRootFolderDesc:'Set root location',
+    menuWorktreesFolder:'Worktrees folder', menuWorktreesFolderDesc:'Set worktrees destination',
+    wtErrorConfigTitle:'Incomplete Configuration', wtConfigNow:'Configure Now',
+    wtErrorRootPath:'The root repositories folder is not configured.',
+    wtErrorWorktreesPath:'The worktrees destination folder is not configured.',
+    wtErrorRootPathNotFound:'The configured root folder does not exist on the system.',
+    wtErrorWorktreesPathNotFound:'The configured worktrees folder does not exist on the system.',
+    wtBatchSelected:'selected',
+    wtBatchUpdate:'Update Selected',
+    wtBatchDeselect:'Deselect',
+    wtStatRepos:'Indexed Repositories',
+    wtStatWorktrees:'Active Worktrees on Disk',
+    wtStatUpdates:'Repositories with Pending Updates',
+    wtStatDisk:'Space Used by Folders',
+    wtUpdate:'Update',
+    wtCreateWorktree:'+ Worktree',
+    wtOpenVSCode:'VS Code',
+    wtWorktreesLinked:'worktrees',
+    wtCreateFrom:'Create worktree from branch...',
+    wtOpen:'Open',
+    wtTerminal:'Terminal',
+    wtDelete:'Delete',
+    wtNoWorktrees:'No additional worktrees',
+    wtModalCreateTitle:'Create New Worktree',
+    wtModalName:'Worktree Name',
+    wtModalBranch:'Branch',
+    wtModalCreate:'Create Worktree',
+    wtModalCancel:'Cancel',
+    wtToastCreated:'Worktree created successfully!',
+    wtToastDeleted:'Worktree deleted successfully!',
+    wtToastUpdated:'updated successfully!',
+    wtToastError:'Error executing operation',
+    wtConfirmDelete:'Are you sure you want to delete this worktree?',
+    wtConfirmDeleteWarning:'This action cannot be undone.',
+    wtStatusUpdated:'Updated',
+    wtStatusBehind:'commits behind',
+    wtStatusAhead:'ahead of origin',
+    wtStatusConflict:'Conflict / Diverged',
+    wtStatusClean:'Clean',
+    wtStatusUncommitted:'uncommitted file(s)',
+    wtWorktreeCount:'active worktrees',
+    wtWorktreeCount_one:'active worktree',
+    wtSyncStatus:'Local Git Daemon:',
+    wtSyncTime:'sync',
+    settingsTitle:'Settings',
+    settingsSubtitle:'Adjust your preferences',
+    settingsDisplayName:'Display Name',
+    settingsDisplayNameDesc:'Customize your dashboard name',
+    wtSettingsRoot:'Root Folder for Repositories',
+    wtSettingsRootDesc:'Where your repositories are located',
+    wtSettingsWorktrees:'Worktrees Destination Folder',
+    wtSettingsWorktreesDesc:'Where to create new worktrees',
+    menuSectionDashboard:'Dashboard',
+    menuSectionStats:'Statistics',
+    menuSectionWorktrees:'Repos & Worktrees',
+    menuNoSettings:'No settings available',
+    menuWtPolling:'Update interval',
   }
 };
-let currentLang='pt-BR';
+let currentLang='en-US';  // Default to English
 let ghLogin='';
 function t(key,...args){const v=I18N[currentLang]?.[key]??I18N['pt-BR'][key]??key;return typeof v==='function'?v(...args):v}
 function applyI18n(){
@@ -175,16 +321,37 @@ var st_initialized=false;
 function switchView(v){
   currentView=v;
   document.getElementById('view-btn-dashboard').classList.toggle('active',v==='dashboard');
+  document.getElementById('view-btn-worktrees').classList.toggle('active',v==='worktrees');
   document.getElementById('view-btn-stats').classList.toggle('active',v==='stats');
   const content=document.getElementById('content');
   const statsDiv=document.getElementById('view-stats');
+  const worktreesDiv=document.getElementById('view-worktrees');
+  const globalLoading=document.getElementById('loading');
+
   if(v==='dashboard'){
+    stopWorktreesPolling();
     if(statsDiv)statsDiv.style.display='none';
-    if(content&&dataLoaded)content.style.display='';
-  } else {
+    if(worktreesDiv)worktreesDiv.style.display='none';
+    if(content&&dataLoaded){
+      content.style.display='block';
+      if(globalLoading)globalLoading.style.display='none';
+    }
+  } else if(v==='worktrees'){
+    stopWorktreesPolling();
     if(content)content.style.display='none';
+    if(statsDiv)statsDiv.style.display='none';
+    if(worktreesDiv)worktreesDiv.style.display='block';
+    // IMPORTANTE: Esconder loading global ANTES de carregar
+    if(globalLoading)globalLoading.style.display='none';
+    loadWorktreesView();
+  } else {
+    stopWorktreesPolling();
+    if(content)content.style.display='none';
+    if(worktreesDiv)worktreesDiv.style.display='none';
     if(statsDiv){
-      statsDiv.style.display='';
+      statsDiv.style.display='block';
+      // IMPORTANTE: Esconder loading global nas stats também
+      if(globalLoading)globalLoading.style.display='none';
       if(!st_initialized){st_initialized=true;st_syncI18n();buildCharts();loadData();}
     }
   }
@@ -241,7 +408,13 @@ function detectAndNotify(data){
   prevMyNums=new Set(prs.map(p=>p.number));
   prevMergedNums=curMergedNums;
 }
-async function playAudio(src,n){for(let i=0;i<n;i++)await new Promise(r=>{const a=new Audio(src);a.onended=r;a.onerror=r;a.play().catch(r)})}
+async function playAudio(src,n){
+  for(let i=0;i<n;i++){
+    if(i>0)await new Promise(r=>setTimeout(r,300));
+    const a=new Audio(src);
+    await new Promise(r=>{a.onended=r;a.onerror=r;a.play().catch(r);setTimeout(r,5000);});
+  }
+}
 function showNotif(type,pr){
   const d=document.createElement('div');d.className='notif '+type;
   const msg=type==='comment'?`💬 ${currentLang==='en-US'?'New comment on':'Novo comentário em'} #${pr.number}`:`🔴 ${currentLang==='en-US'?'CI failed on':'CI com erro em'} #${pr.number}`;
@@ -329,15 +502,85 @@ function renderNotifHistory(){
     </div>`).join('');
 }
 function clearNotifHistory(){notifHistory.length=0;document.getElementById('tc-notif').textContent='0';renderNotifHistory();}
+
+// Simple toast notification helper (global)
+function pushNotif(message, type = 'info') {
+  const d = document.createElement('div');
+  d.className = 'notif ' + type;
+  d.innerHTML = `<button class="nclose" onclick="this.parentNode.remove()">×</button><div class="ntitle">${e(message)}</div>`;
+  document.getElementById('nstack').prepend(d);
+  setTimeout(() => { if (d.parentNode) d.remove() }, 5000);
+}
+
 function saveInterval(){
   const v=parseInt(document.getElementById('interval-input')?.value||'300');
   if(isNaN(v)||v<30)return;
   fetch('/api/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({intervalSeconds:v})}).catch(()=>{});
   ivSecs=v;cd=v;
 }
-function toggleUserMenu(){const dd=document.getElementById('user-dd');const opening=dd.style.display==='none';dd.style.display=opening?'block':'none';if(opening){const inp=document.getElementById('dname-input');if(inp)inp.value=ghLogin||'';}}
+function toggleUserMenu(){
+  const dd=document.getElementById('user-dd');
+  const opening=dd.style.display==='none';
+  dd.style.display=opening?'block':'none';
+  if(opening){
+    const inp=document.getElementById('dname-input');
+    if(inp)inp.value=ghLogin||'';
+
+    // Atualizar intervalo de polling
+    const wtPollingInput=document.getElementById('wt-polling-input');
+    if(wtPollingInput)wtPollingInput.value=worktreesPollingRate/1000;
+
+    // Atualizar paths configurados no dropdown
+    updateWorktreesPathsDisplay();
+  }
+}
 function closeUserMenu(){const dd=document.getElementById('user-dd');if(dd)dd.style.display='none'}
 document.addEventListener('click',e=>{const w=document.getElementById('user-menu-wrap');if(w&&!w.contains(e.target))closeUserMenu()})
+
+function updateWorktreesPathsDisplay(){
+  const config=loadWorktreesConfig();
+
+  const rootDisplay=document.getElementById('wt-root-path-display');
+  const worktreesDisplay=document.getElementById('wt-worktrees-path-display');
+
+  if(rootDisplay){
+    if(config.rootPath&&config.rootPath!=='C:\\'){
+      rootDisplay.textContent=config.rootPath;
+      rootDisplay.style.color='var(--text)';
+    }else{
+      rootDisplay.textContent=t('wtSettingsRootDesc');
+      rootDisplay.style.color='var(--muted)';
+    }
+  }
+
+  if(worktreesDisplay){
+    if(config.worktreesPath&&config.worktreesPath!=='C:\\'){
+      worktreesDisplay.textContent=config.worktreesPath;
+      worktreesDisplay.style.color='var(--text)';
+    }else{
+      worktreesDisplay.textContent=t('wtSettingsWorktreesDesc');
+      worktreesDisplay.style.color='var(--muted)';
+    }
+  }
+}
+
+window.saveWtPolling=function(){
+  const input=document.getElementById('wt-polling-input');
+  if(!input)return;
+
+  const seconds=parseInt(input.value,10);
+  if(isNaN(seconds)||seconds<60||seconds>3600){
+    alert(currentLang==='pt-BR'?'Intervalo deve ser entre 60 e 3600 segundos':'Interval must be between 60 and 3600 seconds');
+    return;
+  }
+
+  saveWorktreesPollingConfig(seconds);
+
+  const msg=currentLang==='pt-BR'?`Atualização automática a cada ${seconds}s (${Math.floor(seconds/60)}min)`:`Auto-refresh every ${seconds}s (${Math.floor(seconds/60)}min)`;
+  pushNotif(`✅ ${msg}`,'info');
+
+  console.log(`[WORKTREES] Polling configurado para ${seconds}s (${Math.floor(seconds/60)}min)`);
+}
 
 // ── Repo ordering ──────────────────────────────────────────────
 function sortRepos(names){
@@ -883,7 +1126,16 @@ function render(data){
 
   document.getElementById('loading').style.display='none';
   dataLoaded=true;
-  document.getElementById('content').style.display=currentView==='dashboard'?'':'none';
+  if(currentView==='dashboard'){
+    const contentEl=document.getElementById('content');
+    if(contentEl)contentEl.style.display='block';
+  }
+  else if(currentView==='stats'&&st_initialized){
+    document.getElementById('view-stats').style.display='block';
+  }
+  else if(currentView==='worktrees'){
+    document.getElementById('view-worktrees').style.display='block';
+  }
   const pill=document.getElementById('upill');
   if(data.login) ghLogin=data.login;
   if(data.displayName) ghLogin=data.displayName;
@@ -1321,9 +1573,915 @@ function exportMD(){
   const blob=new Blob([md],{type:'text/markdown'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='evolution-report-'+new Date().toISOString().slice(0,10)+'.md';a.click();URL.revokeObjectURL(url);
 }
 
+// ── Worktrees Configuration Management ─────────────────────────
+function loadWorktreesConfig(){
+  const defaultConfig={
+    rootPath:'C:\\',
+    worktreesPath:'C:\\'
+  };
+  const stored=localStorage.getItem('worktreesConfig');
+  return stored?JSON.parse(stored):defaultConfig;
+}
+function saveWorktreesConfig(config){
+  localStorage.setItem('worktreesConfig',JSON.stringify(config));
+  syncWorktreesConfigToBackend(config);
+}
+async function syncWorktreesConfigToBackend(config){
+  try{
+    const response=await fetch('/api/settings',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({worktreesConfig:config})
+    });
+    if(!response.ok){
+      console.warn('Failed to sync worktrees config to backend:',response.statusText);
+    }
+  }catch(err){
+    console.warn('Failed to sync worktrees config to backend:',err);
+  }
+}
+async function loadWorktreesConfigFromBackend(){
+  try{
+    const response=await fetch('/api/config/worktrees');
+    if(response.ok){
+      const config=await response.json();
+      localStorage.setItem('worktreesConfig',JSON.stringify(config));
+      return config;
+    }
+  }catch(err){
+    console.warn('Failed to load worktrees config from backend:',err);
+  }
+  return loadWorktreesConfig();
+}
+function updateWorktreesUI(){
+  const config=loadWorktreesConfig();
+  const rootInfo=document.getElementById('wt-root-path-info');
+  const worktreesInfo=document.getElementById('wt-worktrees-path-info');
+  if(rootInfo)rootInfo.textContent=config.rootPath;
+  if(worktreesInfo)worktreesInfo.textContent=config.worktreesPath;
+}
+
+// Make functions globally available - opens native Windows folder dialog
+window.selectRootPath=async function(){
+  const config=loadWorktreesConfig();
+  const description=currentLang==='en-US'?'Select root folder':'Selecione a pasta raiz';
+
+  try{
+    const response=await fetch('/api/select-folder',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({initialPath:config.rootPath,description:description})
+    });
+
+    if(response.ok){
+      const result=await response.json();
+      if(result.path){
+        config.rootPath=result.path;
+        saveWorktreesConfig(config);
+        updateWorktreesUI();
+        updateWorktreesPathsDisplay();
+        const typeText=currentLang==='en-US'?'root':'raiz';
+        pushNotif(`📁 Caminho ${typeText} atualizado: ${config.rootPath}`,'info');
+      }
+    }
+  }catch(err){
+    console.error('Error selecting folder:',err);
+    pushNotif(currentLang==='en-US'?'❌ Error selecting folder':'❌ Erro ao selecionar pasta','error');
+  }
+}
+
+window.selectWorktreesPath=async function(){
+  const config=loadWorktreesConfig();
+  const description=currentLang==='en-US'?'Select worktrees folder':'Selecione a pasta de worktrees';
+
+  try{
+    const response=await fetch('/api/select-folder',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({initialPath:config.worktreesPath,description:description})
+    });
+
+    if(response.ok){
+      const result=await response.json();
+      if(result.path){
+        config.worktreesPath=result.path;
+        saveWorktreesConfig(config);
+        updateWorktreesUI();
+        updateWorktreesPathsDisplay();
+        const typeText=currentLang==='en-US'?'destination':'destino';
+        pushNotif(`📁 Caminho ${typeText} atualizado: ${config.worktreesPath}`,'info');
+      }
+    }
+  }catch(err){
+    console.error('Error selecting folder:',err);
+    pushNotif(currentLang==='en-US'?'❌ Error selecting folder':'❌ Erro ao selecionar pasta','error');
+  }
+}
+
+// ── Worktrees data state ───────────────────────────────────────
+let worktreesData={
+  repositories:[],
+  stats:{},
+  selectedRepos:new Set(),
+  lastUpdate:null,
+  cacheExpiry:60000 // 1 minuto de cache
+};
+
+// Configuração de polling (padrão: 5 minutos)
+let worktreesPollingInterval=null;
+let worktreesPollingRate=300000; // 5 min default
+
+// Loading states para cada seção
+let worktreesSectionLoading={
+  stats:false,
+  repositories:false,
+  diskSpace:false
+};
+
+// Carregar config de polling do localStorage
+function loadWorktreesPollingConfig(){
+  const stored=localStorage.getItem('worktreesPollingRate');
+  if(stored){
+    worktreesPollingRate=parseInt(stored,10);
+  }
+}
+
+function saveWorktreesPollingConfig(rateInSeconds){
+  worktreesPollingRate=rateInSeconds*1000;
+  localStorage.setItem('worktreesPollingRate',worktreesPollingRate.toString());
+  // Reiniciar polling se já estiver ativo
+  if(worktreesPollingInterval){
+    stopWorktreesPolling();
+    startWorktreesPolling();
+  }
+}
+
+loadWorktreesPollingConfig();
+
+// ── Worktrees multi-selection functions ────────────────────────
+function toggleRepoSelection(repoName){
+  if(worktreesData.selectedRepos.has(repoName)){
+    worktreesData.selectedRepos.delete(repoName);
+  }else{
+    worktreesData.selectedRepos.add(repoName);
+  }
+  updateBatchActionsBar();
+  renderWorktreesList();
+}
+
+function updateBatchActionsBar(){
+  const bar=document.getElementById('wt-batch-actions');
+  if(!bar)return;
+  const count=worktreesData.selectedRepos.size;
+
+  if(count===0){
+    bar.classList.add('hidden');
+    bar.style.display='none';
+    return;
+  }
+
+  bar.classList.remove('hidden');
+  bar.style.display='flex';
+  bar.innerHTML=`
+    <div style="display:flex;align-items:center;gap:10px">
+      <span style="font-size:13px;font-weight:600;color:var(--text)">${count} ${t('wtBatchSelected')}</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <button onclick="updateSelectedRepos()" style="padding:8px 16px;border-radius:10px;background:rgba(180,155,250,0.15);border:1px solid rgba(180,155,250,0.3);color:var(--indigo);font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:6px" onmouseover="this.style.background='rgba(180,155,250,0.25)'" onmouseout="this.style.background='rgba(180,155,250,0.15)'">
+        <svg class="ti" width="14" height="14" style="stroke:currentColor"><use href="/icons.svg#ti-refresh"/></svg>
+        ${t('wtBatchUpdate')}
+      </button>
+      <button onclick="clearSelection()" style="padding:8px 16px;border-radius:10px;background:var(--subtle);border:1px solid var(--border);color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;transition:all .15s" onmouseover="this.style.borderColor='var(--indigo)'" onmouseout="this.style.borderColor='var(--border)'">${t('wtBatchDeselect')}</button>
+    </div>
+  `;
+}
+
+function clearSelection(){
+  worktreesData.selectedRepos.clear();
+  updateBatchActionsBar();
+  renderWorktreesList();
+}
+
+async function updateSelectedRepos(){
+  const selected=Array.from(worktreesData.selectedRepos);
+
+  for(const repoName of selected){
+    const repo=worktreesData.repositories.find(r=>r.name===repoName);
+    if(!repo)continue;
+
+    try{
+      const result=await fetch('/api/worktrees/update',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({repoPath:repo.path})
+      }).then(r=>r.json());
+
+      if(result.success){
+        console.log(`Updated ${repoName}`);
+      }
+    }catch(err){
+      console.error(`Error updating ${repoName}:`,err);
+    }
+  }
+
+  // Recarregar dados
+  await loadWorktreesData();
+}
+
+let worktreesFilters={
+  search:'',
+  status:'all', // 'all', 'outdated', 'with-worktrees', 'uncommitted', 'conflict'
+  selectedRepo:'all'
+};
+
+// ── Worktrees validation and data loading ──────────────────────
+async function loadWorktreesView(){
+  try{
+    // IMPORTANTE: Esconder o loading global que bloqueia tudo
+    const globalLoading=document.getElementById('loading');
+    if(globalLoading){
+      globalLoading.style.display='none';
+      console.log('[WORKTREES] Loading global escondido');
+    }
+
+    const validation=await fetch('/api/config/worktrees/validate').then(r=>r.json());
+    if(!validation.isValid){
+      console.error('[WORKTREES] Config invalid:',validation.errors);
+      showWorktreesConfigError(validation.errors);
+      return;
+    }
+    hideWorktreesConfigError();
+    initWorktreesFilters();
+
+    // Tentar carregar do cache primeiro
+    console.log('[WORKTREES] Tentando carregar cache...');
+    const cacheLoaded=await loadWorktreesFromCache();
+
+    // Carregar dados atualizados em background
+    console.log('[WORKTREES] Carregando dados atualizados...');
+    await loadWorktreesData(!cacheLoaded);
+
+    startWorktreesPolling();
+  }catch(err){
+    console.error('[WORKTREES] Error loading worktrees view:',err);
+    showToast('Erro ao carregar visualização de worktrees','error');
+  }
+}
+
+async function loadWorktreesFromCache(){
+  try{
+    console.log('[WORKTREES] Buscando cache em /api/worktrees/cache...');
+    const response=await fetch('/api/worktrees/cache');
+    const result=await response.json();
+
+    console.log('[WORKTREES] Resposta do cache:',result);
+
+    if(result.cached&&result.data){
+      worktreesData.repositories=result.data.repositories||[];
+      worktreesData.stats=result.data.stats||{};
+      worktreesData.lastUpdate=result.data.lastUpdate||null;
+
+      console.log('[WORKTREES] Cache encontrado!',{
+        repos:worktreesData.repositories.length,
+        stats:worktreesData.stats
+      });
+
+      // Renderizar dados do cache
+      updateWorktreesStats(worktreesData.stats);
+      renderWorktreesList();
+
+      console.log('[WORKTREES] ✅ Cache carregado e renderizado com sucesso');
+      return true;
+    }else{
+      console.log('[WORKTREES] Cache não encontrado ou vazio');
+    }
+  }catch(err){
+    console.error('[WORKTREES] ❌ Erro ao carregar cache:',err);
+  }
+  return false;
+}
+
+async function saveWorktreesCache(){
+  try{
+    const cacheData={
+      repositories:worktreesData.repositories,
+      stats:worktreesData.stats,
+      lastUpdate:worktreesData.lastUpdate,
+      generatedAt:new Date().toISOString()
+    };
+
+    console.log('[WORKTREES] Salvando cache...',{
+      repos:cacheData.repositories.length,
+      stats:cacheData.stats
+    });
+
+    const response=await fetch('/api/worktrees/cache',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(cacheData)
+    });
+
+    const result=await response.json();
+
+    if(result.success){
+      console.log('[WORKTREES] ✅ Cache salvo com sucesso em out/worktrees-cache.json');
+    }else{
+      console.error('[WORKTREES] ❌ Erro ao salvar cache:',result.error);
+    }
+  }catch(err){
+    console.error('[WORKTREES] ❌ Falha ao salvar cache:',err);
+  }
+}
+
+async function loadWorktreesData(showLoading=true){
+  // Verificar cache em memória
+  const now=Date.now();
+  if(!showLoading&&worktreesData.lastUpdate&&(now-worktreesData.lastUpdate)<worktreesData.cacheExpiry){
+    renderWorktreesList();
+    return;
+  }
+
+  try{
+    const validation=await fetch('/api/config/worktrees/validate').then(r=>r.json());
+    if(!validation.isValid){
+      showWorktreesConfigError(validation.errors);
+      return;
+    }
+
+    // Mostrar loading localizado apenas se necessário
+    if(showLoading){
+      setWorktreesLoading('stats',true);
+    }
+
+    // Carregar stats e atualizar IMEDIATAMENTE
+    const stats=await fetch('/api/worktrees/stats').then(r=>r.json());
+    worktreesData.stats=stats;
+    updateWorktreesStats(stats);
+    setWorktreesLoading('stats',false);
+
+    // Carregar repositórios
+    setWorktreesLoading('repositories',true);
+    const repos=await fetch('/api/worktrees/repositories').then(r=>r.json());
+    worktreesData.repositories=repos.repositories;
+
+    // Renderizar lista vazia (com esqueletos/placeholders se necessário)
+    const container=document.getElementById('wt-repos-list');
+    if(container&&showLoading)container.innerHTML='';
+
+    // Carregar worktrees de cada repo EM PARALELO (máximo 5 simultâneos)
+    const BATCH_SIZE=5;
+
+    for(let i=0;i<worktreesData.repositories.length;i+=BATCH_SIZE){
+      const batch=worktreesData.repositories.slice(i,i+BATCH_SIZE);
+
+      await Promise.all(batch.map(async repo=>{
+        try{
+          // Carregar worktrees e status em paralelo
+          const [worktreesResp,statusData]=await Promise.all([
+            fetch(`/api/worktrees/list?repoPath=${encodeURIComponent(repo.path)}`).then(r=>r.json()),
+            fetch(`/api/worktrees/status?repoPath=${encodeURIComponent(repo.path)}`).then(r=>r.json())
+          ]);
+
+          repo.worktrees=worktreesResp.worktrees||[];
+          repo.status=statusData;
+          repo._loaded=true; // Marcar como carregado
+
+          // Atualizar APENAS este card (não re-renderizar tudo)
+          updateSingleRepoCard(repo);
+
+        }catch(err){
+          console.error('[WORKTREES] Error loading',repo.name,':',err);
+          repo.worktrees=[];
+          repo.status={ahead:0,behind:0,hasUncommitted:false,isClean:true};
+          repo._loaded=true;
+          updateSingleRepoCard(repo);
+        }
+      }));
+    }
+
+    // Atualizar timestamp do cache
+    worktreesData.lastUpdate=Date.now();
+    setWorktreesLoading('repositories',false);
+
+    // Salvar cache persistente
+    await saveWorktreesCache();
+
+  }catch(err){
+    console.error('[WORKTREES] Error:',err);
+    setWorktreesLoading('stats',false);
+    setWorktreesLoading('repositories',false);
+    showToast(currentLang==='pt-BR'?'Erro ao carregar dados dos repositórios.':'Error loading repository data.','error');
+  }
+}
+
+function setWorktreesLoading(section,isLoading){
+  worktreesSectionLoading[section]=isLoading;
+
+  const loadingSpinner='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="animation:spin .7s linear infinite"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>';
+
+  if(section==='stats'){
+    const repos=document.getElementById('wt-stat-repos');
+    const worktrees=document.getElementById('wt-stat-worktrees');
+    const updates=document.getElementById('wt-stat-updates');
+    const disk=document.getElementById('wt-stat-disk');
+
+    if(isLoading){
+      if(repos)repos.innerHTML=loadingSpinner;
+      if(worktrees)worktrees.innerHTML=loadingSpinner;
+      if(updates)updates.innerHTML=loadingSpinner;
+      if(disk)disk.innerHTML=loadingSpinner;
+    }
+  }else if(section==='repositories'){
+    const container=document.getElementById('wt-repos-list');
+    if(isLoading&&container&&!container.querySelector('.wt-loading-placeholder')){
+      // Não adicionar placeholder se já houver dados do cache
+      if(worktreesData.repositories.length===0){
+        container.innerHTML=`<div class="wt-loading-placeholder" style="display:flex;align-items:center;justify-content:center;padding:40px;color:var(--muted);font-size:14px;gap:10px">${loadingSpinner} Carregando repositórios...</div>`;
+      }
+    }else if(!isLoading&&container){
+      const placeholder=container.querySelector('.wt-loading-placeholder');
+      if(placeholder)placeholder.remove();
+    }
+  }
+}
+
+function updateWorktreesStats(stats){
+  const repos=document.getElementById('wt-stat-repos');
+  const worktrees=document.getElementById('wt-stat-worktrees');
+  const updates=document.getElementById('wt-stat-updates');
+  const disk=document.getElementById('wt-stat-disk');
+
+  if(repos)repos.textContent=stats.totalRepos||0;
+  if(worktrees)worktrees.textContent=stats.totalWorktrees||0;
+  if(updates)updates.textContent=stats.reposWithUpdates||0;
+  if(disk)disk.textContent=stats.diskSpace||'0 B';
+}
+
+function renderWorktreesList(){
+  // Use applyWorktreesFilters to render with current filters
+  applyWorktreesFilters();
+}
+
+// Atualizar apenas um card específico (incremental)
+function updateSingleRepoCard(repo){
+  const container=document.getElementById('wt-repos-list');
+  if(!container)return;
+
+  // Verificar se card já existe
+  let existingCard=container.querySelector(`[data-repo-name="${repo.name}"]`);
+
+  const newCard=createRepoCard(repo);
+
+  if(existingCard){
+    // Substituir card existente
+    existingCard.replaceWith(newCard);
+  }else{
+    // Adicionar novo card
+    container.appendChild(newCard);
+  }
+}
+
+function createRepoCard(repo){
+  const isSelected=worktreesData.selectedRepos.has(repo.name);
+
+  const card=document.createElement('div');
+  card.style.cssText='background:var(--surf);border-radius:14px;border:1px solid var(--border);overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.2)';
+  card.dataset.repoName=repo.name;
+
+  const hasUpdates=repo.status?.behind>0;
+  const statusBadge=hasUpdates?
+    `<span style="display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:6px;background:rgba(250,179,135,0.15);color:#fab387;border:1px solid rgba(250,179,135,0.3);font-size:11px;font-weight:600">
+       <svg class="ti" width="12" height="12" style="stroke:currentColor"><use href="/icons.svg#ti-arrow-down"/></svg>
+       ${repo.status.behind} ${t('wtStatusBehind')}
+     </span>`:
+    `<span style="display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:6px;background:rgba(166,227,161,0.15);color:#a6e3a1;border:1px solid rgba(166,227,161,0.3);font-size:11px;font-weight:600">
+       <svg class="ti" width="12" height="12" style="stroke:currentColor"><use href="/icons.svg#ti-check"/></svg>
+       ${t('wtStatusUpdated')}
+     </span>`;
+
+  // Contar apenas worktrees adicionais (excluir o principal)
+  const additionalWorktrees=(repo.worktrees||[]).filter(wt=>!wt.isMain);
+  const worktreeCount=additionalWorktrees.length;
+
+  // Pegar branch principal - fallback chain correto
+  const mainWorktree=(repo.worktrees||[]).find(wt=>wt.isMain);
+  const currentBranch=repo.currentBranch||mainWorktree?.branch||'main';
+
+  // Última atualização do repositório (dia e horário)
+  const lastUpdate=repo.lastModified?new Date(repo.lastModified).toLocaleString(currentLang,{
+    day:'2-digit',
+    month:'2-digit',
+    year:'numeric',
+    hour:'2-digit',
+    minute:'2-digit'
+  }):'--';
+
+  // Traduzir worktree count
+  const worktreeLabel=worktreeCount===1?t('wtWorktreeCount_one'):t('wtWorktreeCount');
+
+  card.innerHTML=`
+    <div style="padding:16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer" onclick="toggleRepoExpand('${repo.name}')">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="width:20px;height:20px;border-radius:6px;background:${isSelected?'var(--indigo)':'var(--subtle)'};border:${isSelected?'none':'1px solid var(--border)'};display:flex;align-items:center;justify-content:center;cursor:pointer"
+             onclick="event.stopPropagation();toggleRepoSelection('${repo.name}')">
+          ${isSelected?'<svg class="ti" width="14" height="14" style="stroke:var(--bg)"><use href="/icons.svg#ti-check"/></svg>':''}
+        </div>
+        <div style="width:36px;height:36px;border-radius:10px;background:rgba(180,155,250,0.15);display:flex;align-items:center;justify-content:center">
+          <svg class="ti" width="20" height="20" style="stroke:var(--indigo)"><use href="/icons.svg#ti-folder"/></svg>
+        </div>
+        <div>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:2px">
+            <span style="font-size:14px;font-weight:700;color:var(--text)">${repo.name}</span>
+            <span style="font-size:11px;font-weight:600;color:var(--blue);font-family:monospace;background:rgba(137,220,235,0.15);padding:2px 6px;border-radius:4px">⎇ ${currentBranch}</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;font-size:12px">
+            ${statusBadge}
+            ${worktreeCount>0?`<span style="color:var(--indigo);font-weight:500">${worktreeCount} ${worktreeLabel}</span>`:''}
+            <span style="color:var(--muted);font-size:11px">• ${t('wtStatusUpdated').toLowerCase()} ${lastUpdate}</span>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        ${hasUpdates?`<button style="padding:6px 12px;border-radius:8px;background:rgba(250,179,135,0.15);color:#fab387;border:1px solid rgba(250,179,135,0.3);font-size:11px;font-weight:600;cursor:pointer;transition:all .15s" onclick="event.stopPropagation();updateRepo('${repo.name}')" onmouseover="this.style.background='rgba(250,179,135,0.25)'" onmouseout="this.style.background='rgba(250,179,135,0.15)'">${t('wtUpdate')}</button>`:''}
+        <button style="padding:6px 12px;border-radius:8px;background:rgba(166,227,161,0.15);color:#a6e3a1;border:1px solid rgba(166,227,161,0.3);font-size:11px;font-weight:600;cursor:pointer;transition:all .15s" onclick="event.stopPropagation();showCreateWorktreeModal('${repo.name}')" onmouseover="this.style.background='rgba(166,227,161,0.25)'" onmouseout="this.style.background='rgba(166,227,161,0.15)'">${t('wtCreateWorktree')}</button>
+        <button style="width:32px;height:32px;border-radius:8px;background:var(--subtle);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s" onmouseover="this.style.borderColor='var(--indigo)'" onmouseout="this.style.borderColor='var(--border)'">
+          <svg id="chevron-${repo.name}" class="ti" width="16" height="16" style="stroke:var(--muted);transition:transform .2s"><use href="/icons.svg#ti-chevron-down"/></svg>
+        </button>
+      </div>
+    </div>
+    <div id="wt-expand-${repo.name}" style="display:none;padding:16px 20px;background:var(--bg);border-top:1px solid var(--border)">
+      ${renderWorktrees(repo)}
+    </div>
+  `;
+
+  return card;
+}
+
+function toggleRepoExpand(repoName){
+  const expandEl=document.getElementById(`wt-expand-${repoName}`);
+  const chevron=document.getElementById(`chevron-${repoName}`);
+  if(!expandEl||!chevron)return;
+
+  const repo=worktreesData.repositories.find(r=>r.name===repoName);
+  if(!repo)return;
+
+  // Se não tem worktrees, não expandir
+  const worktrees=(repo.worktrees||[]).filter(wt=>!wt.isMain);
+  if(worktrees.length===0)return;
+
+  const isHidden=expandEl.style.display==='none';
+  expandEl.style.display=isHidden?'block':'none';
+  chevron.style.transform=isHidden?'rotate(180deg)':'rotate(0deg)';
+}
+
+function renderWorktrees(repo){
+  // Filtrar apenas worktrees adicionais (excluir o principal)
+  const worktrees=(repo.worktrees||[]).filter(wt=>!wt.isMain);
+
+  if(worktrees.length===0){
+    return `<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">${t('wtNoWorktrees')}</div>`;
+  }
+
+  return `<div style="display:flex;flex-direction:column;gap:10px">${worktrees.map(wt=>{
+    const wtPath=wt.path||'';
+    const wtName=wtPath.split(/[\\/]/).pop()||wtPath;
+    const branch=wt.branch||repo.currentBranch||'main';
+
+    return `
+      <div style="padding:12px 14px;border-radius:10px;background:var(--surf);border:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;transition:border-color .15s" onmouseover="this.style.borderColor='var(--indigo)'" onmouseout="this.style.borderColor='var(--border)'">
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="width:32px;height:32px;border-radius:8px;background:rgba(137,220,235,0.15);display:flex;align-items:center;justify-content:center">
+            <svg class="ti" width="16" height="16" style="stroke:#89dceb"><use href="/icons.svg#ti-git-branch"/></svg>
+          </div>
+          <div>
+            <div style="font-size:12px;font-weight:600;color:var(--text);font-family:monospace">${wtName}</div>
+            <div style="font-size:11px;color:var(--muted)">${branch}</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px">
+          <button style="padding:5px 10px;border-radius:6px;background:var(--subtle);border:1px solid var(--border);font-size:11px;font-weight:500;color:var(--text);cursor:pointer;transition:all .15s" onclick="openWorktree('${wtPath.replace(/\\/g,'\\\\')}','explorer')" onmouseover="this.style.borderColor='var(--indigo)'" onmouseout="this.style.borderColor='var(--border)'">${t('wtOpen')}</button>
+          <button style="padding:5px 10px;border-radius:6px;background:var(--subtle);border:1px solid var(--border);font-size:11px;font-weight:500;color:var(--text);cursor:pointer;transition:all .15s" onclick="openWorktree('${wtPath.replace(/\\/g,'\\\\')}','terminal')" onmouseover="this.style.borderColor='var(--blue)'" onmouseout="this.style.borderColor='var(--border)'">${t('wtTerminal')}</button>
+          <button style="padding:5px 10px;border-radius:6px;background:rgba(243,139,168,0.15);border:1px solid rgba(243,139,168,0.3);font-size:11px;font-weight:500;color:#f38ba8;cursor:pointer;transition:all .15s" onclick="deleteWorktree('${repo.path.replace(/\\/g,'\\\\')}','${wtPath.replace(/\\/g,'\\\\')}')" onmouseover="this.style.background='rgba(243,139,168,0.25)'" onmouseout="this.style.background='rgba(243,139,168,0.15)'">${t('wtDelete')}</button>
+        </div>
+      </div>
+    `;
+  }).join('')}</div>`;
+}
+
+// ── Worktrees filters ──────────────────────────────────────────
+function applyWorktreesFilters(){
+  const filtered=worktreesData.repositories.filter(repo=>{
+    // Filtro de busca
+    if(worktreesFilters.search&&!repo.name.toLowerCase().includes(worktreesFilters.search.toLowerCase())){
+      return false;
+    }
+
+    // Filtro de status
+    if(worktreesFilters.status==='outdated'&&repo.status?.behind===0)return false;
+    if(worktreesFilters.status==='with-worktrees'&&repo.worktrees.length===0)return false;
+    if(worktreesFilters.status==='uncommitted'&&!repo.status?.hasUncommitted)return false;
+
+    // Filtro de repositório específico
+    if(worktreesFilters.selectedRepo!=='all'&&repo.name!==worktreesFilters.selectedRepo)return false;
+
+    return true;
+  });
+
+  const container=document.getElementById('wt-repos-list');
+  if(!container)return;
+  container.innerHTML='';
+  filtered.forEach(repo=>container.appendChild(createRepoCard(repo)));
+}
+
+// Conectar inputs HTML aos filtros
+function initWorktreesFilters(){
+  const searchInput=document.getElementById('wt-filter-search');
+  const statusSelect=document.getElementById('wt-filter-status');
+  const repoSelect=document.getElementById('wt-filter-repo');
+
+  if(searchInput){
+    searchInput.addEventListener('input',(e)=>{
+      worktreesFilters.search=e.target.value;
+      applyWorktreesFilters();
+    });
+  }
+
+  if(statusSelect){
+    statusSelect.addEventListener('change',(e)=>{
+      worktreesFilters.status=e.target.value;
+      applyWorktreesFilters();
+    });
+  }
+
+  if(repoSelect){
+    repoSelect.addEventListener('change',(e)=>{
+      worktreesFilters.selectedRepo=e.target.value;
+      applyWorktreesFilters();
+    });
+  }
+}
+
+function showWorktreesError(message){
+  console.error(message);
+  showToast(message,'error');
+}
+
+// Loading removido - agora é progressivo por card
+
+function showWorktreesConfigError(errors){
+  const errorMessages={
+    rootPath:t('wtErrorRootPath'),
+    worktreesPath:t('wtErrorWorktreesPath'),
+    rootPathNotFound:t('wtErrorRootPathNotFound'),
+    worktreesPathNotFound:t('wtErrorWorktreesPathNotFound')
+  };
+  const messages=errors.map(e=>errorMessages[e]||e);
+  const banner=document.getElementById('wt-error-banner');
+  if(!banner)return;
+  banner.innerHTML=`
+    <div class="bg-app-rose/20 border border-app-rose/40 rounded-xl p-4">
+      <div class="flex items-center gap-2 text-app-rose font-semibold mb-2">
+        <svg class="ti ti-alert-triangle w-5 h-5"><use href="/icons.svg#ti-alert-triangle"/></svg>
+        <span data-i18n="wtErrorConfigTitle">${t('wtErrorConfigTitle')}</span>
+      </div>
+      <ul class="text-sm text-app-text-main space-y-1 ml-6">
+        ${messages.map(m=>`<li>• ${m}</li>`).join('')}
+      </ul>
+      <button onclick="toggleUserMenu()" class="mt-3 px-3 py-1.5 bg-app-purple rounded-lg text-sm font-semibold">
+        <span data-i18n="wtConfigNow">${t('wtConfigNow')}</span>
+      </button>
+    </div>
+  `;
+  banner.classList.remove('hidden');
+  const mainContent=document.getElementById('wt-main-content');
+  if(mainContent)mainContent.classList.add('hidden');
+}
+
+function hideWorktreesConfigError(){
+  const banner=document.getElementById('wt-error-banner');
+  if(banner)banner.classList.add('hidden');
+  const mainContent=document.getElementById('wt-main-content');
+  if(mainContent)mainContent.classList.remove('hidden');
+}
+
+// ── Individual Repository Actions ──────────────────────────────
+async function updateRepo(repoName){
+  const repo=worktreesData.repositories.find(r=>r.name===repoName);
+  if(!repo){
+    showToast(currentLang==='pt-BR'?'Repositório não encontrado':'Repository not found','error');
+    return;
+  }
+
+  // loading removed
+  try{
+    const result=await fetch('/api/worktrees/update',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({repoPath:repo.path})
+    }).then(r=>r.json());
+
+    if(result.success){
+      showToast(`${repoName} ${t('wtToastUpdated')}`,'success');
+      await loadWorktreesData();
+    }else{
+      showToast(`${currentLang==='pt-BR'?'Erro ao atualizar':'Error updating'} ${repoName}: ${result.error}`,'error');
+    }
+  }catch(err){
+    console.error('Error updating repo:',err);
+    showToast(`${currentLang==='pt-BR'?'Erro ao atualizar':'Error updating'} ${repoName}`,'error');
+  }finally{
+    // loading removed
+  }
+}
+
+async function openRepoVSCode(repoName){
+  const repo=worktreesData.repositories.find(r=>r.name===repoName);
+  if(!repo){
+    showToast(currentLang==='pt-BR'?'Repositório não encontrado':'Repository not found','error');
+    return;
+  }
+
+  try{
+    await fetch('/api/worktrees/open',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({path:repo.path,action:'vscode'})
+    });
+  }catch(err){
+    console.error('Error opening VS Code:',err);
+    showToast(currentLang==='pt-BR'?'Erro ao abrir VS Code':'Error opening VS Code','error');
+  }
+}
+
+// ── Worktree Actions ───────────────────────────────────────────
+async function openWorktree(worktreePath,action){
+  try{
+    await fetch('/api/worktrees/open',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({path:worktreePath,action})
+    });
+  }catch(err){
+    console.error('Error opening worktree:',err);
+    showToast(`${currentLang==='pt-BR'?'Erro ao abrir':'Error opening'} ${action}`,'error');
+  }
+}
+
+async function deleteWorktree(repoPath,worktreePath){
+  const confirmMsg=currentLang==='pt-BR'
+    ?`Tem certeza que deseja excluir a worktree?\n\n${worktreePath}\n\nEsta ação não pode ser desfeita.`
+    :`Are you sure you want to delete this worktree?\n\n${worktreePath}\n\nThis action cannot be undone.`;
+
+  if(!confirm(confirmMsg)){
+    return;
+  }
+
+  // loading removed
+  try{
+    const result=await fetch('/api/worktrees/delete',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({repoPath,worktreePath})
+    }).then(r=>r.json());
+
+    if(result.success){
+      showToast(currentLang==='pt-BR'?'Worktree excluída com sucesso!':'Worktree deleted successfully!','success');
+      await loadWorktreesData();
+    }else{
+      showToast(`${currentLang==='pt-BR'?'Erro ao excluir worktree':'Error deleting worktree'}: ${result.error}`,'error');
+    }
+  }catch(err){
+    console.error('Error deleting worktree:',err);
+    showToast(currentLang==='pt-BR'?'Erro ao excluir worktree':'Error deleting worktree','error');
+  }finally{
+    // loading removed
+  }
+}
+
+function showToast(message,type='info'){
+  const colors={
+    success:'bg-app-green/20 border-app-green text-app-green',
+    error:'bg-app-rose/20 border-app-rose text-app-rose',
+    info:'bg-app-blue/20 border-app-blue text-app-blue'
+  };
+
+  const toast=document.createElement('div');
+  toast.className=`fixed bottom-6 right-6 px-4 py-3 rounded-xl border ${colors[type]} z-50 shadow-lg`;
+  toast.textContent=message;
+
+  document.body.appendChild(toast);
+
+  setTimeout(()=>{
+    toast.remove();
+  },3000);
+}
+
+// ── Create Worktree Modal ──────────────────────────────────────
+function showCreateWorktreeModal(repoName){
+  const repo=worktreesData.repositories.find(r=>r.name===repoName);
+  if(!repo)return;
+
+  const modalHtml=`
+    <div id="wt-create-modal" class="fixed inset-0 bg-black/60 flex items-center justify-center z-50" onclick="closeCreateWorktreeModal()">
+      <div class="bg-app-card rounded-2xl border border-app-border p-6 max-w-md w-full" onclick="event.stopPropagation()">
+        <h3 class="text-lg font-bold text-white mb-4">Criar Nova Worktree</h3>
+        <div class="space-y-3">
+          <div>
+            <label class="text-xs text-app-text-muted font-semibold">Nome da Worktree</label>
+            <input id="wt-name-input" type="text" class="w-full bg-[#181926] border border-app-border rounded-xl px-3 py-2 text-sm text-white" placeholder="feat-new-feature" />
+          </div>
+          <div>
+            <label class="text-xs text-app-text-muted font-semibold">Branch</label>
+            <input id="wt-branch-input" type="text" class="w-full bg-[#181926] border border-app-border rounded-xl px-3 py-2 text-sm text-white" placeholder="main" value="${repo.currentBranch}" />
+          </div>
+        </div>
+        <div class="flex items-center gap-2 mt-6">
+          <button class="flex-1 px-4 py-2 rounded-xl bg-app-purple text-[#181926] font-bold text-sm" onclick="createWorktree('${repoName}')">
+            Criar Worktree
+          </button>
+          <button class="px-4 py-2 rounded-xl bg-[#181926] border border-app-border text-sm" onclick="closeCreateWorktreeModal()">
+            Cancelar
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.body.insertAdjacentHTML('beforeend',modalHtml);
+}
+
+function closeCreateWorktreeModal(){
+  const modal=document.getElementById('wt-create-modal');
+  if(modal)modal.remove();
+}
+
+async function createWorktree(repoName){
+  const repo=worktreesData.repositories.find(r=>r.name===repoName);
+  if(!repo){
+    showToast(currentLang==='pt-BR'?'Repositório não encontrado':'Repository not found','error');
+    return;
+  }
+
+  const name=document.getElementById('wt-name-input').value.trim();
+  const branch=document.getElementById('wt-branch-input').value.trim();
+
+  if(!name||!branch){
+    showToast(currentLang==='pt-BR'?'Preencha nome e branch':'Fill in name and branch','error');
+    return;
+  }
+
+  // loading removed
+  try{
+    const result=await fetch('/api/worktrees/create',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({repoPath:repo.path,worktreeName:name,branch})
+    }).then(r=>r.json());
+
+    if(result.success){
+      showToast(currentLang==='pt-BR'?'Worktree criada com sucesso!':'Worktree created successfully!','success');
+      closeCreateWorktreeModal();
+      await loadWorktreesData();
+    }else{
+      showToast(`${currentLang==='pt-BR'?'Erro ao criar worktree':'Error creating worktree'}: ${result.error}`,'error');
+    }
+  }catch(err){
+    console.error('Error creating worktree:',err);
+    showToast(currentLang==='pt-BR'?'Erro ao criar worktree':'Error creating worktree','error');
+  }finally{
+    // loading removed
+  }
+}
+
+// ── Worktrees Polling (Step 17) ────────────────────────────────
+function startWorktreesPolling(){
+  if(worktreesPollingInterval)return;
+
+  console.log(`[WORKTREES] Iniciando polling a cada ${worktreesPollingRate/1000}s`);
+
+  worktreesPollingInterval=setInterval(async()=>{
+    if(currentView!=='worktrees'){
+      stopWorktreesPolling();
+      return;
+    }
+
+    console.log('[WORKTREES] Atualizando dados em background...');
+    await loadWorktreesData(false); // Atualização silenciosa (sem loading indicators)
+  },worktreesPollingRate);
+}
+
+function stopWorktreesPolling(){
+  if(worktreesPollingInterval){
+    console.log('[WORKTREES] Parando polling');
+    clearInterval(worktreesPollingInterval);
+    worktreesPollingInterval=null;
+  }
+}
+
 // Init i18n immediately with cached lang
 applyI18n();
 updateNotifPrefButtons();
 document.getElementById('vbtn-repo')?.classList.toggle('active',myPrsView==='repo');
 document.getElementById('vbtn-status')?.classList.toggle('active',myPrsView==='status');
+loadWorktreesConfigFromBackend().then(updateWorktreesUI);
 go();

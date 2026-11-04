@@ -35,12 +35,142 @@ public class WebServer(PrsDataService dataService, AppConfig config, Notificatio
 
         var app = builder.Build();
 
-        app.MapGet("/", () =>
-            Results.Content(WebAssets.Html, "text/html; charset=utf-8"));
+        app.MapGet("/", (HttpContext ctx) =>
+        {
+            // No cache for HTML - always fetch fresh
+            ctx.Response.Headers.CacheControl = "no-cache, no-store, must-revalidate";
+            ctx.Response.Headers.Pragma = "no-cache";
+            ctx.Response.Headers.Expires = "0";
+            return Results.Content(WebAssets.Html, "text/html; charset=utf-8");
+        });
 
-        app.MapGet("/app.css",   () => Results.Content(WebAssets.Css,   "text/css; charset=utf-8"));
-        app.MapGet("/app.js",    () => Results.Content(WebAssets.Js,    "application/javascript; charset=utf-8"));
-        app.MapGet("/icons.svg", () => Results.Content(WebAssets.Icons, "image/svg+xml; charset=utf-8"));
+        app.MapGet("/app.css", (HttpContext ctx) =>
+        {
+            var content = WebAssets.Css;
+            ctx.Response.Headers.CacheControl = "no-cache, no-store, must-revalidate";
+            ctx.Response.Headers.Pragma = "no-cache";
+            ctx.Response.Headers.Expires = "0";
+            return Results.Content(content, "text/css; charset=utf-8");
+        });
+
+        app.MapGet("/app.js", (HttpContext ctx) =>
+        {
+            var content = WebAssets.Js;
+            ctx.Response.Headers.CacheControl = "no-cache, no-store, must-revalidate";
+            ctx.Response.Headers.Pragma = "no-cache";
+            ctx.Response.Headers.Expires = "0";
+            return Results.Content(content, "application/javascript; charset=utf-8");
+        });
+
+        app.MapGet("/icons.svg", (HttpContext ctx) =>
+        {
+            var content = WebAssets.Icons;
+            ctx.Response.Headers.CacheControl = "public, max-age=86400"; // 24 hours for SVG
+            ctx.Response.Headers.ETag = $"\"{content.GetHashCode():X}\"";
+            return Results.Content(content, "image/svg+xml; charset=utf-8");
+        });
+
+        // Helper to serve embedded resources with caching
+        IResult ServeEmbedded(HttpContext ctx, string resourcePath, string contentType, bool enableCache = true)
+        {
+            var assembly = typeof(WebAssets).Assembly;
+            var fullPath = $"PrDashboard.Web.{resourcePath.Replace("/", ".")}";
+            using var stream = assembly.GetManifestResourceStream(fullPath);
+            if (stream == null) return Results.NotFound();
+            using var reader = new StreamReader(stream);
+            var content = reader.ReadToEnd();
+
+            // Minification disabled - preserves original formatting and prevents syntax errors
+            // if (contentType.Contains("css") || contentType.Contains("javascript"))
+            // {
+            //     content = MinifyContent(content, contentType.Contains("css"));
+            // }
+
+            // Add cache headers for static assets
+            if (enableCache)
+            {
+                ctx.Response.Headers.CacheControl = "public, max-age=3600"; // 1 hour cache
+                ctx.Response.Headers.ETag = $"\"{content.GetHashCode():X}\"";
+            }
+            else
+            {
+                ctx.Response.Headers.CacheControl = "no-cache, no-store, must-revalidate";
+            }
+
+            return Results.Content(content, contentType);
+        }
+
+        // Basic minification: remove comments and extra whitespace
+        static string MinifyContent(string content, bool isCss)
+        {
+            if (string.IsNullOrEmpty(content)) return content;
+
+            // Remove single-line comments (// ...) but NOT in strings or URLs
+            // Match // at beginning of line or after whitespace, but not after : (for URLs like http://)
+            content = System.Text.RegularExpressions.Regex.Replace(
+                content,
+                @"(^|\s)//.*?(?=\r?\n|$)",
+                "$1",
+                System.Text.RegularExpressions.RegexOptions.Multiline
+            );
+
+            // Remove multi-line comments (/* ... */) preserving line structure
+            content = System.Text.RegularExpressions.Regex.Replace(
+                content,
+                @"/\*[\s\S]*?\*/",
+                " "
+            );
+
+            // Remove extra whitespace (multiple spaces/tabs/newlines to single space)
+            content = System.Text.RegularExpressions.Regex.Replace(
+                content,
+                @"\s+",
+                " "
+            );
+
+            // Remove whitespace around CSS/JS operators (optional, for more aggressive minification)
+            if (isCss)
+            {
+                content = System.Text.RegularExpressions.Regex.Replace(content, @"\s*([{}:;,])\s*", "$1");
+            }
+
+            return content.Trim();
+        }
+
+        // Serve modular CSS files
+        app.MapGet("/css/{file}", (HttpContext ctx, string file) =>
+        {
+            if (!file.EndsWith(".css", StringComparison.OrdinalIgnoreCase)) return Results.NotFound();
+            return ServeEmbedded(ctx, $"css.{file}", "text/css; charset=utf-8");
+        });
+
+        // Serve modular JS files
+        app.MapGet("/js/{file}", (HttpContext ctx, string file) =>
+        {
+            if (!file.EndsWith(".js", StringComparison.OrdinalIgnoreCase)) return Results.NotFound();
+            return ServeEmbedded(ctx, $"js.{file}", "application/javascript; charset=utf-8");
+        });
+
+        // Serve JS component files
+        app.MapGet("/js/components/{file}", (HttpContext ctx, string file) =>
+        {
+            if (!file.EndsWith(".js", StringComparison.OrdinalIgnoreCase)) return Results.NotFound();
+            return ServeEmbedded(ctx, $"js.components.{file}", "application/javascript; charset=utf-8");
+        });
+
+        // Serve JS view files
+        app.MapGet("/js/views/{file}", (HttpContext ctx, string file) =>
+        {
+            if (!file.EndsWith(".js", StringComparison.OrdinalIgnoreCase)) return Results.NotFound();
+            return ServeEmbedded(ctx, $"js.views.{file}", "application/javascript; charset=utf-8");
+        });
+
+        // Serve HTML view templates (no cache for HTML views)
+        app.MapGet("/views/{file}", (HttpContext ctx, string file) =>
+        {
+            if (!file.EndsWith(".html", StringComparison.OrdinalIgnoreCase)) return Results.NotFound();
+            return ServeEmbedded(ctx, $"views.{file}", "text/html; charset=utf-8", enableCache: false);
+        });
 
         app.MapGet("/api/stats/logs", async () =>
         {
@@ -89,6 +219,316 @@ public class WebServer(PrsDataService dataService, AppConfig config, Notificatio
             return Results.Json(data, JsonOpts);
         });
 
+        app.MapGet("/api/config/worktrees", () =>
+        {
+            var wtConfig = config.WorktreesConfig ?? new WorktreesConfig();
+            return Results.Json(new { rootPath = wtConfig.RootPath, worktreesPath = wtConfig.WorktreesPath }, JsonOpts);
+        });
+
+        app.MapGet("/api/worktrees/status", async (HttpContext ctx) =>
+        {
+            var repoPath = ctx.Request.Query["repoPath"].ToString();
+
+            if (string.IsNullOrEmpty(repoPath) || !Directory.Exists(repoPath))
+                return Results.Json(new { status = "unknown" }, JsonOpts);
+
+            var psi = new ProcessStartInfo
+            {
+                FileName = "git",
+                Arguments = "status -sb --porcelain",
+                WorkingDirectory = repoPath,
+                RedirectStandardOutput = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
+
+            var process = Process.Start(psi);
+            if (process == null)
+                return Results.Json(new { status = "error" }, JsonOpts);
+
+            var output = await process.StandardOutput.ReadToEndAsync();
+            await process.WaitForExitAsync();
+
+            if (process.ExitCode != 0)
+                return Results.Json(new { status = "error" }, JsonOpts);
+
+            var firstLine = output.Split('\n').FirstOrDefault() ?? "";
+            var ahead = 0;
+            var behind = 0;
+            var hasUncommitted = output.Split('\n').Length > 1;
+
+            if (firstLine.Contains("[ahead "))
+            {
+                var match = System.Text.RegularExpressions.Regex.Match(firstLine, @"ahead (\d+)");
+                if (match.Success) ahead = int.Parse(match.Groups[1].Value);
+            }
+
+            if (firstLine.Contains("behind "))
+            {
+                var match = System.Text.RegularExpressions.Regex.Match(firstLine, @"behind (\d+)");
+                if (match.Success) behind = int.Parse(match.Groups[1].Value);
+            }
+
+            return Results.Json(new { ahead, behind, hasUncommitted, isClean = !hasUncommitted && ahead == 0 }, JsonOpts);
+        });
+
+        app.MapGet("/api/worktrees/list", async (HttpContext ctx) =>
+        {
+            var repoPath = ctx.Request.Query["repoPath"].ToString();
+
+            if (string.IsNullOrEmpty(repoPath) || !Directory.Exists(repoPath))
+                return Results.Json(new { worktrees = new List<object>() });
+
+            var psi = new ProcessStartInfo
+            {
+                FileName = "git",
+                Arguments = "worktree list --porcelain",
+                WorkingDirectory = repoPath,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
+
+            var process = Process.Start(psi);
+            var output = await process!.StandardOutput.ReadToEndAsync();
+            await process.WaitForExitAsync();
+
+            if (process.ExitCode != 0)
+                return Results.Json(new { worktrees = new List<object>(), error = true });
+
+            var worktrees = new List<object>();
+            var lines = output.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+
+            object? current = null;
+            foreach (var line in lines)
+            {
+                if (line.StartsWith("worktree "))
+                {
+                    if (current != null) worktrees.Add(current);
+                    current = new { path = line.Replace("worktree ", "").Trim(), branch = "", head = "", isMain = false };
+                }
+                else if (line.StartsWith("branch "))
+                {
+                    var branch = line.Replace("branch ", "").Replace("refs/heads/", "").Trim();
+                    current = new { ((dynamic)current!).path, branch, ((dynamic)current).head, ((dynamic)current).isMain };
+                }
+                else if (line.StartsWith("HEAD "))
+                {
+                    var head = line.Replace("HEAD ", "").Trim();
+                    current = new { ((dynamic)current!).path, ((dynamic)current).branch, head, ((dynamic)current).isMain };
+                }
+                else if (line == "bare")
+                {
+                    current = new { ((dynamic)current!).path, ((dynamic)current).branch, ((dynamic)current).head, isMain = true };
+                }
+            }
+            if (current != null) worktrees.Add(current);
+
+            return Results.Json(new { worktrees });
+        });
+
+        app.MapGet("/api/config/worktrees/validate", () =>
+        {
+            var wt = config.WorktreesConfig;
+            var errors = new List<string>();
+
+            if (string.IsNullOrWhiteSpace(wt?.RootPath) || wt.RootPath == "C:\\")
+                errors.Add("rootPath");
+
+            if (string.IsNullOrWhiteSpace(wt?.WorktreesPath) || wt.WorktreesPath == "C:\\")
+                errors.Add("worktreesPath");
+
+            if (!string.IsNullOrEmpty(wt?.RootPath) && wt.RootPath != "C:\\" && !Directory.Exists(wt.RootPath))
+                errors.Add("rootPathNotFound");
+
+            if (!string.IsNullOrEmpty(wt?.WorktreesPath) && wt.WorktreesPath != "C:\\" && !Directory.Exists(wt.WorktreesPath))
+                errors.Add("worktreesPathNotFound");
+
+            return Results.Json(new { isValid = errors.Count == 0, errors }, JsonOpts);
+        });
+
+        app.MapPost("/api/worktrees/delete", async (HttpContext ctx) =>
+        {
+            using var reader = new System.IO.StreamReader(ctx.Request.Body);
+            var json = await reader.ReadToEndAsync();
+            var body = JsonSerializer.Deserialize<JsonElement>(json);
+            var repoPath = body.TryGetProperty("repoPath", out var rp) ? rp.GetString() : null;
+            var worktreePath = body.TryGetProperty("worktreePath", out var wp) ? wp.GetString() : null;
+
+            if (string.IsNullOrEmpty(repoPath) || string.IsNullOrEmpty(worktreePath))
+                return Results.Json(new { success = false, error = "invalidParams" }, JsonOpts);
+
+            var psi = new ProcessStartInfo
+            {
+                FileName = "git",
+                Arguments = $"worktree remove \"{worktreePath}\" --force",
+                WorkingDirectory = repoPath,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
+
+            var process = Process.Start(psi);
+            if (process != null)
+            {
+                await process.WaitForExitAsync();
+
+                // Se falhar via git, tentar excluir pasta diretamente
+                if (process.ExitCode != 0 && Directory.Exists(worktreePath))
+                {
+                    try { Directory.Delete(worktreePath, true); }
+                    catch { return Results.Json(new { success = false, error = "cannotDelete" }, JsonOpts); }
+                }
+            }
+
+            return Results.Json(new { success = true }, JsonOpts);
+        });
+
+        app.MapGet("/api/worktrees/repositories", async (HttpContext ctx) =>
+        {
+            var rootPath = config.WorktreesConfig?.RootPath;
+
+            if (string.IsNullOrEmpty(rootPath) || !Directory.Exists(rootPath))
+                return Results.Json(new { repositories = new List<object>() }, JsonOpts);
+
+            var repos = new List<object>();
+
+            foreach (var dir in Directory.GetDirectories(rootPath))
+            {
+                var gitDir = Path.Combine(dir, ".git");
+                if (!Directory.Exists(gitDir) && !File.Exists(gitDir)) continue;
+
+                var repoName = Path.GetFileName(dir);
+
+                // Obter branch atual
+                var headFile = Path.Combine(dir, ".git", "HEAD");
+                var currentBranch = "unknown";
+                if (File.Exists(headFile))
+                {
+                    var headContent = await File.ReadAllTextAsync(headFile);
+                    if (headContent.StartsWith("ref: refs/heads/"))
+                        currentBranch = headContent.Replace("ref: refs/heads/", "").Trim();
+                }
+
+                repos.Add(new
+                {
+                    name = repoName,
+                    path = dir,
+                    currentBranch,
+                    lastModified = Directory.GetLastWriteTime(dir)
+                });
+            }
+
+            return Results.Json(new { repositories = repos.OrderBy(r => ((dynamic)r).name) }, JsonOpts);
+        });
+
+        app.MapGet("/api/worktrees/cache", async () =>
+        {
+            var outDir = Path.GetFullPath(config.OutputDir);
+            var cachePath = Path.Combine(outDir, "worktrees-cache.json");
+
+            if (!File.Exists(cachePath))
+                return Results.Json(new { cached = false }, JsonOpts);
+
+            try
+            {
+                var json = await File.ReadAllTextAsync(cachePath);
+                var data = JsonSerializer.Deserialize<JsonElement>(json);
+                return Results.Json(new { cached = true, data }, JsonOpts);
+            }
+            catch
+            {
+                return Results.Json(new { cached = false }, JsonOpts);
+            }
+        });
+
+        app.MapPost("/api/worktrees/cache", async (HttpContext ctx) =>
+        {
+            using var reader = new System.IO.StreamReader(ctx.Request.Body);
+            var json = await reader.ReadToEndAsync();
+
+            var outDir = Path.GetFullPath(config.OutputDir);
+            var cachePath = Path.Combine(outDir, "worktrees-cache.json");
+
+            try
+            {
+                await File.WriteAllTextAsync(cachePath, json);
+                return Results.Json(new { success = true }, JsonOpts);
+            }
+            catch (Exception ex)
+            {
+                return Results.Json(new { success = false, error = ex.Message }, JsonOpts);
+            }
+        });
+
+        app.MapGet("/api/worktrees/stats", async (HttpContext ctx) =>
+        {
+            var rootPath = config.WorktreesConfig?.RootPath;
+            var worktreesPath = config.WorktreesConfig?.WorktreesPath;
+
+            if (string.IsNullOrEmpty(rootPath) || !Directory.Exists(rootPath))
+                return Results.Json(new { totalRepos = 0, totalWorktrees = 0, diskSpace = "0 B", reposWithUpdates = 0 }, JsonOpts);
+
+            var repos = Directory.GetDirectories(rootPath)
+                .Where(d => Directory.Exists(Path.Combine(d, ".git")) || File.Exists(Path.Combine(d, ".git")))
+                .ToList();
+
+            var totalRepos = repos.Count;
+            var totalWorktrees = 0;
+            var reposWithUpdates = 0;
+
+            foreach (var repo in repos)
+            {
+                var psi = new ProcessStartInfo
+                {
+                    FileName = "git",
+                    Arguments = "worktree list --porcelain",
+                    WorkingDirectory = repo,
+                    RedirectStandardOutput = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true
+                };
+
+                var process = Process.Start(psi);
+                if (process != null)
+                {
+                    var output = await process.StandardOutput.ReadToEndAsync();
+                    await process.WaitForExitAsync();
+
+                    if (process.ExitCode == 0)
+                    {
+                        var count = output.Split("worktree ", StringSplitOptions.RemoveEmptyEntries).Length - 1;
+                        totalWorktrees += Math.Max(0, count - 1); // -1 para não contar o repo principal
+                    }
+                }
+            }
+
+            long diskSpaceBytes = 0;
+            if (!string.IsNullOrEmpty(worktreesPath) && Directory.Exists(worktreesPath))
+            {
+                var di = new DirectoryInfo(worktreesPath);
+                diskSpaceBytes = di.EnumerateFiles("*", SearchOption.AllDirectories).Sum(f => f.Length);
+            }
+
+            var diskSpaceStr = diskSpaceBytes switch
+            {
+                < 1024 => $"{diskSpaceBytes} B",
+                < 1024 * 1024 => $"{diskSpaceBytes / 1024.0:F1} KB",
+                < 1024 * 1024 * 1024 => $"{diskSpaceBytes / (1024.0 * 1024):F1} MB",
+                _ => $"{diskSpaceBytes / (1024.0 * 1024 * 1024):F1} GB"
+            };
+
+            return Results.Json(new
+            {
+                totalRepos,
+                totalWorktrees,
+                diskSpace = diskSpaceStr,
+                reposWithUpdates
+            }, JsonOpts);
+        });
+
         app.MapPost("/api/refresh", async () =>
         {
             await dataService.RefreshAsync(ct);
@@ -123,6 +563,12 @@ public class WebServer(PrsDataService dataService, AppConfig config, Notificatio
             if (body.IntervalSeconds is int iv && iv >= 30 && iv <= 3600) config.IntervalSeconds = iv;
             if (body.HideBotReviews is not null) config.HideBotReviews = body.HideBotReviews.Value;
             if (body.DisplayName is not null) config.DisplayName = body.DisplayName.Length > 0 ? body.DisplayName : null;
+            if (body.WorktreesConfig is not null)
+            {
+                config.WorktreesConfig ??= new WorktreesConfig();
+                if (body.WorktreesConfig.RootPath is not null) config.WorktreesConfig.RootPath = body.WorktreesConfig.RootPath;
+                if (body.WorktreesConfig.WorktreesPath is not null) config.WorktreesConfig.WorktreesPath = body.WorktreesConfig.WorktreesPath;
+            }
 
             dataService.RemapCached(config.Language);
 
@@ -184,6 +630,181 @@ public class WebServer(PrsDataService dataService, AppConfig config, Notificatio
             }
         });
 
+        app.MapPost("/api/worktrees/create", async (HttpContext ctx) =>
+        {
+            var body = await ctx.Request.ReadFromJsonAsync<JsonElement>();
+            var repoPath = body.GetProperty("repoPath").GetString();
+            var branch = body.GetProperty("branch").GetString();
+            var worktreeName = body.GetProperty("worktreeName").GetString();
+
+            var worktreesBasePath = config.WorktreesConfig?.WorktreesPath;
+
+            if (string.IsNullOrEmpty(repoPath) || string.IsNullOrEmpty(branch) || string.IsNullOrEmpty(worktreesBasePath))
+                return Results.Json(new { success = false, error = "invalidParams" });
+
+            var repoName = Path.GetFileName(repoPath);
+            var worktreeFullPath = Path.Combine(worktreesBasePath, repoName, worktreeName!);
+
+            var psi = new ProcessStartInfo
+            {
+                FileName = "git",
+                Arguments = $"worktree add \"{worktreeFullPath}\" {branch}",
+                WorkingDirectory = repoPath,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
+
+            var process = Process.Start(psi);
+            var output = await process!.StandardOutput.ReadToEndAsync();
+            var error = await process.StandardError.ReadToEndAsync();
+            await process.WaitForExitAsync();
+
+            if (process.ExitCode != 0)
+                return Results.Json(new { success = false, error = error });
+
+            return Results.Json(new { success = true, path = worktreeFullPath });
+        });
+
+        app.MapPost("/api/worktrees/open", async (HttpContext ctx) =>
+        {
+            var body = await ctx.Request.ReadFromJsonAsync<JsonElement>();
+            var path = body.GetProperty("path").GetString();
+            var action = body.GetProperty("action").GetString(); // "explorer", "terminal", "vscode"
+
+            if (string.IsNullOrEmpty(path) || !Directory.Exists(path))
+                return Results.Json(new { success = false, error = "invalidPath" }, JsonOpts);
+
+            try
+            {
+                if (action == "explorer")
+                {
+                    Process.Start(new ProcessStartInfo
+                    {
+                        FileName = "explorer.exe",
+                        Arguments = $"\"{path}\"",
+                        UseShellExecute = true
+                    });
+                }
+                else if (action == "terminal")
+                {
+                    Process.Start(new ProcessStartInfo
+                    {
+                        FileName = "cmd.exe",
+                        Arguments = $"/K cd /d \"{path}\"",
+                        UseShellExecute = true
+                    });
+                }
+                else if (action == "vscode")
+                {
+                    Process.Start(new ProcessStartInfo
+                    {
+                        FileName = "code",
+                        Arguments = $"\"{path}\"",
+                        UseShellExecute = true
+                    });
+                }
+                else
+                {
+                    return Results.Json(new { success = false, error = "invalidAction" }, JsonOpts);
+                }
+
+                return Results.Json(new { success = true }, JsonOpts);
+            }
+            catch (Exception ex)
+            {
+                return Results.Json(new { success = false, error = ex.Message }, JsonOpts);
+            }
+        });
+
+        app.MapPost("/api/worktrees/update", async (HttpContext ctx) =>
+        {
+            using var reader = new System.IO.StreamReader(ctx.Request.Body);
+            var json = await reader.ReadToEndAsync();
+            var body = JsonSerializer.Deserialize<JsonElement>(json);
+            var repoPath = body.TryGetProperty("repoPath", out var rp) ? rp.GetString() : null;
+
+            if (string.IsNullOrEmpty(repoPath) || !Directory.Exists(repoPath))
+                return Results.Json(new { success = false, error = "invalidPath" }, JsonOpts);
+
+            var psi = new ProcessStartInfo
+            {
+                FileName = "git",
+                Arguments = "pull",
+                WorkingDirectory = repoPath,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
+
+            var process = Process.Start(psi);
+            if (process == null)
+                return Results.Json(new { success = false, error = "failedToStartProcess" }, JsonOpts);
+
+            var output = await process.StandardOutput.ReadToEndAsync();
+            var error = await process.StandardError.ReadToEndAsync();
+            await process.WaitForExitAsync();
+
+            if (process.ExitCode != 0)
+                return Results.Json(new { success = false, error = error }, JsonOpts);
+
+            return Results.Json(new { success = true, output }, JsonOpts);
+        });
+
+        app.MapPost("/api/select-folder", async (HttpContext ctx) =>
+        {
+            using var reader = new System.IO.StreamReader(ctx.Request.Body);
+            var json = await reader.ReadToEndAsync();
+            var body = JsonSerializer.Deserialize<SelectFolderBody>(json, ReadOpts);
+            if (body == null) return Results.BadRequest();
+
+            string? selectedPath = null;
+            var thread = new Thread(() =>
+            {
+                try
+                {
+                    var dialog = new System.Windows.Forms.FolderBrowserDialog
+                    {
+                        Description = body.Description ?? "Selecione uma pasta",
+                        UseDescriptionForTitle = true,
+                        SelectedPath = body.InitialPath ?? "C:\\"
+                    };
+
+                    // Create a dummy form to ensure dialog appears on top
+                    var dummyForm = new System.Windows.Forms.Form
+                    {
+                        TopMost = true,
+                        StartPosition = System.Windows.Forms.FormStartPosition.Manual,
+                        Location = new System.Drawing.Point(-2000, -2000),
+                        Size = new System.Drawing.Size(1, 1),
+                        ShowInTaskbar = false
+                    };
+
+                    dummyForm.Show();
+                    var result = dialog.ShowDialog(dummyForm);
+                    dummyForm.Close();
+                    dummyForm.Dispose();
+
+                    if (result == System.Windows.Forms.DialogResult.OK)
+                    {
+                        selectedPath = dialog.SelectedPath;
+                    }
+                    dialog.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error opening folder dialog: {ex.Message}");
+                }
+            });
+            thread.SetApartmentState(System.Threading.ApartmentState.STA);
+            thread.Start();
+            thread.Join();
+
+            return Results.Json(new { path = selectedPath }, JsonOpts);
+        });
+
         app.MapGet("/favicon.svg", () =>
         {
             var exeDir = Path.GetDirectoryName(Environment.ProcessPath) ?? AppContext.BaseDirectory;
@@ -191,14 +812,29 @@ public class WebServer(PrsDataService dataService, AppConfig config, Notificatio
             return File.Exists(path) ? Results.File(path, "image/svg+xml") : Results.NotFound();
         });
 
-        app.MapGet("/audio/{file}", (string file) =>
+        // Audio: serve MP3/WAV files from exe directory, detect MIME by magic bytes
+        static string DetectAudioMime(byte[] header)
         {
-            if (file != "message.mp3" && file != "error.mp3" && file != "done.mp3")
-                return Results.NotFound();
-            var exeDir = Path.GetDirectoryName(Environment.ProcessPath) ?? AppContext.BaseDirectory;
-            var path = Path.Combine(exeDir, file);
-            return File.Exists(path) ? Results.File(path, "audio/mpeg") : Results.NotFound();
-        });
+            if (header.Length >= 4 && header[0] == 0x52 && header[1] == 0x49 && header[2] == 0x46 && header[3] == 0x46)
+                return "audio/wav";
+            return "audio/mpeg";
+        }
+
+        var exeDirAudio = Path.GetDirectoryName(Environment.ProcessPath) ?? AppContext.BaseDirectory;
+        foreach (var name in new[] { "done.mp3", "error.mp3", "message.mp3" })
+        {
+            var filePath = Path.Combine(exeDirAudio, name);
+            var captured = name;
+            IResult ServeAudio()
+            {
+                if (!File.Exists(filePath)) return Results.NotFound();
+                var data = File.ReadAllBytes(filePath);
+                var mime = DetectAudioMime(data.Length >= 4 ? data[..4] : data);
+                return Results.Bytes(data, mime);
+            }
+            app.MapGet($"/audio/{captured}", ServeAudio);
+            app.MapGet($"/{captured}",       ServeAudio);
+        }
 
         app.Lifetime.ApplicationStarted.Register(() =>
         {
@@ -365,7 +1001,11 @@ public class WebServer(PrsDataService dataService, AppConfig config, Notificatio
         bool? NotifApprovedVisual, bool? NotifApprovedAudio,
         bool? NotifReadyVisual, bool? NotifReadyAudio,
         int? IntervalSeconds, bool? HideBotReviews,
-        string? DisplayName);
+        string? DisplayName,
+        WorktreesConfigBody? WorktreesConfig);
+
+    private record WorktreesConfigBody(string? RootPath, string? WorktreesPath);
+    private record SelectFolderBody(string? InitialPath, string? Description);
 
     private record NotifyLogBody(string Type, string Repo, int PrNumber, string PrTitle);
     private record BackfillStartBody(string? Month);

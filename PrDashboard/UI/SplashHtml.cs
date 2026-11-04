@@ -169,10 +169,10 @@ public static class SplashHtml
               </label>
               <label class="flex items-center justify-between p-2 rounded-lg bg-mocha-mantle border border-mocha-s0 hover:border-mocha-s1 transition-colors cursor-pointer group">
                 <div class="flex flex-col pr-3">
-                  <span class="text-[13px] text-mocha-text font-medium group-hover:text-mocha-mauve transition-colors">Open in background</span>
-                  <span class="text-[11px] text-mocha-muted">Silently initialize daemon</span>
+                  <span class="text-[13px] text-mocha-text font-medium group-hover:text-mocha-mauve transition-colors">Start minimized to tray</span>
+                  <span class="text-[11px] text-mocha-muted">Launch app directly in system tray</span>
                 </div>
-                <input type="checkbox" id="bg-check" class="mocha-checkbox h-4 w-4 rounded cursor-pointer">
+                <input type="checkbox" id="bg-check" class="mocha-checkbox h-4 w-4 rounded cursor-pointer" checked>
               </label>
               <label class="flex items-center justify-between p-2 rounded-lg bg-mocha-mantle border border-mocha-s0 hover:border-mocha-s1 transition-colors cursor-pointer group">
                 <div class="flex flex-col pr-3">
@@ -228,7 +228,10 @@ public static class SplashHtml
         trayCheck.checked = localStorage.getItem('prd-tray') !== '0';
 
         autoCheck.addEventListener('change', () => localStorage.setItem('prd-auto-launch', autoCheck.checked ? '1' : '0'));
-        bgCheck.addEventListener('change',   () => localStorage.setItem('prd-bg',          bgCheck.checked   ? '1' : '0'));
+        bgCheck.addEventListener('change',   () => {
+          localStorage.setItem('prd-bg', bgCheck.checked ? '1' : '0');
+          wv('startMinimized:' + (bgCheck.checked ? '1' : '0'));
+        });
         trayCheck.addEventListener('change', () => {
           localStorage.setItem('prd-tray', trayCheck.checked ? '1' : '0');
           wv('tray:' + (trayCheck.checked ? '1' : '0'));

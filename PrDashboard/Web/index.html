@@ -1,6 +1,7 @@
 <!DOCTYPE html>
-<html class="dark" lang="pt-BR">
+<html class="dark" lang="en-US">
 <head>
+<!-- BUILD TEST MARKER - SE ISSO APARECEU NO BUILD, ESTÁ FUNCIONANDO -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PrDashboard</title>
@@ -26,139 +27,179 @@
 
 <!-- ── BACKFILL MODAL ─────────────────────────────────────── -->
 <div id="backfill-overlay" onclick="if(event.target===this)closeBackfillModal()" style="display:none;position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.6);align-items:center;justify-content:center">
-  <div style="background:var(--surf);border:1px solid var(--border);border-radius:14px;padding:24px;width:460px;max-width:calc(100vw - 32px);box-shadow:0 8px 40px rgba(0,0,0,.4)">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+  <div style="background:var(--surf);border:1px solid var(--border);border-radius:8px;padding:1.5rem;width:28.75rem;max-width:calc(100vw - 2rem);box-shadow:0 8px 40px rgba(0,0,0,.4)">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem">
       <span style="font-size:15px;font-weight:600;color:var(--text)">📅 <span data-i18n="backfillTitle">Histórico do mês</span></span>
-      <button onclick="closeBackfillModal()" style="background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;padding:0 4px;line-height:1;border-radius:4px" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--muted)'">×</button>
+      <button onclick="closeBackfillModal()" class="btn-modal-close" style="background:none;border:none;color:var(--muted);font-size:1.25rem;cursor:pointer;padding:0 0.25rem;line-height:1;border-radius:0.25rem;transition:color .15s">×</button>
     </div>
-    <div style="margin-bottom:16px">
-      <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);display:block;margin-bottom:6px" data-i18n="backfillMonth">Mês</label>
-      <select id="backfill-month" onchange="resetBackfillState()" style="width:100%;padding:7px 10px;border-radius:6px;border:1px solid var(--border);background:var(--subtle);color:var(--text);font-size:13px;font-family:inherit"></select>
+    <div style="margin-bottom:1rem">
+      <label style="font-size:0.69rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);display:block;margin-bottom:0.375rem" data-i18n="backfillMonth">Mês</label>
+      <select id="backfill-month" onchange="resetBackfillState()" style="width:100%;padding:0.4375rem 0.625rem;border-radius:6px;border:1px solid var(--border);background:var(--subtle);color:var(--text);font-size:0.8125rem;font-family:inherit"></select>
     </div>
-    <div id="backfill-progress-wrap" style="display:none;margin-bottom:14px">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px">
-        <span style="font-size:11px;color:var(--muted)" data-i18n="backfillProgress">Progresso</span>
-        <span id="backfill-pct" style="font-size:11px;font-family:monospace;color:var(--muted)"></span>
+    <div id="backfill-progress-wrap" style="display:none;margin-bottom:0.875rem">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.375rem">
+        <span style="font-size:0.69rem;color:var(--muted)" data-i18n="backfillProgress">Progresso</span>
+        <span id="backfill-pct" style="font-size:0.69rem;font-family:monospace;color:var(--muted)"></span>
       </div>
-      <div style="height:6px;border-radius:9999px;background:var(--subtle);overflow:hidden">
+      <div style="height:0.375rem;border-radius:9999px;background:var(--subtle);overflow:hidden">
         <div id="backfill-bar" style="height:100%;border-radius:9999px;background:var(--indigo);width:0%;transition:width .3s ease"></div>
       </div>
     </div>
-    <div id="backfill-log" style="display:none;background:var(--subtle);border:1px solid var(--border);border-radius:8px;padding:10px 12px;max-height:180px;overflow-y:auto;font-size:11px;font-family:monospace;color:var(--text);margin-bottom:16px"></div>
-    <div style="display:flex;gap:8px;justify-content:flex-end">
-      <button id="backfill-start-btn" onclick="startBackfill()" style="padding:7px 20px;border-radius:6px;border:1px solid var(--indigo-bd);background:var(--indigo-bg);color:var(--indigo);font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;transition:all .12s" data-i18n="backfillStart">Iniciar</button>
-      <button onclick="closeBackfillModal()" style="padding:7px 16px;border-radius:6px;border:1px solid var(--border);background:none;color:var(--muted);font-size:13px;cursor:pointer;font-family:inherit" data-i18n="backfillClose">Fechar</button>
+    <div id="backfill-log" style="display:none;background:var(--subtle);border:1px solid var(--border);border-radius:8px;padding:0.625rem 0.75rem;max-height:180px;overflow-y:auto;font-size:0.69rem;font-family:monospace;color:var(--text);margin-bottom:1rem"></div>
+    <div style="display:flex;gap:0.5rem;justify-content:flex-end">
+      <button id="backfill-start-btn" onclick="startBackfill()" class="btn-primary-sm" style="padding:0.4375rem 1.25rem;border-radius:6px;border:1px solid var(--indigo-bd);background:var(--indigo-bg);color:var(--indigo);font-size:0.8125rem;font-weight:500;cursor:pointer;font-family:inherit;transition:all .12s" data-i18n="backfillStart">Iniciar</button>
+      <button onclick="closeBackfillModal()" class="btn-secondary" style="padding:0.4375rem 1rem;border-radius:6px;border:1px solid var(--border);background:none;color:var(--muted);font-size:0.8125rem;cursor:pointer;font-family:inherit;transition:all .15s" data-i18n="backfillClose">Fechar</button>
     </div>
   </div>
 </div>
 
 <!-- ── HEADER ─────────────────────────────────────────────── -->
 <header style="position:sticky;top:0;z-index:40;background:var(--header-bg);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-bottom:1px solid var(--border)">
-  <div style="max-width:1280px;margin:0 auto;height:64px;padding:0 24px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
-    <div style="display:flex;align-items:center;gap:14px">
+  <div style="max-width:80rem;margin:0 auto;height:4rem;padding:0 1.5rem;display:flex;align-items:center;justify-content:space-between;gap:0.75rem;flex-wrap:wrap">
+    <div style="display:flex;align-items:center;gap:0.875rem">
       <!-- Logo -->
-      <div style="display:flex;align-items:center;gap:10px">
-        <img src="/favicon.svg" width="22" height="22" style="border-radius:5px;flex-shrink:0" alt="">
+      <div style="display:flex;align-items:center;gap:0.625rem">
+        <img src="/favicon.svg" width="22" height="22" style="border-radius:0.3125rem;flex-shrink:0" alt="">
         <nav style="display:flex;gap:2px">
-          <button class="tab-btn view-tab active" id="view-btn-dashboard" onclick="switchView('dashboard')">PR - Dashboard</button>
+          <button class="tab-btn view-tab active" id="view-btn-dashboard" onclick="switchView('dashboard')"><span data-i18n="tabDashboard">Dashboard</span></button>
+          <button class="tab-btn view-tab" id="view-btn-worktrees" onclick="switchView('worktrees')"><span data-i18n="tabWorktrees">Worktrees &amp; Repos</span></button>
           <button class="tab-btn view-tab" id="view-btn-stats" onclick="switchView('stats')"><span data-i18n="tabStats">Estatísticas</span></button>
         </nav>
       </div>
     </div>
-    <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+    <div style="display:flex;align-items:center;gap:0.375rem;flex-wrap:wrap">
       <!-- Sync countdown -->
-      <div style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:8px;background:var(--subtle);border:1px solid var(--border);font-size:12px;color:var(--muted)">
-        <span id="rlabel" style="font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;min-width:28px">—</span>
+      <div style="display:inline-flex;align-items:center;gap:0.375rem;padding:0.25rem 0.625rem;border-radius:6px;background:var(--subtle);border:1px solid var(--border);font-size:0.75rem;color:var(--muted)">
+        <span id="rlabel" style="font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;min-width:1.75rem">—</span>
       </div>
       <!-- Refresh -->
-      <button onclick="manual()" style="display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:8px;font-size:12px;font-weight:500;color:var(--muted);background:var(--subtle);border:1px solid var(--border);cursor:pointer;transition:all .15s" onmouseover="this.style.borderColor='var(--indigo)';this.style.color='var(--indigo)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">
+      <button onclick="manual()" class="btn-refresh" style="display:inline-flex;align-items:center;gap:0.375rem;padding:0.3125rem 0.75rem;border-radius:6px;font-size:0.75rem;font-weight:500;color:var(--muted);background:var(--subtle);border:1px solid var(--border);cursor:pointer;transition:all .15s">
         <svg id="ricon" class="ti" width="13" height="13"><use href="/icons.svg#ti-refresh"/></svg>
         <span data-i18n="refresh">Atualizar</span>
       </button>
-      <div style="width:1px;height:16px;background:var(--border)"></div>
+      <div class="divider-v"></div>
       <!-- Language toggle -->
-      <button onclick="toggleLanguage()" id="lang-btn" title="Toggle language" style="display:inline-flex;align-items:center;justify-content:center;padding:5px 10px;border-radius:8px;background:var(--subtle);border:1px solid var(--border);cursor:pointer;font-size:11px;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--muted);transition:all .15s;letter-spacing:.05em" onmouseover="this.style.borderColor='var(--indigo)';this.style.color='var(--indigo)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">
+      <button onclick="toggleLanguage()" id="lang-btn" class="btn-lang" title="Toggle language" style="display:inline-flex;align-items:center;justify-content:center;padding:0.3125rem 0.625rem;border-radius:6px;background:var(--subtle);border:1px solid var(--border);cursor:pointer;font-size:0.69rem;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--muted);transition:all .15s;letter-spacing:.05em">
         <span id="lang-display">PT</span>
       </button>
       <!-- Theme toggle -->
-      <button onclick="toggleTheme()" title="Toggle theme" style="display:inline-flex;align-items:center;justify-content:center;padding:5px;border-radius:8px;background:var(--subtle);border:1px solid var(--border);cursor:pointer;transition:all .15s" onmouseover="this.style.borderColor='var(--indigo)'" onmouseout="this.style.borderColor='var(--border)'">
+      <button onclick="toggleTheme()" class="btn-theme" title="Toggle theme" style="display:inline-flex;align-items:center;justify-content:center;padding:0.3125rem;border-radius:6px;background:var(--subtle);border:1px solid var(--border);cursor:pointer;transition:all .15s">
         <svg id="icon-sun" class="ti" width="16" height="16" stroke="#f59e0b" style="display:none"><use href="/icons.svg#ti-sun"/></svg>
         <svg id="icon-moon" class="ti" width="16" height="16" stroke="var(--indigo)"><use href="/icons.svg#ti-moon"/></svg>
       </button>
       <!-- User menu -->
       <div style="position:relative;display:inline-block" id="user-menu-wrap">
-        <div id="upill" onclick="toggleUserMenu()" title="" style="width:32px;height:32px;border-radius:9999px;background:linear-gradient(135deg,var(--indigo),var(--violet));color:var(--bg);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;flex-shrink:0;cursor:pointer;box-shadow:0 0 0 2px var(--bg),0 0 12px rgba(212,187,255,.25)">—</div>
-        <div id="user-dd" style="display:none;position:absolute;right:0;top:calc(100% + 8px);background:var(--surf);border:1px solid var(--border);border-radius:14px;min-width:278px;box-shadow:0 8px 40px rgba(0,0,0,.55);z-index:200;overflow:hidden">
+        <div id="upill" onclick="toggleUserMenu()" title="" style="width:2rem;height:2rem;border-radius:9999px;background:linear-gradient(135deg,var(--indigo),var(--violet));color:var(--bg);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.69rem;flex-shrink:0;cursor:pointer;box-shadow:0 0 0 2px var(--bg),0 0 0.75rem rgba(212,187,255,.25)">—</div>
+        <div id="user-dd" style="display:none;position:absolute;right:0;top:calc(100% + 0.5rem);background:var(--surf);border:1px solid var(--border);border-radius:8px;min-width:17.375rem;box-shadow:0 8px 40px rgba(0,0,0,.55);z-index:200;overflow:hidden">
           <!-- Identity -->
-          <div style="padding:12px 14px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border)">
-            <div id="user-dd-avatar" style="width:36px;height:36px;border-radius:9999px;background:linear-gradient(135deg,var(--indigo),var(--violet));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:var(--bg);flex-shrink:0;box-shadow:0 0 10px rgba(203,166,247,.2)">—</div>
+          <div style="padding:0.75rem 0.875rem;display:flex;align-items:center;gap:0.625rem;border-bottom:1px solid var(--border)">
+            <div id="user-dd-avatar" style="width:2.25rem;height:2.25rem;border-radius:9999px;background:linear-gradient(135deg,var(--indigo),var(--violet));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.8125rem;color:var(--bg);flex-shrink:0;box-shadow:0 0 0.625rem rgba(203,166,247,.2)">—</div>
             <div style="min-width:0">
-              <div id="user-dd-name" style="font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">—</div>
-              <div style="font-size:11px;color:var(--muted);margin-top:1px">GitHub · Connected</div>
+              <div id="user-dd-name" style="font-size:0.8125rem;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">—</div>
+              <div style="font-size:0.69rem;color:var(--muted);margin-top:0.0625rem">GitHub · Connected</div>
             </div>
           </div>
-          <!-- Notifications config -->
-          <div style="padding:8px 0;border-bottom:1px solid var(--border)">
-            <div style="padding:4px 14px 6px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)" data-i18n="menuConfigNotifs">Notificações</div>
-            <div style="display:flex;align-items:center;gap:6px;padding:3px 14px">
-              <span style="flex:1;font-size:12px;color:var(--text)">🔔 <span data-i18n="notifComment">Novo comentário</span></span>
-              <button id="npref-comment-visual" class="npref-btn" onclick="toggleNotifPref('comment','visual')"><span data-i18n="notifVisual">Aviso</span></button>
-              <button id="npref-comment-audio" class="npref-btn" onclick="toggleNotifPref('comment','audio')"><span data-i18n="notifAudio">Som</span></button>
+
+          <!-- Section: Dashboard -->
+          <div style="padding:0.625rem 0;border-bottom:1px solid var(--border)">
+            <div style="padding:0.25rem 0.875rem 0.375rem;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--indigo)" data-i18n="menuSectionDashboard">Dashboard</div>
+            <div style="padding:0 0.875rem">
+              <div style="font-size:0.625rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:0.375rem" data-i18n="menuDname">Nome no relatório PDF</div>
+              <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.5rem">
+                <input id="dname-input" type="text" placeholder="ex: Matheus Boldrini"
+                  style="flex:1;padding:0.25rem 0.5rem;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:0.75rem;font-family:inherit;outline:none;transition:border-color .15s"
+                  onfocus="this.style.borderColor='var(--indigo)'" onblur="this.style.borderColor='var(--border)'"
+                  onkeydown="if(event.key==='Enter')saveDname()">
+                <button onclick="saveDname()" class="btn-primary-sm" style="padding:0.25rem 0.75rem;border-radius:6px;border:1px solid var(--indigo-bd);background:var(--indigo-bg);color:var(--indigo);font-size:0.69rem;font-weight:600;cursor:pointer;font-family:inherit;transition:all .12s" data-i18n="menuSave">Salvar</button>
+              </div>
             </div>
-            <div style="display:flex;align-items:center;gap:6px;padding:3px 14px">
-              <span style="flex:1;font-size:12px;color:var(--text)">⚠️ <span data-i18n="notifCi">CI com erro</span></span>
-              <button id="npref-ci-visual" class="npref-btn" onclick="toggleNotifPref('ci','visual')"><span data-i18n="notifVisual">Aviso</span></button>
-              <button id="npref-ci-audio" class="npref-btn" onclick="toggleNotifPref('ci','audio')"><span data-i18n="notifAudio">Som</span></button>
+            <div style="padding:0 0.875rem">
+              <div style="font-size:0.625rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:0.375rem" data-i18n="menuInterval">Intervalo de atualização</div>
+              <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.5rem">
+                <input id="interval-input" type="number" min="30" max="3600" value="300" style="width:4rem;padding:0.25rem 0.5rem;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:0.8125rem;font-family:'JetBrains Mono',monospace;outline:none;transition:border-color .15s">
+                <span style="font-size:0.75rem;color:var(--muted)" data-i18n="menuSecs">seg</span>
+                <button onclick="saveInterval()" class="btn-primary-sm" style="margin-left:auto;padding:0.25rem 0.75rem;border-radius:6px;border:1px solid var(--indigo-bd);background:var(--indigo-bg);color:var(--indigo);font-size:0.69rem;font-weight:600;cursor:pointer;font-family:inherit;transition:all .12s" data-i18n="menuSave">Salvar</button>
+              </div>
             </div>
-            <div style="display:flex;align-items:center;gap:6px;padding:3px 14px">
-              <span style="flex:1;font-size:12px;color:var(--text)">🎉 <span data-i18n="notifMerged">PR mergeado</span></span>
-              <button id="npref-merged-visual" class="npref-btn" onclick="toggleNotifPref('merged','visual')"><span data-i18n="notifVisual">Aviso</span></button>
-              <button id="npref-merged-audio" class="npref-btn" onclick="toggleNotifPref('merged','audio')"><span data-i18n="notifAudio">Som</span></button>
+            <div style="padding:0 0.875rem">
+              <button onclick="openBackfillModal();closeUserMenu()" class="dd-menu-btn" style="display:flex;align-items:center;gap:0.4375rem;padding:0.25rem 0;font-size:0.75rem;color:var(--muted);background:none;border:none;cursor:pointer;font-family:inherit;transition:color .12s">
+                <svg class="ti" width="13" height="13"><use href="/icons.svg#ti-calendar"/></svg>
+                <span data-i18n="menuBackfill">Histórico do mês</span>
+              </button>
             </div>
-            <div style="display:flex;align-items:center;gap:6px;padding:3px 14px">
-              <span style="flex:1;font-size:12px;color:var(--text)">✅ <span data-i18n="notifApproved">PR aprovado</span></span>
-              <button id="npref-approved-visual" class="npref-btn" onclick="toggleNotifPref('approved','visual')"><span data-i18n="notifVisual">Aviso</span></button>
-              <button id="npref-approved-audio" class="npref-btn" onclick="toggleNotifPref('approved','audio')"><span data-i18n="notifAudio">Som</span></button>
+            <div style="height:1px;background:var(--border);margin:0.625rem 0.875rem 0.5rem"></div>
+            <div style="padding:0 0.875rem 0.25rem">
+              <div style="font-size:0.625rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:0.25rem" data-i18n="menuConfigNotifs">Notificações</div>
+              <div style="display:flex;align-items:center;gap:0.375rem;padding:0.1875rem 0">
+                <span style="flex:1;font-size:0.75rem;color:var(--text)">🔔 <span data-i18n="notifComment">Novo comentário</span></span>
+                <button id="npref-comment-visual" class="npref-btn" onclick="toggleNotifPref('comment','visual')"><span data-i18n="notifVisual">Aviso</span></button>
+                <button id="npref-comment-audio" class="npref-btn" onclick="toggleNotifPref('comment','audio')"><span data-i18n="notifAudio">Som</span></button>
+              </div>
+              <div style="display:flex;align-items:center;gap:0.375rem;padding:0.1875rem 0">
+                <span style="flex:1;font-size:0.75rem;color:var(--text)">⚠️ <span data-i18n="notifCi">CI com erro</span></span>
+                <button id="npref-ci-visual" class="npref-btn" onclick="toggleNotifPref('ci','visual')"><span data-i18n="notifVisual">Aviso</span></button>
+                <button id="npref-ci-audio" class="npref-btn" onclick="toggleNotifPref('ci','audio')"><span data-i18n="notifAudio">Som</span></button>
+              </div>
+              <div style="display:flex;align-items:center;gap:0.375rem;padding:0.1875rem 0">
+                <span style="flex:1;font-size:0.75rem;color:var(--text)">🎉 <span data-i18n="notifMerged">PR mergeado</span></span>
+                <button id="npref-merged-visual" class="npref-btn" onclick="toggleNotifPref('merged','visual')"><span data-i18n="notifVisual">Aviso</span></button>
+                <button id="npref-merged-audio" class="npref-btn" onclick="toggleNotifPref('merged','audio')"><span data-i18n="notifAudio">Som</span></button>
+              </div>
+              <div style="display:flex;align-items:center;gap:0.375rem;padding:0.1875rem 0">
+                <span style="flex:1;font-size:0.75rem;color:var(--text)">✅ <span data-i18n="notifApproved">PR aprovado</span></span>
+                <button id="npref-approved-visual" class="npref-btn" onclick="toggleNotifPref('approved','visual')"><span data-i18n="notifVisual">Aviso</span></button>
+                <button id="npref-approved-audio" class="npref-btn" onclick="toggleNotifPref('approved','audio')"><span data-i18n="notifAudio">Som</span></button>
+              </div>
+              <div style="display:flex;align-items:center;gap:0.375rem;padding:0.1875rem 0">
+                <span style="flex:1;font-size:0.75rem;color:var(--text)">🔵 <span data-i18n="notifReady">Pronto p/ review</span></span>
+                <button id="npref-ready-visual" class="npref-btn" onclick="toggleNotifPref('ready','visual')"><span data-i18n="notifVisual">Aviso</span></button>
+                <button id="npref-ready-audio" class="npref-btn" onclick="toggleNotifPref('ready','audio')"><span data-i18n="notifAudio">Som</span></button>
+              </div>
             </div>
-            <div style="display:flex;align-items:center;gap:6px;padding:3px 14px">
-              <span style="flex:1;font-size:12px;color:var(--text)">🔵 <span data-i18n="notifReady">Pronto p/ review</span></span>
-              <button id="npref-ready-visual" class="npref-btn" onclick="toggleNotifPref('ready','visual')"><span data-i18n="notifVisual">Aviso</span></button>
-              <button id="npref-ready-audio" class="npref-btn" onclick="toggleNotifPref('ready','audio')"><span data-i18n="notifAudio">Som</span></button>
+            <div style="height:1px;background:var(--border);margin:0.5rem 0.875rem"></div>
+            <div style="padding:0 0.875rem 0.25rem">
+              <div style="font-size:0.625rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:0.25rem" data-i18n="menuTestNotifs">Testar</div>
+              <div style="padding:0.125rem 0 0;display:flex;flex-wrap:wrap;gap:0.3125rem">
+                <button onclick="testNotif('comment');closeUserMenu()" class="dd-test-btn">🔔 <span data-i18n="testComment">Comentário</span></button>
+                <button onclick="testNotif('ci');closeUserMenu()" class="dd-test-btn">⚠️ <span data-i18n="testCi">CI</span></button>
+                <button onclick="testNotif('merged');closeUserMenu()" class="dd-test-btn">🎉 <span data-i18n="testMerged">Merge</span></button>
+                <button onclick="testNotif('approved');closeUserMenu()" class="dd-test-btn">✅ <span data-i18n="testApproved">Aprovado</span></button>
+                <button onclick="testNotif('ready');closeUserMenu()" class="dd-test-btn">🔵 <span data-i18n="testReady">Draft</span></button>
+              </div>
             </div>
           </div>
-          <!-- Test notifications -->
-          <div style="padding:8px 0;border-bottom:1px solid var(--border)">
-            <div style="padding:4px 14px 6px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)" data-i18n="menuTestNotifs">Testar</div>
-            <div style="padding:2px 14px 4px;display:flex;flex-wrap:wrap;gap:5px">
-              <button onclick="testNotif('comment');closeUserMenu()" class="dd-test-btn">🔔 <span data-i18n="testComment">Comentário</span></button>
-              <button onclick="testNotif('ci');closeUserMenu()" class="dd-test-btn">⚠️ <span data-i18n="testCi">CI</span></button>
-              <button onclick="testNotif('merged');closeUserMenu()" class="dd-test-btn">🎉 <span data-i18n="testMerged">Merge</span></button>
-              <button onclick="testNotif('approved');closeUserMenu()" class="dd-test-btn">✅ <span data-i18n="testApproved">Aprovado</span></button>
-              <button onclick="testNotif('ready');closeUserMenu()" class="dd-test-btn">🔵 <span data-i18n="testReady">Draft</span></button>
-            </div>
+
+          <!-- Section: Statistics -->
+          <div style="padding:0.625rem 0;border-bottom:1px solid var(--border)">
+            <div style="padding:0.25rem 0.875rem 0.375rem;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--blue)" data-i18n="menuSectionStats">Estatísticas</div>
+            <div style="padding:0 14px 4px;font-size:11px;color:var(--dim);font-style:italic" data-i18n="menuNoSettings">Sem configurações disponíveis</div>
           </div>
-          <!-- Settings: interval + backfill -->
-          <div style="padding:10px 14px 12px">
-            <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:8px" data-i18n="menuInterval">Intervalo de atualização</div>
-            <div style="display:flex;align-items:center;gap:8px">
-              <input id="interval-input" type="number" min="30" max="3600" value="300" style="width:64px;padding:4px 8px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:13px;font-family:'JetBrains Mono',monospace">
-              <span style="font-size:12px;color:var(--muted)" data-i18n="menuSecs">seg</span>
-              <button onclick="saveInterval()" style="margin-left:auto;padding:4px 12px;border-radius:6px;border:1px solid var(--indigo-bd);background:var(--indigo-bg);color:var(--indigo);font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .12s" data-i18n="menuSave">Salvar</button>
-            </div>
-            <div style="height:1px;background:var(--border);margin:10px 0 8px"></div>
-            <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:6px" data-i18n="menuDname">Nome no relatório PDF</div>
-            <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-              <input id="dname-input" type="text" placeholder="ex: Matheus Boldrini"
-                style="flex:1;padding:4px 8px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:12px;font-family:inherit;outline:none"
-                onfocus="this.style.borderColor='var(--indigo)'" onblur="this.style.borderColor='var(--border)'"
-                onkeydown="if(event.key==='Enter')saveDname()">
-              <button onclick="saveDname()" style="padding:4px 12px;border-radius:6px;border:1px solid var(--indigo-bd);background:var(--indigo-bg);color:var(--indigo);font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .12s" data-i18n="menuSave">Salvar</button>
-            </div>
-            <div style="height:1px;background:var(--border);margin:0 0 8px"></div>
-            <button onclick="openBackfillModal();closeUserMenu()" style="display:flex;align-items:center;gap:7px;padding:4px 0;font-size:12px;color:var(--muted);background:none;border:none;cursor:pointer;font-family:inherit;transition:color .12s" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--muted)'">
-              <svg class="ti" width="13" height="13"><use href="/icons.svg#ti-calendar"/></svg>
-              <span data-i18n="menuBackfill">Histórico do mês</span>
+
+          <!-- Section: Repos & Worktrees -->
+          <div style="padding:8px 0">
+            <div style="padding:0.25rem 0.875rem 0.375rem;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--teal)" data-i18n="menuSectionWorktrees">Repos & Worktrees</div>
+            <button onclick="selectRootPath();closeUserMenu()" class="dd-settings-btn" style="display:flex;align-items:center;gap:0.4375rem;padding:0.3125rem 0.875rem;width:100%;font-size:0.75rem;color:var(--text);background:none;border:none;cursor:pointer;font-family:inherit;text-align:left;transition:background .12s">
+              <svg class="ti" width="13" height="13" style="stroke:var(--teal)"><use href="/icons.svg#ti-folder"/></svg>
+              <div style="display:flex;flex-direction:column;gap:0.0625rem;min-width:0;flex:1">
+                <span style="font-weight:500" data-i18n="wtSettingsRoot">Pasta raiz dos repositórios</span>
+                <span id="wt-root-path-display" style="font-size:0.625rem;color:var(--muted);font-family:monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" data-i18n="wtSettingsRootDesc">Local onde seus repositórios estão</span>
+              </div>
             </button>
+            <button onclick="selectWorktreesPath();closeUserMenu()" class="dd-settings-btn" style="display:flex;align-items:center;gap:0.4375rem;padding:0.3125rem 0.875rem;width:100%;font-size:0.75rem;color:var(--text);background:none;border:none;cursor:pointer;font-family:inherit;text-align:left;transition:background .12s">
+              <svg class="ti" width="13" height="13" style="stroke:var(--teal)"><use href="/icons.svg#ti-folder-down"/></svg>
+              <div style="display:flex;flex-direction:column;gap:0.0625rem;min-width:0;flex:1">
+                <span style="font-weight:500" data-i18n="wtSettingsWorktrees">Pasta de destino das worktrees</span>
+                <span id="wt-worktrees-path-display" style="font-size:0.625rem;color:var(--muted);font-family:monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" data-i18n="wtSettingsWorktreesDesc">Onde criar novas worktrees</span>
+              </div>
+            </button>
+            <div style="padding:0 0.875rem;margin-top:0.5rem">
+              <div style="font-size:0.625rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:0.375rem" data-i18n="menuWtPolling">Intervalo de atualização</div>
+              <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.5rem">
+                <input id="wt-polling-input" type="number" min="60" max="3600" value="300" style="width:4rem;padding:0.25rem 0.5rem;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:0.8125rem;font-family:'JetBrains Mono',monospace;outline:none;transition:border-color .15s">
+                <span style="font-size:0.75rem;color:var(--muted)" data-i18n="menuSecs">seg</span>
+                <button onclick="saveWtPolling()" class="btn-primary-sm" style="margin-left:auto;padding:0.25rem 0.75rem;border-radius:6px;border:1px solid var(--indigo-bd);background:var(--indigo-bg);color:var(--indigo);font-size:0.69rem;font-weight:600;cursor:pointer;font-family:inherit;transition:all .12s" data-i18n="menuSave">Salvar</button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -166,19 +207,19 @@
   </div>
 </header>
 
-<main style="max-width:1280px;margin:0 auto;padding:28px 24px">
+<main style="max-width:80rem;margin:0 auto;padding:1.75rem 1.5rem">
   <div class="ebanner" id="err"></div>
   <div class="empty" id="loading" data-i18n="loading">Carregando...</div>
 
   <div id="content" style="display:none">
     <!-- ── METRICS ── -->
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:28px" class="metrics-grid">
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:0.875rem;margin-bottom:1.75rem" class="metrics-grid">
 
       <div class="mcard">
         <div class="mlabel">
           <span style="display:flex;align-items:center;gap:6px"><span class="sdot" style="width:7px;height:7px;background:var(--green);box-shadow:0 0 6px var(--green)"></span><span data-i18n="metricsMyPrs">Meus PRs Abertos</span></span>
         </div>
-        <div style="display:flex;align-items:baseline;gap:6px;margin-top:4px">
+        <div style="display:flex;align-items:baseline;gap:6px;margin-top:0.25rem">
           <span class="mval" id="m-open" style="color:var(--green)">—</span><span class="msub" id="m-open-sub"></span>
         </div>
         <div class="mprog"><div class="mprog-bar" id="m-open-bar" style="background:var(--green);width:0%"></div></div>
@@ -188,7 +229,7 @@
         <div class="mlabel">
           <span style="display:flex;align-items:center;gap:6px"><span class="sdot" style="width:7px;height:7px;background:var(--red);box-shadow:0 0 6px var(--red)"></span><span data-i18n="metricsCi">CI com Falha</span></span>
         </div>
-        <div style="display:flex;align-items:baseline;gap:6px;margin-top:4px">
+        <div style="display:flex;align-items:baseline;gap:6px;margin-top:0.25rem">
           <span class="mval" id="m-ci" style="color:var(--red)">—</span><span class="msub" id="m-ci-sub" style="color:var(--red)"></span>
         </div>
         <div class="mprog"><div class="mprog-bar" id="m-ci-bar" style="background:var(--red);width:0%"></div></div>
@@ -198,7 +239,7 @@
         <div class="mlabel">
           <span style="display:flex;align-items:center;gap:6px"><span class="sdot" style="width:7px;height:7px;background:var(--amber);box-shadow:0 0 6px var(--amber)"></span><span data-i18n="metricsReviews">Reviews a Mim</span></span>
         </div>
-        <div style="display:flex;align-items:baseline;gap:6px;margin-top:4px">
+        <div style="display:flex;align-items:baseline;gap:6px;margin-top:0.25rem">
           <span class="mval" id="m-rev" style="color:var(--amber)">—</span><span class="msub" id="m-rev-sub" style="color:var(--amber)"></span>
         </div>
         <div class="mprog"><div class="mprog-bar" id="m-rev-bar" style="background:var(--amber);width:0%"></div></div>
@@ -208,7 +249,7 @@
         <div class="mlabel">
           <span style="display:flex;align-items:center;gap:6px"><span class="sdot" style="width:7px;height:7px;background:var(--indigo);box-shadow:0 0 6px var(--indigo)"></span><span data-i18n="metricsMerged">Mergeados Recentes</span></span>
         </div>
-        <div style="display:flex;align-items:baseline;gap:6px;margin-top:4px">
+        <div style="display:flex;align-items:baseline;gap:6px;margin-top:0.25rem">
           <span class="mval" id="m-mrg" style="color:var(--indigo)">—</span><span class="msub" id="m-mrg-sub"></span>
         </div>
         <div class="mprog"><div class="mprog-bar" id="m-mrg-bar" style="background:var(--indigo);width:0%"></div></div>
@@ -217,8 +258,8 @@
     </div>
 
     <!-- ── TABS ── -->
-    <div style="background:var(--surf);border:1px solid var(--border);border-radius:14px;padding:14px 18px;margin-bottom:24px;box-shadow:0 2px 12px rgba(0,0,0,.2)">
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">
+    <div style="background:var(--surf);border:1px solid var(--border);border-radius:8px;padding:1rem 1.25rem;margin-bottom:1.5rem;box-shadow:0 0.125rem 0.5rem rgba(0,0,0,.18)">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:0.5rem;flex-wrap:wrap">
         <nav style="display:flex;gap:2px">
           <button class="tab-btn" data-tab="my" onclick="setTab('my')">
             <span data-i18n="tabMyPrs">Meus PRs</span> <span id="tc-my" class="tcnt tcnt-indigo">0</span>
@@ -246,15 +287,13 @@
     <!-- ── TAB: MEUS PRs ── -->
     <div id="tab-my" class="tab-panel">
       <div class="tab-toolbar">
-        <input id="my-search" type="search" class="toolbar-search" placeholder="" data-i18n-ph="searchPlaceholder" oninput="setMySearch(this.value)">
-        <div class="toolbar-divider"></div>
         <div class="toolbar-controls">
           <span style="font-size:11px;color:var(--muted)" data-i18n="groupBy">Agrupar por</span>
           <div class="view-seg">
             <button class="view-btn active" id="vbtn-repo" onclick="setMyView('repo')" data-i18n="groupByRepo">Repositório</button>
             <button class="view-btn" id="vbtn-status" onclick="setMyView('status')" data-i18n="groupByStatus">Status</button>
           </div>
-          <div style="width:1px;height:16px;background:var(--border)"></div>
+          <div class="divider-v"></div>
           <div class="view-seg">
             <button class="view-btn" id="collapse-all-btn" onclick="toggleAllRepos()" style="display:inline-flex;align-items:center;gap:4px">
               <svg class="ti icon-collapse" width="11" height="11"><use href="/icons.svg#ti-chevrons-up"/></svg>
@@ -284,7 +323,7 @@
         <div class="toolbar-divider"></div>
         <div class="toolbar-controls">
           <button id="rev-hide-bots-btn" class="fchip" onclick="toggleRevHideBots()"><span data-i18n="hideBots">Ocultar bots</span></button>
-          <div style="width:1px;height:16px;background:var(--border)"></div>
+          <div class="divider-v"></div>
           <div class="view-seg">
             <button id="rev-collapse-all-btn" class="view-btn" onclick="toggleAllRevRepos()" style="display:inline-flex;align-items:center;gap:4px">
               <svg class="ti rev-icon-collapse" width="11" height="11"><use href="/icons.svg#ti-chevrons-up"/></svg>
@@ -315,7 +354,7 @@
   </div>
 
   <!-- ── STATS VIEW ──────────────────────────────────────────── -->
-  <div id="view-stats" style="display:none;margin:-28px -24px 0">
+  <div id="view-stats" style="display:none;margin:-1.75rem -1.5rem 0">
     <div class="filter-bar">
       <div class="filter-group">
         <label data-i18n="stFilterRepo">Repository</label>
@@ -384,7 +423,7 @@
         <div class="card full">
           <div style="display:flex;align-items:center;gap:0.75rem">
             <div class="card-title" id="pr-section-title" style="margin:0">PRs</div>
-            <button id="pr-clear-btn" class="pr-clear-btn" onclick="resetPRFilters()" style="display:none;padding:0.2rem 0.6rem;font-size:0.72rem;background:transparent;border:1px solid #585b70;border-radius:6px;color:#6c7086;cursor:pointer" onmouseover="this.style.borderColor='#cba6f7';this.style.color='#cba6f7'" onmouseout="this.style.borderColor='#585b70';this.style.color='#6c7086'">✕ <span data-i18n="stClearPR">clear</span></button>
+            <button id="pr-clear-btn" class="pr-clear-btn" onclick="resetPRFilters()" style="display:none;padding:0.2rem 0.6rem;font-size:0.72rem;background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--muted);cursor:pointer;transition:border-color .15s,color .15s">✕ <span data-i18n="stClearPR">clear</span></button>
             <input type="text" id="pr-search" class="pr-search-input" placeholder="🔍 search title…" oninput="onPRSearch()" style="margin-left:auto">
             <span id="pr-count" style="font-size:0.68rem;color:#585b70"></span>
           </div>
@@ -395,6 +434,139 @@
         </div>
       </div>
     </div>
+  </div>
+
+  <!-- ── WORKTREES & REPOS VIEW ──────────────────────────────────────────── -->
+  <div id="view-worktrees" style="display:none;margin:-1.75rem -1.5rem 0">
+    <!-- Error Banner -->
+    <div id="wt-error-banner" class="hidden" style="margin:32px 0 16px"></div>
+
+    <!-- Main Content Wrapper -->
+    <div id="wt-main-content">
+    <!-- Path Info Bar (discrete, footer style) -->
+    <div style="background:var(--surf);border-radius:8px;padding:0.625rem 1.25rem;border:1px solid var(--border);margin:2rem 0 1rem;display:flex;flex-wrap:wrap;align-items:center;gap:1rem;font-size:0.69rem;color:var(--muted);font-family:monospace;box-shadow:0 0.125rem 0.75rem rgba(0,0,0,.2)">
+      <span style="display:flex;align-items:center;gap:0.375rem">
+        <svg class="ti" width="13" height="13" style="stroke:var(--indigo)"><use href="/icons.svg#ti-folder"/></svg>
+        <span data-i18n="wtLabelRoot">RAIZ:</span>
+        <span id="wt-root-path-info" style="color:var(--text);font-weight:500">C:\</span>
+      </span>
+      <span>•</span>
+      <span style="display:flex;align-items:center;gap:0.375rem">
+        <svg class="ti" width="13" height="13" style="stroke:var(--blue)"><use href="/icons.svg#ti-folder-down"/></svg>
+        <span data-i18n="wtLabelDestination">DESTINO:</span>
+        <span id="wt-worktrees-path-info" style="color:var(--text);font-weight:500">C:\</span>
+      </span>
+    </div>
+    <!-- Filters & Actions Ribbon Card -->
+    <section style="background:var(--surf);border-radius:8px;padding:1.25rem;border:1px solid var(--border);margin-bottom:1.5rem;box-shadow:0 0.125rem 0.75rem rgba(0,0,0,.2)">
+      <div style="display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:1rem">
+        <!-- Filter Controls -->
+        <div style="display:flex;flex-wrap:wrap;align-items:flex-end;gap:1rem">
+          <!-- Repository Filter -->
+          <div style="display:flex;flex-direction:column;gap:0.375rem;min-width:12.5rem">
+            <label style="font-size:0.69rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)" data-i18n="wtFilterRepo">REPOSITÓRIO</label>
+            <div style="position:relative">
+              <select style="width:100%;appearance:none;background:var(--subtle);border:1px solid var(--border);border-radius:6px;padding:0.5rem 0.75rem;font-size:0.8125rem;font-weight:500;color:var(--text);cursor:pointer;padding-right:2rem">
+                <option selected="" data-i18n="wtAllRepos">Todos os repositórios (14)</option>
+                <option>auth-service</option>
+                <option>billing-api</option>
+                <option>frontend-dashboard</option>
+                <option>notification-worker</option>
+                <option>data-pipeline</option>
+              </select>
+              <svg class="ti" width="14" height="14" style="position:absolute;right:0.625rem;top:50%;transform:translateY(-50%);pointer-events:none;stroke:var(--muted)"><use href="/icons.svg#ti-chevron-down"/></svg>
+            </div>
+          </div>
+          <!-- Status Filter -->
+          <div style="display:flex;flex-direction:column;gap:0.375rem;min-width:10.625rem">
+            <label style="font-size:0.69rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)" data-i18n="wtFilterStatus">STATUS DO REPO</label>
+            <div style="position:relative">
+              <select style="width:100%;appearance:none;background:var(--subtle);border:1px solid var(--border);border-radius:6px;padding:0.5rem 0.75rem;font-size:0.8125rem;font-weight:500;color:var(--text);cursor:pointer;padding-right:2rem">
+                <option selected="" data-i18n="wtAllStates">Todos os estados</option>
+                <option data-i18n="wtOutdated">Desatualizados (5)</option>
+                <option data-i18n="wtWithWorktrees">Com Worktrees (4)</option>
+                <option data-i18n="wtWithChanges">Com alterações locais (2)</option>
+                <option data-i18n="wtInConflict">Em conflito (1)</option>
+              </select>
+              <svg class="ti" width="14" height="14" style="position:absolute;right:0.625rem;top:50%;transform:translateY(-50%);pointer-events:none;stroke:var(--muted)"><use href="/icons.svg#ti-chevron-down"/></svg>
+            </div>
+          </div>
+          <!-- Search Input -->
+          <div style="display:flex;flex-direction:column;gap:0.375rem">
+            <label style="font-size:0.69rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)" data-i18n="wtFilterSearch">BUSCAR RAMO / REPO</label>
+            <div style="position:relative;width:16.25rem">
+              <input type="search" placeholder="Filtrar por nome ou branch..." data-i18n-ph="wtSearchPlaceholder" style="width:100%;background:var(--subtle);border:1px solid var(--border);border-radius:6px;padding:0.5rem 0.75rem 0.5rem 2.25rem;font-size:0.8125rem;color:var(--text);outline:none" onfocus="this.style.borderColor='var(--indigo)'" onblur="this.style.borderColor='var(--border)'">
+              <svg class="ti" width="15" height="15" style="position:absolute;left:0.75rem;top:50%;transform:translateY(-50%);stroke:var(--muted)"><use href="/icons.svg#ti-search"/></svg>
+            </div>
+          </div>
+          <!-- Worktree View Toggle -->
+          <div style="display:flex;align-items:center;gap:0.75rem;padding-top:1.375rem">
+            <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;user-select:none">
+              <input type="checkbox" checked="" style="width:1rem;height:1rem;cursor:pointer">
+              <span style="font-size:0.8125rem;color:var(--muted);font-weight:500" data-i18n="wtWorktreeView">Worktree View</span>
+            </label>
+            <button data-i18n-title="wtClearFilters" title="Limpar filtros" class="wt-filter-clear-btn" style="padding:0.5rem;border-radius:6px;background:var(--subtle);border:1px solid var(--border);color:var(--muted);cursor:pointer;transition:all .15s">
+              <svg class="ti" width="16" height="16"><use href="/icons.svg#ti-filter-x"/></svg>
+            </button>
+          </div>
+        </div>
+        <!-- Export Button -->
+        <div style="display:flex;align-items:center;gap:0.75rem;padding-top:1.375rem">
+          <button class="wt-export-btn" style="display:flex;align-items:center;gap:0.5rem;padding:0.5rem 1rem;border-radius:6px;background:var(--subtle);border:1px solid var(--border);color:var(--text);font-size:0.8125rem;font-weight:500;cursor:pointer;transition:all .15s">
+            <svg class="ti" width="16" height="16" style="stroke:var(--indigo)"><use href="/icons.svg#ti-download"/></svg>
+            <span data-i18n="wtExportReport">Exportar Relatório</span>
+            <svg class="ti" width="14" height="14" style="stroke:var(--muted)"><use href="/icons.svg#ti-chevron-down"/></svg>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- KPI Metric Summary Cards -->
+    <section style="display:grid;grid-template-columns:repeat(auto-fit,minmax(15rem,1fr));gap:1rem;margin-bottom:1.5rem">
+      <!-- Card 1 -->
+      <div class="wt-kpi-card wt-kpi-indigo" style="background:var(--surf);border-radius:8px;padding:0.875rem 1rem;border:1px solid var(--border);transition:border-color .15s;box-shadow:0 0.125rem 0.75rem rgba(0,0,0,.2)">
+        <div id="wt-stat-repos" style="font-size:1.75rem;font-weight:700;color:var(--indigo);margin-bottom:0.25rem">—</div>
+        <div style="font-size:0.72rem;font-weight:500;color:var(--muted)" data-i18n="wtKpiIndexed">Repositórios Indexados</div>
+      </div>
+      <!-- Card 2 -->
+      <div class="wt-kpi-card wt-kpi-blue" style="background:var(--surf);border-radius:8px;padding:0.875rem 1rem;border:1px solid var(--border);transition:border-color .15s;box-shadow:0 0.125rem 0.75rem rgba(0,0,0,.2)">
+        <div id="wt-stat-worktrees" style="font-size:1.75rem;font-weight:700;color:var(--blue);margin-bottom:0.25rem">—</div>
+        <div style="font-size:0.72rem;font-weight:500;color:var(--muted)" data-i18n="wtKpiWorktrees">Worktrees Ativas em Disco</div>
+      </div>
+      <!-- Card 3 -->
+      <div class="wt-kpi-card wt-kpi-teal" style="background:var(--surf);border-radius:8px;padding:0.875rem 1rem;border:1px solid var(--border);transition:border-color .15s;box-shadow:0 0.125rem 0.75rem rgba(0,0,0,.2)">
+        <div id="wt-stat-updates" style="font-size:1.75rem;font-weight:700;color:var(--teal);margin-bottom:0.25rem">—</div>
+        <div style="font-size:0.72rem;font-weight:500;color:var(--muted)" data-i18n="wtKpiPendingUpdates">Repositórios com Atualizações Pendentes</div>
+      </div>
+      <!-- Card 4 -->
+      <div class="wt-kpi-card wt-kpi-green" style="background:var(--surf);border-radius:8px;padding:0.875rem 1rem;border:1px solid var(--border);transition:border-color .15s;box-shadow:0 0.125rem 0.75rem rgba(0,0,0,.2)">
+        <div id="wt-stat-disk" style="font-size:1.75rem;font-weight:700;color:var(--green);margin-bottom:0.25rem">—</div>
+        <div style="font-size:0.72rem;font-weight:500;color:var(--muted)" data-i18n="wtKpiDiskSpace">Espaço Ocupado pelas Pastas</div>
+      </div>
+    </section>
+
+    <!-- Multi-select Batch Actions Bar (visible when items selected) -->
+    <section id="wt-batch-actions" style="background:linear-gradient(to right,rgba(180,155,250,0.15),var(--surf));border:1px solid var(--indigo-bd);border-radius:8px;padding:0.875rem 1.25rem;display:none;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:1.5rem;box-shadow:0 0.25rem 1.25rem rgba(180,155,250,0.1)">
+      <!-- Content dynamically rendered by JS -->
+    </section>
+
+    <!-- Main Repositories Accordion Stack -->
+    <section id="wt-repos-list" style="display:flex;flex-direction:column;gap:0.875rem;margin-bottom:1.5rem">
+      <!-- Repository cards will be rendered here by JS -->
+    </section>
+
+    <!-- Footer Telemetry Bar -->
+    <footer style="background:var(--surf);border-radius:8px;padding:0.75rem 1.25rem;border:1px solid var(--border);display:flex;flex-wrap:wrap;align-items:center;gap:1rem;font-size:0.72rem;color:var(--muted);font-family:monospace;box-shadow:0 0.125rem 0.75rem rgba(0,0,0,.2)">
+      <span style="display:flex;align-items:center;gap:0.375rem">
+        <span class="sdot" style="width:7px;height:7px;border-radius:50%;background:var(--green)"></span>
+        <span data-i18n="wtFooterSynced">14 repositórios sincronizados</span>
+      </span>
+      <span>•</span>
+      <span>Espaço ocupado por worktrees: <strong class="text-emphasis">3.8 GB</strong></span>
+      <span>•</span>
+      <span>SSD Hub Engine: <strong class="text-success">0.14ms</strong></span>
+    </footer>
+    </div><!-- End wt-main-content -->
   </div>
 </main>
 <script src="/app.js"></script>
