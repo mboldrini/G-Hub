@@ -163,7 +163,17 @@ const i18n = {
     menuRootFolder: 'Pasta raiz dos repositórios',
     menuRootFolderDesc: 'Definir localização raiz',
     menuWorktreesFolder: 'Pasta de worktrees',
-    menuWorktreesFolderDesc: 'Definir destino das worktrees'
+    menuWorktreesFolderDesc: 'Definir destino das worktrees',
+    wtUpdate: 'Atualizar',
+    wtCreateWorktree: '+ Worktree',
+    wtOpenVSCode: 'VS Code',
+    wtWorktreesLinked: 'worktrees',
+    wtCreateFrom: 'Criar worktree a partir de branch...',
+    wtOpen: 'Abrir',
+    wtOpenFolder: 'Abrir Pasta',
+    wtTerminal: 'Terminal',
+    wtDelete: 'Excluir',
+    wtNoWorktrees: 'Nenhuma worktree vinculada'
   },
   'en-US': {
     refresh: 'Refresh',
@@ -328,7 +338,17 @@ const i18n = {
     menuRootFolder: 'Root repository folder',
     menuRootFolderDesc: 'Set root location',
     menuWorktreesFolder: 'Worktrees folder',
-    menuWorktreesFolderDesc: 'Set worktrees destination'
+    menuWorktreesFolderDesc: 'Set worktrees destination',
+    wtUpdate: 'Update',
+    wtCreateWorktree: '+ Worktree',
+    wtOpenVSCode: 'VS Code',
+    wtWorktreesLinked: 'worktrees',
+    wtCreateFrom: 'Create worktree from branch...',
+    wtOpen: 'Open',
+    wtOpenFolder: 'Open Folder',
+    wtTerminal: 'Terminal',
+    wtDelete: 'Delete',
+    wtNoWorktrees: 'No additional worktrees'
   }
 };
 

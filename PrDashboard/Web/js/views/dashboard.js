@@ -12,6 +12,9 @@ export let myPrsFilter = null;
 export let mySearchText = '', revSearchText = '', mrgSearchText = '';
 export let revFilter = null;
 export let revAuthorFilter = null;
+export let revSidebarPage = 0;
+export let mrgSidebarPage = 0;
+const SIDEBAR_PAGE_SIZE = 5;
 
 // ── Constants ──────────────────────────────────────────────────
 const UCLS = {CiFailing:'u-ci',ChangesRequested:'u-ch',CommentsPending:'u-cp',AwaitingReview:'u-ar',Approved:'u-ap',Normal:''};
@@ -343,19 +346,50 @@ export function renderMyPrs(prs) {
   window.updateCollapseBtn();
 }
 
+export function nextRevPage() {
+  const visible = window.hideBotReviews ? _lastRevPrs.filter(p => !window.isBotAuthor(p.author)) : _lastRevPrs;
+  const maxPage = Math.max(0, Math.ceil(visible.length / SIDEBAR_PAGE_SIZE) - 1);
+  if (revSidebarPage < maxPage) {
+    revSidebarPage++;
+    renderRevSidebar(_lastRevPrs);
+  }
+}
+
+export function prevRevPage() {
+  if (revSidebarPage > 0) {
+    revSidebarPage--;
+    renderRevSidebar(_lastRevPrs);
+  }
+}
+
 export function renderRevSidebar(prs) {
   const s = document.getElementById('s-rev-side');
   const visible = window.hideBotReviews ? prs.filter(p => !window.isBotAuthor(p.author)) : prs;
   if (!visible.length) {
     s.innerHTML = '';
+    revSidebarPage = 0;
     return;
   }
-  const items = visible.map(p => `<div class="srev">
+  const totalPages = Math.ceil(visible.length / SIDEBAR_PAGE_SIZE);
+  if (revSidebarPage >= totalPages) revSidebarPage = Math.max(0, totalPages - 1);
+
+  const start = revSidebarPage * SIDEBAR_PAGE_SIZE;
+  const end = start + SIDEBAR_PAGE_SIZE;
+  const page = visible.slice(start, end);
+
+  const items = page.map(p => `<div class="srev">
     <div class="srev-repo">${window.e(p.repo)} · #${p.number}</div>
     <a class="srev-link" href="${window.e(p.url)}" target="_blank" rel="noopener">${window.e(p.title)}</a>
     <div class="prc-meta">${window.bCI(p.ciState, p.failingCheck, p.failingChecks)}${window.bMrg(p.mergeState)}<span>${window.e(p.ageAgo)}</span></div>
   </div>`).join('');
-  s.innerHTML = `<div class="sc"><div class="sc-hdr"><div class="sc-title"><span style="width:7px;height:7px;border-radius:9999px;background:var(--amber);display:inline-block"></span>${window.t('sidebarReviews')}</div><span class="b by">${window.t('pendingCount', visible.length)}</span></div>${items}</div>`;
+
+  const pagination = totalPages > 1 ? `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-top:1px solid var(--border);margin-top:8px">
+    <button onclick="window.prevRevPage()" ${revSidebarPage === 0 ? 'disabled' : ''} style="padding:4px 10px;border-radius:4px;border:1px solid var(--border);background:var(--surf);color:var(--text);cursor:pointer;font-size:11px;font-family:inherit" ${revSidebarPage === 0 ? 'style="opacity:0.5;cursor:not-allowed"' : ''}>← Anterior</button>
+    <span style="font-size:11px;color:var(--muted)">${revSidebarPage + 1} / ${totalPages}</span>
+    <button onclick="window.nextRevPage()" ${revSidebarPage === totalPages - 1 ? 'disabled' : ''} style="padding:4px 10px;border-radius:4px;border:1px solid var(--border);background:var(--surf);color:var(--text);cursor:pointer;font-size:11px;font-family:inherit" ${revSidebarPage === totalPages - 1 ? 'style="opacity:0.5;cursor:not-allowed"' : ''}>Próximo →</button>
+  </div>` : '';
+
+  s.innerHTML = `<div class="sc"><div class="sc-hdr"><div class="sc-title"><span style="width:7px;height:7px;border-radius:9999px;background:var(--amber);display:inline-block"></span>${window.t('sidebarReviews')}</div><span class="b by">${window.t('pendingCount', visible.length)}</span></div>${items}${pagination}</div>`;
 }
 
 export function toggleAllRevRepos() {
@@ -421,17 +455,47 @@ export function renderRevFull(prs) {
   updateRevCollapseBtn();
 }
 
+export function nextMrgPage() {
+  const maxPage = Math.max(0, Math.ceil(_lastMrgPrs.length / SIDEBAR_PAGE_SIZE) - 1);
+  if (mrgSidebarPage < maxPage) {
+    mrgSidebarPage++;
+    renderMrgSidebar(_lastMrgPrs);
+  }
+}
+
+export function prevMrgPage() {
+  if (mrgSidebarPage > 0) {
+    mrgSidebarPage--;
+    renderMrgSidebar(_lastMrgPrs);
+  }
+}
+
 export function renderMrgSidebar(prs) {
   const s = document.getElementById('s-mrg-side');
   if (!prs.length) {
     s.innerHTML = '';
+    mrgSidebarPage = 0;
     return;
   }
-  const items = prs.slice(0, 6).map(p => `<div class="smerge-item">
+  const totalPages = Math.ceil(prs.length / SIDEBAR_PAGE_SIZE);
+  if (mrgSidebarPage >= totalPages) mrgSidebarPage = Math.max(0, totalPages - 1);
+
+  const start = mrgSidebarPage * SIDEBAR_PAGE_SIZE;
+  const end = start + SIDEBAR_PAGE_SIZE;
+  const page = prs.slice(start, end);
+
+  const items = page.map(p => `<div class="smerge-item">
     <div class="smerge-icon">${MERGE_SVG}</div>
     <div><a class="smerge-link" href="${window.e(p.url)}" target="_blank" rel="noopener">#${p.number} ${window.e(p.title)}</a><div class="smerge-sub">${window.e(p.repo)} · ${window.e(p.mergedAgo)}</div></div>
   </div>`).join('');
-  s.innerHTML = `<div class="sc"><div class="sc-hdr"><div class="sc-title"><span style="width:7px;height:7px;border-radius:9999px;background:var(--indigo);display:inline-block"></span>${window.t('sidebarMerged')}</div><span style="font-size:11px;font-family:monospace;color:var(--muted)">${window.t('recentCount', prs.length)}</span></div>${items}</div>`;
+
+  const pagination = totalPages > 1 ? `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-top:1px solid var(--border);margin-top:8px">
+    <button onclick="window.prevMrgPage()" ${mrgSidebarPage === 0 ? 'disabled' : ''} style="padding:4px 10px;border-radius:4px;border:1px solid var(--border);background:var(--surf);color:var(--text);cursor:pointer;font-size:11px;font-family:inherit" ${mrgSidebarPage === 0 ? 'style="opacity:0.5;cursor:not-allowed"' : ''}>← Anterior</button>
+    <span style="font-size:11px;color:var(--muted)">${mrgSidebarPage + 1} / ${totalPages}</span>
+    <button onclick="window.nextMrgPage()" ${mrgSidebarPage === totalPages - 1 ? 'disabled' : ''} style="padding:4px 10px;border-radius:4px;border:1px solid var(--border);background:var(--surf);color:var(--text);cursor:pointer;font-size:11px;font-family:inherit" ${mrgSidebarPage === totalPages - 1 ? 'style="opacity:0.5;cursor:not-allowed"' : ''}>Próximo →</button>
+  </div>` : '';
+
+  s.innerHTML = `<div class="sc"><div class="sc-hdr"><div class="sc-title"><span style="width:7px;height:7px;border-radius:9999px;background:var(--indigo);display:inline-block"></span>${window.t('sidebarMerged')}</div><span style="font-size:11px;font-family:monospace;color:var(--muted)">${window.t('recentCount', prs.length)}</span></div>${items}${pagination}</div>`;
 }
 
 export function renderMrgFull(prs) {

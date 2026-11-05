@@ -52,7 +52,9 @@ const I18N={
     stEntries:n=>`${n} entrada${n===1?'':'s'}`,
     stShowingOf:(a,b)=>`Mostrando ${a} de ${b}`,
     wtFilterRepo:'REPOSITÓRIO', wtFilterStatus:'STATUS DO REPO', wtFilterSearch:'BUSCAR RAMO / REPO',
-    wtAllRepos:'Todos os repositórios (14)', wtAllStates:'Todos os estados',
+    wtAllRepos:'Todos os repositórios', wtAllStates:'Todos os estados',
+    wtOrderBy:'Ordenar por', wtOrderNameAsc:'Nome (A-Z)', wtOrderNameDesc:'Nome (Z-A)',
+    wtOrderModified:'Última modificação', wtOrderStatus:'Status', wtOrderWorktrees:'Worktrees',
     wtOutdated:'Desatualizados (5)', wtWithWorktrees:'Com Worktrees (4)',
     wtWithChanges:'Com alterações locais (2)', wtInConflict:'Em conflito (1)',
     wtSearchPlaceholder:'Filtrar por nome ou branch...', wtWorktreeView:'Worktree View',
@@ -87,14 +89,24 @@ const I18N={
     wtWorktreesLinked:'worktrees',
     wtCreateFrom:'Criar worktree a partir de branch...',
     wtOpen:'Abrir',
-    wtTerminal:'Terminal',
+    wtOpenMenu:'Abrir',
+    wtOpenFolder:'Abrir Pasta',
+    wtOpenVSCode:'Abrir no VS Code',
+    wtOpenTerminal:'Abrir no Terminal',
     wtDelete:'Excluir',
+    wtSwitchToMain:'Ir para main',
     wtNoWorktrees:'Nenhuma worktree vinculada',
     wtModalCreateTitle:'Criar Nova Worktree',
     wtModalName:'Nome da Worktree',
     wtModalBranch:'Branch',
     wtModalCreate:'Criar Worktree',
     wtModalCancel:'Cancelar',
+    wtModalDestination:'Será criado em:',
+    wtModalRepoFolder:'Repositório:',
+    wtModalWorktreeFolder:'Pasta de worktrees:',
+    wtModalFinalPath:'Caminho final:',
+    wtModalGitCommand:'Comando git que será executado:',
+    wtModalInfo:'A worktree será criada na pasta de worktrees configurada, dentro de uma subpasta com o nome do repositório.',
     wtToastCreated:'Worktree criada com sucesso!',
     wtToastDeleted:'Worktree excluída com sucesso!',
     wtToastUpdated:'atualizado com sucesso!',
@@ -177,7 +189,9 @@ const I18N={
     stEntries:n=>`${n} entr${n===1?'y':'ies'}`,
     stShowingOf:(a,b)=>`Showing ${a} of ${b}`,
     wtFilterRepo:'REPOSITORY', wtFilterStatus:'REPO STATUS', wtFilterSearch:'SEARCH BRANCH / REPO',
-    wtAllRepos:'All repositories (14)', wtAllStates:'All states',
+    wtAllRepos:'All repositories', wtAllStates:'All states',
+    wtOrderBy:'Order by', wtOrderNameAsc:'Name (A-Z)', wtOrderNameDesc:'Name (Z-A)',
+    wtOrderModified:'Last modified', wtOrderStatus:'Status', wtOrderWorktrees:'Worktrees',
     wtOutdated:'Outdated (5)', wtWithWorktrees:'With Worktrees (4)',
     wtWithChanges:'With local changes (2)', wtInConflict:'In conflict (1)',
     wtSearchPlaceholder:'Filter by name or branch...', wtWorktreeView:'Worktree View',
@@ -212,14 +226,24 @@ const I18N={
     wtWorktreesLinked:'worktrees',
     wtCreateFrom:'Create worktree from branch...',
     wtOpen:'Open',
-    wtTerminal:'Terminal',
+    wtOpenMenu:'Open',
+    wtOpenFolder:'Open Folder',
+    wtOpenVSCode:'Open in VS Code',
+    wtOpenTerminal:'Open in Terminal',
     wtDelete:'Delete',
+    wtSwitchToMain:'Switch to main',
     wtNoWorktrees:'No additional worktrees',
     wtModalCreateTitle:'Create New Worktree',
     wtModalName:'Worktree Name',
     wtModalBranch:'Branch',
     wtModalCreate:'Create Worktree',
     wtModalCancel:'Cancel',
+    wtModalDestination:'Will be created in:',
+    wtModalRepoFolder:'Repository:',
+    wtModalWorktreeFolder:'Worktrees folder:',
+    wtModalFinalPath:'Final path:',
+    wtModalGitCommand:'Git command to be executed:',
+    wtModalInfo:'The worktree will be created in the configured worktrees folder, inside a subfolder with the repository name.',
     wtToastCreated:'Worktree created successfully!',
     wtToastDeleted:'Worktree deleted successfully!',
     wtToastUpdated:'updated successfully!',
@@ -727,6 +751,8 @@ let _lastMrgPrs=[];
 const notifHistory=[];
 let myPrsFilter=null;
 let mySearchText='', revSearchText='', mrgSearchText='';
+let revSidebarPage=0, mrgSidebarPage=0;
+const SIDEBAR_PAGE_SIZE=5;
 function setMyView(v){
   myPrsView=v;
   
@@ -937,16 +963,35 @@ function renderMyPrs(prs){
   updateCollapseBtn();
 }
 
+function nextRevPage(){
+  const visible=hideBotReviews?_lastRevPrs.filter(p=>!isBotAuthor(p.author)):_lastRevPrs;
+  const maxPage=Math.max(0,Math.ceil(visible.length/SIDEBAR_PAGE_SIZE)-1);
+  if(revSidebarPage<maxPage){revSidebarPage++;renderRevSidebar(_lastRevPrs)}
+}
+function prevRevPage(){
+  if(revSidebarPage>0){revSidebarPage--;renderRevSidebar(_lastRevPrs)}
+}
 function renderRevSidebar(prs){
+  _lastRevPrs=prs;
   const s=document.getElementById('s-rev-side');
   const visible=hideBotReviews?prs.filter(p=>!isBotAuthor(p.author)):prs;
-  if(!visible.length){s.innerHTML='';return}
-  const items=visible.map(p=>`<div class="srev">
+  if(!visible.length){s.innerHTML='';revSidebarPage=0;return}
+  const totalPages=Math.ceil(visible.length/SIDEBAR_PAGE_SIZE);
+  if(revSidebarPage>=totalPages)revSidebarPage=Math.max(0,totalPages-1);
+  const start=revSidebarPage*SIDEBAR_PAGE_SIZE;
+  const end=start+SIDEBAR_PAGE_SIZE;
+  const page=visible.slice(start,end);
+  const items=page.map(p=>`<div class="srev">
     <div class="srev-repo">${e(p.repo)} · #${p.number}</div>
     <a class="srev-link" href="${e(p.url)}" target="_blank" rel="noopener">${e(p.title)}</a>
     <div class="prc-meta">${bCI(p.ciState,p.failingCheck,p.failingChecks)}${bMrg(p.mergeState)}<span>${e(p.ageAgo)}</span></div>
   </div>`).join('');
-  s.innerHTML=`<div class="sc"><div class="sc-hdr"><div class="sc-title"><span style="width:7px;height:7px;border-radius:9999px;background:var(--amber);display:inline-block"></span>${t('sidebarReviews')}</div><span class="b by">${t('pendingCount',visible.length)}</span></div>${items}</div>`;
+  const pagination=totalPages>1?`<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-top:1px solid var(--border);margin-top:8px">
+    <button onclick="prevRevPage()" ${revSidebarPage===0?'disabled':''} style="padding:4px 10px;border-radius:4px;border:1px solid var(--border);background:var(--surf);color:var(--text);cursor:pointer;font-size:11px;font-family:inherit;transition:all .15s${revSidebarPage===0?';opacity:0.5;cursor:not-allowed':''}">← Anterior</button>
+    <span style="font-size:11px;color:var(--muted)">${revSidebarPage+1} / ${totalPages}</span>
+    <button onclick="nextRevPage()" ${revSidebarPage===totalPages-1?'disabled':''} style="padding:4px 10px;border-radius:4px;border:1px solid var(--border);background:var(--surf);color:var(--text);cursor:pointer;font-size:11px;font-family:inherit;transition:all .15s${revSidebarPage===totalPages-1?';opacity:0.5;cursor:not-allowed':''}">Próximo →</button>
+  </div>`:'';
+  s.innerHTML=`<div class="sc"><div class="sc-hdr"><div class="sc-title"><span style="width:7px;height:7px;border-radius:9999px;background:var(--amber);display:inline-block"></span>${t('sidebarReviews')}</div><span class="b by">${t('pendingCount',visible.length)}</span></div>${items}${pagination}</div>`;
 }
 
 // ── Reviews tab view + filter ─────────────────────────────────
@@ -1042,14 +1087,32 @@ function renderRevFull(prs){
   updateRevCollapseBtn();
 }
 
+function nextMrgPage(){
+  const maxPage=Math.max(0,Math.ceil(_lastMrgPrs.length/SIDEBAR_PAGE_SIZE)-1);
+  if(mrgSidebarPage<maxPage){mrgSidebarPage++;renderMrgSidebar(_lastMrgPrs)}
+}
+function prevMrgPage(){
+  if(mrgSidebarPage>0){mrgSidebarPage--;renderMrgSidebar(_lastMrgPrs)}
+}
 function renderMrgSidebar(prs){
+  _lastMrgPrs=prs;
   const s=document.getElementById('s-mrg-side');
-  if(!prs.length){s.innerHTML='';return}
-  const items=prs.slice(0,6).map(p=>`<div class="smerge-item">
+  if(!prs.length){s.innerHTML='';mrgSidebarPage=0;return}
+  const totalPages=Math.ceil(prs.length/SIDEBAR_PAGE_SIZE);
+  if(mrgSidebarPage>=totalPages)mrgSidebarPage=Math.max(0,totalPages-1);
+  const start=mrgSidebarPage*SIDEBAR_PAGE_SIZE;
+  const end=start+SIDEBAR_PAGE_SIZE;
+  const page=prs.slice(start,end);
+  const items=page.map(p=>`<div class="smerge-item">
     <div class="smerge-icon">${MERGE_SVG}</div>
     <div><a class="smerge-link" href="${e(p.url)}" target="_blank" rel="noopener">#${p.number} ${e(p.title)}</a><div class="smerge-sub">${e(p.repo)} · ${e(p.mergedAgo)}</div></div>
   </div>`).join('');
-  s.innerHTML=`<div class="sc"><div class="sc-hdr"><div class="sc-title"><span style="width:7px;height:7px;border-radius:9999px;background:var(--indigo);display:inline-block"></span>${t('sidebarMerged')}</div><span style="font-size:11px;font-family:monospace;color:var(--muted)">${t('recentCount',prs.length)}</span></div>${items}</div>`;
+  const pagination=totalPages>1?`<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-top:1px solid var(--border);margin-top:8px">
+    <button onclick="prevMrgPage()" ${mrgSidebarPage===0?'disabled':''} style="padding:4px 10px;border-radius:4px;border:1px solid var(--border);background:var(--surf);color:var(--text);cursor:pointer;font-size:11px;font-family:inherit;transition:all .15s${mrgSidebarPage===0?';opacity:0.5;cursor:not-allowed':''}">← Anterior</button>
+    <span style="font-size:11px;color:var(--muted)">${mrgSidebarPage+1} / ${totalPages}</span>
+    <button onclick="nextMrgPage()" ${mrgSidebarPage===totalPages-1?'disabled':''} style="padding:4px 10px;border-radius:4px;border:1px solid var(--border);background:var(--surf);color:var(--text);cursor:pointer;font-size:11px;font-family:inherit;transition:all .15s${mrgSidebarPage===totalPages-1?';opacity:0.5;cursor:not-allowed':''}">Próximo →</button>
+  </div>`:'';
+  s.innerHTML=`<div class="sc"><div class="sc-hdr"><div class="sc-title"><span style="width:7px;height:7px;border-radius:9999px;background:var(--indigo);display:inline-block"></span>${t('sidebarMerged')}</div><span style="font-size:11px;font-family:monospace;color:var(--muted)">${t('recentCount',prs.length)}</span></div>${items}${pagination}</div>`;
 }
 
 function renderMrgFull(prs){
@@ -1626,6 +1689,10 @@ window.selectRootPath=async function(){
   const config=loadWorktreesConfig();
   const description=currentLang==='en-US'?'Select root folder':'Selecione a pasta raiz';
 
+  // Mostrar aviso de que a janela pode estar minimizada
+  const waitMsg=currentLang==='pt-BR'?'Abrindo seletor de pasta... (verifique a barra de tarefas se não aparecer)':'Opening folder picker... (check taskbar if it doesn\'t appear)';
+  pushNotif(`📂 ${waitMsg}`,'info');
+
   try{
     const response=await fetch('/api/select-folder',{
       method:'POST',
@@ -1640,8 +1707,9 @@ window.selectRootPath=async function(){
         saveWorktreesConfig(config);
         updateWorktreesUI();
         updateWorktreesPathsDisplay();
-        const typeText=currentLang==='en-US'?'root':'raiz';
-        pushNotif(`📁 Caminho ${typeText} atualizado: ${config.rootPath}`,'info');
+        const typeText=t('wtPathTypeRoot');
+        const msg=t('wtPathUpdated').replace('{type}',typeText).replace('{path}',config.rootPath);
+        pushNotif(`📁 ${msg}`,'info');
       }
     }
   }catch(err){
@@ -1653,6 +1721,10 @@ window.selectRootPath=async function(){
 window.selectWorktreesPath=async function(){
   const config=loadWorktreesConfig();
   const description=currentLang==='en-US'?'Select worktrees folder':'Selecione a pasta de worktrees';
+
+  // Mostrar aviso de que a janela pode estar minimizada
+  const waitMsg=currentLang==='pt-BR'?'Abrindo seletor de pasta... (verifique a barra de tarefas se não aparecer)':'Opening folder picker... (check taskbar if it doesn\'t appear)';
+  pushNotif(`📂 ${waitMsg}`,'info');
 
   try{
     const response=await fetch('/api/select-folder',{
@@ -1668,8 +1740,9 @@ window.selectWorktreesPath=async function(){
         saveWorktreesConfig(config);
         updateWorktreesUI();
         updateWorktreesPathsDisplay();
-        const typeText=currentLang==='en-US'?'destination':'destino';
-        pushNotif(`📁 Caminho ${typeText} atualizado: ${config.worktreesPath}`,'info');
+        const typeText=t('wtPathTypeWorktrees');
+        const msg=t('wtPathUpdated').replace('{type}',typeText).replace('{path}',config.worktreesPath);
+        pushNotif(`📁 ${msg}`,'info');
       }
     }
   }catch(err){
@@ -1790,8 +1863,8 @@ async function updateSelectedRepos(){
 
 let worktreesFilters={
   search:'',
-  status:'all', // 'all', 'outdated', 'with-worktrees', 'uncommitted', 'conflict'
-  selectedRepo:'all'
+  selectedRepos:[], // array de repositórios selecionados
+  selectedStatuses:[] // array de status selecionados
 };
 
 // ── Worktrees validation and data loading ──────────────────────
@@ -1908,6 +1981,11 @@ async function loadWorktreesData(showLoading=true){
       return;
     }
 
+    // Desabilitar filtros enquanto carrega
+    if(showLoading){
+      setWorktreeFiltersDisabled(true);
+    }
+
     // Mostrar loading localizado apenas se necessário
     if(showLoading){
       setWorktreesLoading('stats',true);
@@ -1923,6 +2001,9 @@ async function loadWorktreesData(showLoading=true){
     setWorktreesLoading('repositories',true);
     const repos=await fetch('/api/worktrees/repositories').then(r=>r.json());
     worktreesData.repositories=repos.repositories;
+
+    // Popular dropdown de repositórios
+    populateRepoDropdown();
 
     // Renderizar lista vazia (com esqueletos/placeholders se necessário)
     const container=document.getElementById('wt-repos-list');
@@ -1963,6 +2044,9 @@ async function loadWorktreesData(showLoading=true){
     worktreesData.lastUpdate=Date.now();
     setWorktreesLoading('repositories',false);
 
+    // Reabilitar filtros
+    setWorktreeFiltersDisabled(false);
+
     // Salvar cache persistente
     await saveWorktreesCache();
 
@@ -1970,6 +2054,7 @@ async function loadWorktreesData(showLoading=true){
     console.error('[WORKTREES] Error:',err);
     setWorktreesLoading('stats',false);
     setWorktreesLoading('repositories',false);
+    setWorktreeFiltersDisabled(false);
     showToast(currentLang==='pt-BR'?'Erro ao carregar dados dos repositórios.':'Error loading repository data.','error');
   }
 }
@@ -2018,8 +2103,8 @@ function updateWorktreesStats(stats){
 }
 
 function renderWorktreesList(){
-  // Use applyWorktreesFilters to render with current filters
-  applyWorktreesFilters();
+  // Use applyWorktreeFilters to render with current filters
+  applyWorktreeFilters();
 }
 
 // Atualizar apenas um card específico (incremental)
@@ -2134,34 +2219,151 @@ function toggleRepoExpand(repoName){
   chevron.style.transform=isHidden?'rotate(180deg)':'rotate(0deg)';
 }
 
-function renderWorktrees(repo){
-  // Filtrar apenas worktrees adicionais (excluir o principal)
-  const worktrees=(repo.worktrees||[]).filter(wt=>!wt.isMain);
+// Helper: Find PRs related to a branch/worktree
+function findRelatedPRs(repoName,branch){
+  const allPRs=[..._lastMyPrs,..._lastRevPrs,..._lastMrgPrs];
+  return allPRs.filter(pr=>{
+    const prRepo=pr.repo||'';
+    const prBranch=pr.headRef||'';
+    // Match by repo name and branch name
+    return prRepo.toLowerCase().includes(repoName.toLowerCase())&&
+           prBranch.toLowerCase()===branch.toLowerCase();
+  });
+}
 
-  if(worktrees.length===0){
+// Helper: Get PR status badge for worktree
+function getPRStatusBadge(prs){
+  if(prs.length===0)return '';
+
+  const prCount=prs.length;
+  if(prCount>1){
+    return `<span style="display:inline-flex;align-items:center;gap:3px;padding:2px 6px;border-radius:4px;background:var(--indigo-bg);border:1px solid var(--indigo-bd);color:var(--indigo);font-size:10px;font-weight:600">
+      <svg class="ti" width="10" height="10"><use href="/icons.svg#ti-git-pull-request"/></svg>
+      ${prCount} PRs
+    </span>`;
+  }
+
+  // Single PR - show detailed status (priorizar Merged > Draft > CI > Changes > Approved > Awaiting)
+  const pr=prs[0];
+  let statusColor,statusIcon,statusText,statusBg,statusBorder;
+
+  // Check if PR is merged (has mergedAgo or is from _lastMrgPrs)
+  const isMerged=!!pr.mergedAgo;
+
+  // Priority 0: Merged
+  if(isMerged){
+    statusColor='#a6e3a1';statusIcon='ti-git-merge';statusText=`Merged ${pr.mergedAgo||''}`;
+    statusBg='rgba(166,227,161,0.15)';statusBorder='rgba(166,227,161,0.3)';
+  }
+  // Priority 1: Draft
+  else if(pr.isDraft){
+    statusColor='#bac2de';statusIcon='ti-pencil';statusText='Draft';
+    statusBg='rgba(186,194,222,0.15)';statusBorder='rgba(186,194,222,0.3)';
+  }
+  // Priority 2: CI State
+  else if(pr.ciState==='Failing'){
+    statusColor='#f38ba8';statusIcon='ti-alert-circle';statusText='CI failing';
+    statusBg='rgba(243,139,168,0.15)';statusBorder='rgba(243,139,168,0.3)';
+  }
+  // Priority 3: Changes Requested
+  else if(pr.reviewState==='ChangesRequested'){
+    statusColor='#fab387';statusIcon='ti-x';statusText='Changes req.';
+    statusBg='rgba(250,179,135,0.15)';statusBorder='rgba(250,179,135,0.3)';
+  }
+  // Priority 4: Approved
+  else if(pr.reviewState==='Approved'){
+    statusColor='#a6e3a1';statusIcon='ti-check';statusText='Approved';
+    statusBg='rgba(166,227,161,0.15)';statusBorder='rgba(166,227,161,0.3)';
+  }
+  // Priority 5: CI Pending
+  else if(pr.ciState==='Pending'){
+    statusColor='#f9e2af';statusIcon='ti-loader';statusText='CI pending';
+    statusBg='rgba(249,226,175,0.15)';statusBorder='rgba(249,226,175,0.3)';
+  }
+  // Priority 6: Awaiting Review
+  else if(pr.reviewState==='Pending'||pr.reviewState===null||pr.reviewState===undefined){
+    statusColor='#cba6f7';statusIcon='ti-clock';statusText='Awaiting';
+    statusBg='rgba(203,166,247,0.15)';statusBorder='rgba(203,166,247,0.3)';
+  }
+  // Default: In review
+  else{
+    statusColor='#89b4fa';statusIcon='ti-git-pull-request';statusText='Review';
+    statusBg='rgba(137,180,250,0.15)';statusBorder='rgba(137,180,250,0.3)';
+  }
+
+  return `<a href="${e(pr.url)}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:3px;padding:2px 6px;border-radius:4px;background:${statusBg};border:1px solid ${statusBorder};color:${statusColor};font-size:10px;font-weight:600;text-decoration:none;transition:opacity .15s" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">
+    <svg class="ti" width="10" height="10"><use href="/icons.svg#${statusIcon}"/></svg>
+    #${pr.number} ${statusText}
+  </a>`;
+}
+
+function renderWorktrees(repo){
+  // Ordenar worktrees: principal primeiro, depois alfabético
+  const sortedWorktrees=sortWorktrees(repo.worktrees||[]);
+  const mainWorktree=sortedWorktrees.find(wt=>wt.isMain);
+  const additionalWorktrees=sortedWorktrees.filter(wt=>!wt.isMain);
+
+  if(!mainWorktree&&additionalWorktrees.length===0){
     return `<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">${t('wtNoWorktrees')}</div>`;
   }
 
-  return `<div style="display:flex;flex-direction:column;gap:10px">${worktrees.map(wt=>{
+  const allWorktrees=mainWorktree?[mainWorktree,...additionalWorktrees]:additionalWorktrees;
+
+  return `<div style="display:flex;flex-direction:column;gap:10px">${allWorktrees.map(wt=>{
     const wtPath=wt.path||'';
     const wtName=wtPath.split(/[\\/]/).pop()||wtPath;
     const branch=wt.branch||repo.currentBranch||'main';
+    const isMain=wt.isMain;
+
+    // Find related PRs
+    const relatedPRs=findRelatedPRs(repo.name,branch);
+    const prBadge=getPRStatusBadge(relatedPRs);
+
+    // Estilo diferenciado para o principal
+    const borderStyle=isMain?'border:2px solid #89b4fa':'border:1px solid var(--border)';
+    const iconBg=isMain?'rgba(137,180,250,0.15)':'rgba(137,220,235,0.15)';
+    const iconColor=isMain?'#89b4fa':'#89dceb';
+    const iconName=isMain?'ti-git-merge':'ti-git-branch';
+    const hoverBorder=isMain?'#89b4fa':'var(--indigo)';
 
     return `
-      <div style="padding:12px 14px;border-radius:10px;background:var(--surf);border:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;transition:border-color .15s" onmouseover="this.style.borderColor='var(--indigo)'" onmouseout="this.style.borderColor='var(--border)'">
-        <div style="display:flex;align-items:center;gap:10px">
-          <div style="width:32px;height:32px;border-radius:8px;background:rgba(137,220,235,0.15);display:flex;align-items:center;justify-content:center">
-            <svg class="ti" width="16" height="16" style="stroke:#89dceb"><use href="/icons.svg#ti-git-branch"/></svg>
+      <div style="padding:12px 14px;border-radius:10px;background:var(--surf);${borderStyle};display:flex;align-items:center;justify-content:space-between;transition:border-color .15s" onmouseover="this.style.borderColor='${hoverBorder}'" onmouseout="this.style.borderColor='${isMain?'#89b4fa':'var(--border)'}'">
+        <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0">
+          <div style="width:32px;height:32px;border-radius:8px;background:${iconBg};display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <svg class="ti" width="16" height="16" style="stroke:${iconColor}"><use href="/icons.svg#${iconName}"/></svg>
           </div>
-          <div>
-            <div style="font-size:12px;font-weight:600;color:var(--text);font-family:monospace">${wtName}</div>
+          <div style="flex:1;min-width:0">
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px">
+              <span style="font-size:12px;font-weight:${isMain?'700':'600'};color:var(--text);font-family:monospace">${wtName}</span>
+              ${prBadge}
+            </div>
             <div style="font-size:11px;color:var(--muted)">${branch}</div>
           </div>
         </div>
-        <div style="display:flex;align-items:center;gap:6px">
-          <button style="padding:5px 10px;border-radius:6px;background:var(--subtle);border:1px solid var(--border);font-size:11px;font-weight:500;color:var(--text);cursor:pointer;transition:all .15s" onclick="openWorktree('${wtPath.replace(/\\/g,'\\\\')}','explorer')" onmouseover="this.style.borderColor='var(--indigo)'" onmouseout="this.style.borderColor='var(--border)'">${t('wtOpen')}</button>
-          <button style="padding:5px 10px;border-radius:6px;background:var(--subtle);border:1px solid var(--border);font-size:11px;font-weight:500;color:var(--text);cursor:pointer;transition:all .15s" onclick="openWorktree('${wtPath.replace(/\\/g,'\\\\')}','terminal')" onmouseover="this.style.borderColor='var(--blue)'" onmouseout="this.style.borderColor='var(--border)'">${t('wtTerminal')}</button>
-          <button style="padding:5px 10px;border-radius:6px;background:rgba(243,139,168,0.15);border:1px solid rgba(243,139,168,0.3);font-size:11px;font-weight:500;color:#f38ba8;cursor:pointer;transition:all .15s" onclick="deleteWorktree('${repo.path.replace(/\\/g,'\\\\')}','${wtPath.replace(/\\/g,'\\\\')}')" onmouseover="this.style.background='rgba(243,139,168,0.25)'" onmouseout="this.style.background='rgba(243,139,168,0.15)'">${t('wtDelete')}</button>
+        <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+          <div class="wt-action-dropdown">
+            <button class="wt-action-btn" onclick="toggleWorktreeActionMenu(event, '${wtPath.replace(/\\/g,'\\\\').replace(/'/g,"\\'")}')">
+              <svg class="ti" width="14" height="14" style="stroke:currentColor"><use href="/icons.svg#ti-external-link"/></svg>
+              <span>${t('wtOpenMenu')}</span>
+              <svg class="ti" width="12" height="12" style="stroke:currentColor"><use href="/icons.svg#ti-chevron-down"/></svg>
+            </button>
+            <div class="wt-action-menu" id="wt-menu-${wtPath.replace(/[^a-zA-Z0-9]/g,'_')}">
+              <div class="wt-action-item folder" onclick="openWorktree('${wtPath.replace(/\\/g,'\\\\')}','explorer'); closeAllWorktreeMenus()">
+                <svg class="ti"><use href="/icons.svg#ti-folder"/></svg>
+                <span>${t('wtOpenFolder')}</span>
+              </div>
+              <div class="wt-action-item vscode" onclick="openWorktree('${wtPath.replace(/\\/g,'\\\\')}','vscode'); closeAllWorktreeMenus()">
+                <svg class="ti"><use href="/icons.svg#ti-file-description"/></svg>
+                <span>${t('wtOpenVSCode')}</span>
+              </div>
+              <div class="wt-action-item terminal" onclick="openWorktree('${wtPath.replace(/\\/g,'\\\\')}','terminal'); closeAllWorktreeMenus()">
+                <svg class="ti"><use href="/icons.svg#ti-chevron-right"/></svg>
+                <span>${t('wtOpenTerminal')}</span>
+              </div>
+            </div>
+          </div>
+          ${isMain && branch !== 'main' && branch !== 'master'?`<button style="padding:5px 10px;border-radius:6px;background:rgba(166,227,161,0.15);border:1px solid rgba(166,227,161,0.3);font-size:11px;font-weight:500;color:#a6e3a1;cursor:pointer;transition:all .15s" onclick="switchToMainBranch('${repo.path.replace(/\\/g,'\\\\')}')" onmouseover="this.style.background='rgba(166,227,161,0.25)'" onmouseout="this.style.background='rgba(166,227,161,0.15)'">${t('wtSwitchToMain')}</button>`:''}
+          ${!isMain?`<button style="padding:5px 10px;border-radius:6px;background:rgba(243,139,168,0.15);border:1px solid rgba(243,139,168,0.3);font-size:11px;font-weight:500;color:#f38ba8;cursor:pointer;transition:all .15s" onclick="deleteWorktree('${repo.path.replace(/\\/g,'\\\\')}','${wtPath.replace(/\\/g,'\\\\')}')" onmouseover="this.style.background='rgba(243,139,168,0.25)'" onmouseout="this.style.background='rgba(243,139,168,0.15)'">${t('wtDelete')}</button>`:''}
         </div>
       </div>
     `;
@@ -2169,22 +2371,133 @@ function renderWorktrees(repo){
 }
 
 // ── Worktrees filters ──────────────────────────────────────────
-function applyWorktreesFilters(){
+// Multi-select toggle functions for worktrees
+function toggleWtMS(key,ev){
+  ev.stopPropagation();
+  const panel=document.getElementById('ms-panel-wt-'+key);
+  const isOpen=panel.style.display!=='none';
+  document.querySelectorAll('.ms-panel').forEach(p=>p.style.display='none');
+  if(!isOpen)panel.style.display='';
+}
+
+function toggleWtMSItem(key,val){
+  const arr=key==='repo'?worktreesFilters.selectedRepos:worktreesFilters.selectedStatuses;
+  const idx=arr.indexOf(val);
+  if(idx===-1)arr.push(val);else arr.splice(idx,1);
+  updateWtMSBtn(key);
+  document.querySelectorAll('#ms-panel-wt-'+key+' .ms-item').forEach(item=>{
+    item.classList.toggle('sel',arr.includes(item.dataset.val));
+  });
+  applyWorktreeFilters();
+}
+
+function updateWtMSBtn(key){
+  const arr=key==='repo'?worktreesFilters.selectedRepos:worktreesFilters.selectedStatuses;
+  const el=document.querySelector('#ms-wt-'+key+' .ms-label');
+  if(!el)return;
+
+  const defaults={repo:t('wtAllRepos'),status:t('wtAllStates')};
+  const plurals={repo:currentLang==='pt-BR'?'repositórios':'repositories',status:currentLang==='pt-BR'?'status':'statuses'};
+
+  // Mapeamento de labels amigáveis para status
+  const statusLabels={
+    outdated:currentLang==='pt-BR'?'Desatualizados':'Outdated',
+    hasWorktrees:currentLang==='pt-BR'?'Com Worktrees':'With Worktrees',
+    hasChanges:currentLang==='pt-BR'?'Com alterações':'With changes',
+    conflict:currentLang==='pt-BR'?'Em conflito':'In conflict'
+  };
+
+  // Quando nada selecionado, mostrar total disponível
+  if(arr.length===0){
+    if(key==='repo'){
+      const total=worktreesData.repositories.length;
+      el.textContent=total>0?`${defaults[key]} (${total})`:defaults[key];
+    }else{
+      el.textContent=defaults[key];
+    }
+  }
+  // Quando 1 selecionado, mostrar nome/valor traduzido
+  else if(arr.length===1){
+    if(key==='status'){
+      el.textContent=statusLabels[arr[0]]||arr[0];
+    }else{
+      el.textContent=String(arr[0]);
+    }
+  }
+  // Quando múltiplos, mostrar "N repositórios" ou "N status"
+  else{
+    el.textContent=arr.length+' '+plurals[key];
+  }
+}
+
+window.toggleWtMS=toggleWtMS;
+window.toggleWtMSItem=toggleWtMSItem;
+
+function applyWorktreeFilters(){
+  const searchInput=document.getElementById('wt-search-input');
+  const orderBy=document.getElementById('wt-order-by');
+
+  const searchValue=(searchInput?.value||'').toLowerCase();
+  const orderValue=orderBy?.value||'name-asc';
+
   const filtered=worktreesData.repositories.filter(repo=>{
     // Filtro de busca
-    if(worktreesFilters.search&&!repo.name.toLowerCase().includes(worktreesFilters.search.toLowerCase())){
-      return false;
+    if(searchValue&&!repo.name.toLowerCase().includes(searchValue)){
+      const hasMatchingBranch=repo.worktrees?.some(wt=>wt.branch?.toLowerCase().includes(searchValue));
+      if(!hasMatchingBranch)return false;
     }
 
-    // Filtro de status
-    if(worktreesFilters.status==='outdated'&&repo.status?.behind===0)return false;
-    if(worktreesFilters.status==='with-worktrees'&&repo.worktrees.length===0)return false;
-    if(worktreesFilters.status==='uncommitted'&&!repo.status?.hasUncommitted)return false;
+    // Filtro de repositórios (multi-select)
+    if(worktreesFilters.selectedRepos.length>0&&!worktreesFilters.selectedRepos.includes(repo.name))return false;
 
-    // Filtro de repositório específico
-    if(worktreesFilters.selectedRepo!=='all'&&repo.name!==worktreesFilters.selectedRepo)return false;
+    // Filtro de status (multi-select)
+    if(worktreesFilters.selectedStatuses.length>0){
+      let matchesAnyStatus=false;
+      for(const status of worktreesFilters.selectedStatuses){
+        if(status==='outdated'&&repo.status?.behind>0)matchesAnyStatus=true;
+        if(status==='hasWorktrees'&&repo.worktrees?.length>1)matchesAnyStatus=true;
+        if(status==='hasChanges'&&repo.status?.hasUncommitted)matchesAnyStatus=true;
+        if(status==='conflict'&&(repo.status?.diverged||repo.status?.conflict))matchesAnyStatus=true;
+      }
+      if(!matchesAnyStatus)return false;
+    }
 
     return true;
+  });
+
+  // Ordenar worktrees internamente em cada repo ANTES de ordenar repos
+  filtered.forEach(repo=>{
+    if(repo.worktrees&&repo.worktrees.length>0){
+      repo.worktrees=sortWorktrees(repo.worktrees);
+    }
+  });
+
+  // Ordenação dos repositórios
+  filtered.sort((a,b)=>{
+    switch(orderValue){
+      case 'name-asc':
+        return a.name.localeCompare(b.name);
+      case 'name-desc':
+        return b.name.localeCompare(a.name);
+      case 'modified':
+        const aTime=a.lastModified?new Date(a.lastModified).getTime():0;
+        const bTime=b.lastModified?new Date(b.lastModified).getTime():0;
+        return bTime-aTime;
+      case 'status':
+        const getStatusPriority=r=>{
+          if(r.status?.behind>0)return 4;
+          if(r.worktrees?.length>1)return 3;
+          if(r.status?.hasUncommitted)return 2;
+          return 1;
+        };
+        return getStatusPriority(b)-getStatusPriority(a);
+      case 'worktrees':
+        const aWT=(a.worktrees||[]).length;
+        const bWT=(b.worktrees||[]).length;
+        return bWT-aWT;
+      default:
+        return 0;
+    }
   });
 
   const container=document.getElementById('wt-repos-list');
@@ -2193,32 +2506,86 @@ function applyWorktreesFilters(){
   filtered.forEach(repo=>container.appendChild(createRepoCard(repo)));
 }
 
+// Helper: ordenar worktrees com o principal primeiro, depois alfabético
+function sortWorktrees(worktrees){
+  if(!worktrees||worktrees.length===0)return worktrees;
+
+  const sorted=[...worktrees].sort((a,b)=>{
+    // Principal sempre primeiro
+    if(a.isMain&&!b.isMain)return -1;
+    if(!a.isMain&&b.isMain)return 1;
+
+    // Se ambos são principais ou ambos não são, ordenar por nome da branch
+    const aName=(a.branch||a.name||'').toLowerCase();
+    const bName=(b.branch||b.name||'').toLowerCase();
+    return aName.localeCompare(bName);
+  });
+
+  return sorted;
+}
+
+function clearWorktreeFilters(){
+  const searchInput=document.getElementById('wt-search-input');
+  const orderBy=document.getElementById('wt-order-by');
+
+  if(searchInput)searchInput.value='';
+  if(orderBy)orderBy.value='name-asc';
+
+  worktreesFilters.selectedRepos=[];
+  worktreesFilters.selectedStatuses=[];
+
+  updateWtMSBtn('repo');
+  updateWtMSBtn('status');
+
+  document.querySelectorAll('.ms-panel .ms-item').forEach(item=>item.classList.remove('sel'));
+
+  applyWorktreeFilters();
+}
+
+window.applyWorktreeFilters=applyWorktreeFilters;
+window.clearWorktreeFilters=clearWorktreeFilters;
+
 // Conectar inputs HTML aos filtros
 function initWorktreesFilters(){
-  const searchInput=document.getElementById('wt-filter-search');
-  const statusSelect=document.getElementById('wt-filter-status');
-  const repoSelect=document.getElementById('wt-filter-repo');
+  // Nada necessário - os eventos estão nos elementos HTML (onchange/oninput)
+  // Mas podemos popular o dropdown de repositórios aqui
+  populateRepoDropdown();
+}
 
-  if(searchInput){
-    searchInput.addEventListener('input',(e)=>{
-      worktreesFilters.search=e.target.value;
-      applyWorktreesFilters();
-    });
-  }
+function populateRepoDropdown(){
+  const panel=document.getElementById('ms-panel-wt-repo');
+  if(!panel)return;
 
-  if(statusSelect){
-    statusSelect.addEventListener('change',(e)=>{
-      worktreesFilters.status=e.target.value;
-      applyWorktreesFilters();
-    });
-  }
+  panel.innerHTML='';
+  worktreesData.repositories.forEach(repo=>{
+    const item=document.createElement('div');
+    item.className='ms-item';
+    item.dataset.val=repo.name;
+    item.onclick=()=>toggleWtMSItem('repo',repo.name);
 
-  if(repoSelect){
-    repoSelect.addEventListener('change',(e)=>{
-      worktreesFilters.selectedRepo=e.target.value;
-      applyWorktreesFilters();
-    });
-  }
+    const check=document.createElement('span');
+    check.className='ms-check';
+    item.appendChild(check);
+
+    const label=document.createElement('span');
+    label.textContent=repo.name;
+    item.appendChild(label);
+
+    panel.appendChild(item);
+  });
+
+  // Atualizar label do botão com total
+  updateWtMSBtn('repo');
+}
+
+function setWorktreeFiltersDisabled(disabled){
+  const searchInput=document.getElementById('wt-search-input');
+  const repoBtn=document.querySelector('#ms-wt-repo .ms-btn');
+  const statusBtn=document.querySelector('#ms-wt-status .ms-btn');
+
+  if(searchInput)searchInput.disabled=disabled;
+  if(repoBtn)repoBtn.disabled=disabled;
+  if(statusBtn)statusBtn.disabled=disabled;
 }
 
 function showWorktreesError(message){
@@ -2229,39 +2596,156 @@ function showWorktreesError(message){
 // Loading removido - agora é progressivo por card
 
 function showWorktreesConfigError(errors){
+  const config=loadWorktreesConfig();
   const errorMessages={
     rootPath:t('wtErrorRootPath'),
     worktreesPath:t('wtErrorWorktreesPath'),
     rootPathNotFound:t('wtErrorRootPathNotFound'),
     worktreesPathNotFound:t('wtErrorWorktreesPathNotFound')
   };
+
+  // Verificar o que está configurado e o que falta
+  const rootConfigured=!!config.rootPath;
+  const worktreesConfigured=!!config.worktreesPath;
+
+  // Verificar se as pastas são válidas (não são C:\ ou raiz de drive)
+  const isRootValid=rootConfigured&&!isRootDrivePath(config.rootPath);
+  const isWorktreesValid=worktreesConfigured&&!isRootDrivePath(config.worktreesPath);
+
+  const bothConfigured=rootConfigured&&worktreesConfigured;
+  const bothValid=isRootValid&&isWorktreesValid;
   const messages=errors.map(e=>errorMessages[e]||e);
+
   const banner=document.getElementById('wt-error-banner');
   if(!banner)return;
-  banner.innerHTML=`
-    <div class="bg-app-rose/20 border border-app-rose/40 rounded-xl p-4">
-      <div class="flex items-center gap-2 text-app-rose font-semibold mb-2">
-        <svg class="ti ti-alert-triangle w-5 h-5"><use href="/icons.svg#ti-alert-triangle"/></svg>
-        <span data-i18n="wtErrorConfigTitle">${t('wtErrorConfigTitle')}</span>
-      </div>
-      <ul class="text-sm text-app-text-main space-y-1 ml-6">
-        ${messages.map(m=>`<li>• ${m}</li>`).join('')}
-      </ul>
-      <button onclick="toggleUserMenu()" class="mt-3 px-3 py-1.5 bg-app-purple rounded-lg text-sm font-semibold">
-        <span data-i18n="wtConfigNow">${t('wtConfigNow')}</span>
+
+  // Status como botões clicáveis
+  const configStatus=`
+    <div style="display:flex;gap:0.5rem;margin-top:0.75rem;flex-direction:column">
+      <button onclick="selectRootPathFromBanner()" style="display:flex;align-items:center;gap:0.5rem;padding:0.5rem 0.75rem;border-radius:8px;background:${isRootValid?'var(--green-bg)':'var(--subtle)'};border:1px solid ${isRootValid?'var(--green-bd)':'var(--border)'};color:var(--text);cursor:pointer;font-family:inherit;text-align:left;transition:all .15s;font-size:0.8125rem" onmouseover="this.style.borderColor='var(--indigo)'" onmouseout="this.style.borderColor='${isRootValid?'var(--green-bd)':'var(--border)'}'">
+        <svg class="ti" width="16" height="16" style="stroke:${isRootValid?'var(--green)':'var(--red)'}"><use href="/icons.svg#ti-${isRootValid?'check':'x'}"/></svg>
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:600;margin-bottom:2px">${currentLang==='pt-BR'?'Pasta raiz':'Root folder'}</div>
+          <div style="font-size:0.69rem;color:var(--muted);font-family:monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${rootConfigured?config.rootPath:(currentLang==='pt-BR'?'Não configurado':'Not configured')}</div>
+          ${rootConfigured&&!isRootValid?`<div style="font-size:0.69rem;color:var(--red);margin-top:2px">${currentLang==='pt-BR'?'⚠️ Evite usar a raiz do drive':'⚠️ Avoid using drive root'}</div>`:''}
+        </div>
+        <svg class="ti" width="14" height="14" style="stroke:var(--muted)"><use href="/icons.svg#ti-pencil"/></svg>
       </button>
+
+      <button onclick="selectWorktreesPathFromBanner()" style="display:flex;align-items:center;gap:0.5rem;padding:0.5rem 0.75rem;border-radius:8px;background:${isWorktreesValid?'var(--green-bg)':'var(--subtle)'};border:1px solid ${isWorktreesValid?'var(--green-bd)':'var(--border)'};color:var(--text);cursor:pointer;font-family:inherit;text-align:left;transition:all .15s;font-size:0.8125rem" onmouseover="this.style.borderColor='var(--blue)'" onmouseout="this.style.borderColor='${isWorktreesValid?'var(--green-bd)':'var(--border)'}'">
+        <svg class="ti" width="16" height="16" style="stroke:${isWorktreesValid?'var(--green)':'var(--red)'}"><use href="/icons.svg#ti-${isWorktreesValid?'check':'x'}"/></svg>
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:600;margin-bottom:2px">${currentLang==='pt-BR'?'Pasta worktrees':'Worktrees folder'}</div>
+          <div style="font-size:0.69rem;color:var(--muted);font-family:monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${worktreesConfigured?config.worktreesPath:(currentLang==='pt-BR'?'Não configurado':'Not configured')}</div>
+          ${worktreesConfigured&&!isWorktreesValid?`<div style="font-size:0.69rem;color:var(--red);margin-top:2px">${currentLang==='pt-BR'?'⚠️ Evite usar a raiz do drive':'⚠️ Avoid using drive root'}</div>`:''}
+        </div>
+        <svg class="ti" width="14" height="14" style="stroke:var(--muted)"><use href="/icons.svg#ti-pencil"/></svg>
+      </button>
+    </div>
+  `;
+
+  // Botão de carregar (só habilitado se ambos válidos)
+  const loadText=currentLang==='pt-BR'?'Carregar Repositórios':'Load Repositories';
+  const loadButton=`
+    <button onclick="${bothValid?'reloadWorktreesAfterConfig()':'void(0)'}" ${!bothValid?'disabled':''} style="margin-top:0.75rem;padding:0.5rem 1.25rem;background:${bothValid?'var(--green-bg)':'var(--subtle)'};border:1px solid ${bothValid?'var(--green-bd)':'var(--border)'};color:${bothValid?'var(--green)':'var(--muted)'};border-radius:8px;font-size:0.8125rem;font-weight:600;cursor:${bothValid?'pointer':'not-allowed'};font-family:inherit;display:inline-flex;align-items:center;gap:0.5rem;transition:all .15s;opacity:${bothValid?'1':'0.5'}" ${bothValid?`onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform=''"`:''}>
+      <svg class="ti" width="14" height="14"><use href="/icons.svg#ti-refresh"/></svg>
+      <span>${loadText}</span>
+    </button>
+  `;
+
+  const titleText=bothValid?(currentLang==='pt-BR'?'Configuração Completa':'Configuration Complete'):t('wtErrorConfigTitle');
+  const titleColor=bothValid?'var(--green)':'var(--red)';
+  const bgColor=bothValid?'rgba(166,227,161,0.15)':'rgba(243,139,168,0.15)';
+  const borderColor=bothValid?'rgba(166,227,161,0.4)':'rgba(243,139,168,0.4)';
+
+  banner.innerHTML=`
+    <div style="background:${bgColor};border:1px solid ${borderColor};border-radius:12px;padding:1rem">
+      <div style="display:flex;align-items:center;gap:0.5rem;color:${titleColor};font-weight:600;margin-bottom:0.5rem">
+        <svg class="ti" width="18" height="18"><use href="/icons.svg#ti-${bothValid?'check':'alert-triangle'}"/></svg>
+        <span>${titleText}</span>
+      </div>
+      ${!bothValid&&messages.length>0?`<ul style="font-size:0.8125rem;color:var(--text);margin:0 0 0 1.5rem;list-style:disc">
+        ${messages.map(m=>`<li>${m}</li>`).join('')}
+      </ul>`:`<p style="font-size:0.8125rem;color:var(--text);margin:0">${currentLang==='pt-BR'?'Configure as pastas abaixo clicando nos botões. O botão de carregar será habilitado quando ambas estiverem configuradas corretamente.':'Configure the folders below by clicking the buttons. The load button will be enabled when both are properly configured.'}</p>`}
+      ${configStatus}
+      ${loadButton}
     </div>
   `;
   banner.classList.remove('hidden');
   const mainContent=document.getElementById('wt-main-content');
-  if(mainContent)mainContent.classList.add('hidden');
+  if(mainContent)mainContent.style.display='none';
 }
+
+// Helper: verificar se é raiz de drive (C:\, D:\, etc)
+function isRootDrivePath(path){
+  if(!path)return true;
+  // Normalizar path
+  const normalized=path.replace(/\//g,'\\').trim();
+  // Verificar se é apenas letra de drive + :\ ou :/
+  return /^[A-Za-z]:\\?$/.test(normalized);
+}
+
+// Funções para configurar pastas do banner
+async function selectRootPathFromBanner(){
+  await window.selectRootPath();
+  // Re-validar e atualizar o banner
+  try{
+    const validation=await fetch('/api/config/worktrees/validate').then(r=>r.json());
+    const config=loadWorktreesConfig();
+
+    // Verificar se ambas as pastas estão configuradas E válidas
+    const rootValid=config.rootPath&&!isRootDrivePath(config.rootPath);
+    const wtValid=config.worktreesPath&&!isRootDrivePath(config.worktreesPath);
+
+    if(!validation.isValid||!rootValid||!wtValid){
+      // Ainda tem problemas - atualizar banner
+      showWorktreesConfigError(validation.errors||[]);
+    }else{
+      // Tudo ok - mas não carregar ainda, deixar usuário clicar no botão
+      showWorktreesConfigError([]);
+    }
+  }catch(err){
+    console.error('Error validating config:',err);
+  }
+}
+
+async function selectWorktreesPathFromBanner(){
+  await window.selectWorktreesPath();
+  // Re-validar e atualizar o banner
+  try{
+    const validation=await fetch('/api/config/worktrees/validate').then(r=>r.json());
+    const config=loadWorktreesConfig();
+
+    // Verificar se ambas as pastas estão configuradas E válidas
+    const rootValid=config.rootPath&&!isRootDrivePath(config.rootPath);
+    const wtValid=config.worktreesPath&&!isRootDrivePath(config.worktreesPath);
+
+    if(!validation.isValid||!rootValid||!wtValid){
+      // Ainda tem problemas - atualizar banner
+      showWorktreesConfigError(validation.errors||[]);
+    }else{
+      // Tudo ok - mas não carregar ainda, deixar usuário clicar no botão
+      showWorktreesConfigError([]);
+    }
+  }catch(err){
+    console.error('Error validating config:',err);
+  }
+}
+
+async function reloadWorktreesAfterConfig(){
+  hideWorktreesConfigError();
+  await loadWorktreesData(true);
+}
+
+window.selectRootPathFromBanner=selectRootPathFromBanner;
+window.selectWorktreesPathFromBanner=selectWorktreesPathFromBanner;
+window.reloadWorktreesAfterConfig=reloadWorktreesAfterConfig;
 
 function hideWorktreesConfigError(){
   const banner=document.getElementById('wt-error-banner');
   if(banner)banner.classList.add('hidden');
   const mainContent=document.getElementById('wt-main-content');
-  if(mainContent)mainContent.classList.remove('hidden');
+  if(mainContent)mainContent.style.display='';
 }
 
 // ── Individual Repository Actions ──────────────────────────────
@@ -2327,6 +2811,34 @@ async function openWorktree(worktreePath,action){
   }
 }
 
+async function switchToMainBranch(repoPath){
+  const confirmMsg=currentLang==='pt-BR'
+    ?`Deseja mudar o repositório principal para o branch 'main'?\n\n${repoPath}\n\nAs alterações não commitadas serão preservadas.`
+    :`Switch the main repository to 'main' branch?\n\n${repoPath}\n\nUncommitted changes will be preserved.`;
+
+  if(!confirm(confirmMsg)){
+    return;
+  }
+
+  try{
+    const result=await fetch('/api/worktrees/switch-to-main',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({repoPath})
+    }).then(r=>r.json());
+
+    if(result.success){
+      showToast(currentLang==='pt-BR'?'Branch alterado para main com sucesso!':'Successfully switched to main branch!','success');
+      await loadWorktreesData();
+    }else{
+      showToast(`${currentLang==='pt-BR'?'Erro ao mudar branch':'Error switching branch'}: ${result.error}`,'error');
+    }
+  }catch(err){
+    console.error('Error switching to main:',err);
+    showToast(currentLang==='pt-BR'?'Erro ao mudar branch':'Error switching branch','error');
+  }
+}
+
 async function deleteWorktree(repoPath,worktreePath){
   const confirmMsg=currentLang==='pt-BR'
     ?`Tem certeza que deseja excluir a worktree?\n\n${worktreePath}\n\nEsta ação não pode ser desfeita.`
@@ -2376,38 +2888,142 @@ function showToast(message,type='info'){
   },3000);
 }
 
+// ── Worktree Action Dropdown Control ───────────────────────────
+function toggleWorktreeActionMenu(event, wtPath){
+  event.stopPropagation();
+  const menuId='wt-menu-'+wtPath.replace(/[^a-zA-Z0-9]/g,'_');
+  const menu=document.getElementById(menuId);
+  if(!menu)return;
+
+  // Close all other menus first
+  const wasOpen=menu.classList.contains('show');
+  closeAllWorktreeMenus();
+
+  // Toggle this menu
+  if(!wasOpen){
+    menu.classList.add('show');
+  }
+}
+
+function closeAllWorktreeMenus(){
+  document.querySelectorAll('.wt-action-menu').forEach(menu=>{
+    menu.classList.remove('show');
+  });
+}
+
+// Close dropdowns when clicking outside
+document.addEventListener('click',()=>{
+  closeAllWorktreeMenus();
+});
+
 // ── Create Worktree Modal ──────────────────────────────────────
 function showCreateWorktreeModal(repoName){
   const repo=worktreesData.repositories.find(r=>r.name===repoName);
   if(!repo)return;
 
+  const config=loadWorktreesConfig();
+  const worktreesBasePath=config.worktreesPath||'';
+  const repoFolder=repoName;
+
+  // Update preview when inputs change
+  const updatePreview=()=>{
+    const nameInput=document.getElementById('wt-name-input');
+    const branchInput=document.getElementById('wt-branch-input');
+    const previewPath=document.getElementById('wt-preview-path');
+    const previewCmd=document.getElementById('wt-preview-cmd');
+
+    if(!nameInput||!branchInput||!previewPath||!previewCmd)return;
+
+    const name=nameInput.value.trim()||'<nome>';
+    const branch=branchInput.value.trim()||'main';
+    const finalPath=`${worktreesBasePath}\\${repoFolder}\\${name}`;
+
+    previewPath.textContent=finalPath;
+    previewCmd.textContent=`git worktree add -b ${branch} "${finalPath}" ${branch}`;
+  };
+
   const modalHtml=`
-    <div id="wt-create-modal" class="fixed inset-0 bg-black/60 flex items-center justify-center z-50" onclick="closeCreateWorktreeModal()">
-      <div class="bg-app-card rounded-2xl border border-app-border p-6 max-w-md w-full" onclick="event.stopPropagation()">
-        <h3 class="text-lg font-bold text-white mb-4">Criar Nova Worktree</h3>
-        <div class="space-y-3">
-          <div>
-            <label class="text-xs text-app-text-muted font-semibold">Nome da Worktree</label>
-            <input id="wt-name-input" type="text" class="w-full bg-[#181926] border border-app-border rounded-xl px-3 py-2 text-sm text-white" placeholder="feat-new-feature" />
+    <div id="wt-create-modal" style="position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:9999;padding:1.5rem" onclick="closeCreateWorktreeModal()">
+      <div style="background:var(--surf);border-radius:1rem;border:1px solid var(--border);padding:1.75rem;max-width:42rem;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.4)" onclick="event.stopPropagation()">
+
+        <!-- Header -->
+        <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:1.5rem">
+          <div style="width:2.5rem;height:2.5rem;border-radius:0.5rem;background:rgba(180,190,254,0.15);display:flex;align-items:center;justify-content:center">
+            <svg class="ti" width="1.25rem" height="1.25rem" style="stroke:#b4befe"><use href="/icons.svg#ti-git-branch"/></svg>
           </div>
           <div>
-            <label class="text-xs text-app-text-muted font-semibold">Branch</label>
-            <input id="wt-branch-input" type="text" class="w-full bg-[#181926] border border-app-border rounded-xl px-3 py-2 text-sm text-white" placeholder="main" value="${repo.currentBranch}" />
+            <h3 style="font-size:1.125rem;font-weight:700;color:var(--text);margin:0" data-i18n="wtModalCreateTitle">${t('wtModalCreateTitle')}</h3>
+            <div style="font-size:0.75rem;color:var(--muted);margin-top:0.125rem">${repoName}</div>
           </div>
         </div>
-        <div class="flex items-center gap-2 mt-6">
-          <button class="flex-1 px-4 py-2 rounded-xl bg-app-purple text-[#181926] font-bold text-sm" onclick="createWorktree('${repoName}')">
-            Criar Worktree
+
+        <!-- Info Box -->
+        <div style="background:rgba(116,199,236,0.1);border:1px solid rgba(116,199,236,0.3);border-radius:0.625rem;padding:0.875rem 1rem;margin-bottom:1.25rem;display:flex;gap:0.75rem">
+          <svg class="ti" width="1rem" height="1rem" style="stroke:#74c7ec;flex-shrink:0;margin-top:0.125rem"><use href="/icons.svg#ti-info-circle"/></svg>
+          <div style="font-size:0.75rem;color:#74c7ec;line-height:1.4" data-i18n="wtModalInfo">${t('wtModalInfo')}</div>
+        </div>
+
+        <!-- Form Inputs -->
+        <div style="display:flex;flex-direction:column;gap:1rem;margin-bottom:1.25rem">
+          <div>
+            <label style="display:block;font-size:0.6875rem;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:var(--muted);margin-bottom:0.375rem" data-i18n="wtModalName">${t('wtModalName')}</label>
+            <input id="wt-name-input" type="text" placeholder="feature/new-feature" style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:0.5rem;padding:0.625rem 0.875rem;font-size:0.875rem;color:var(--text);outline:none;font-family:monospace;transition:border-color .15s" oninput="updateWorktreePreview()" onfocus="this.style.borderColor='var(--blue)'" onblur="this.style.borderColor='var(--border)'" />
+          </div>
+          <div>
+            <label style="display:block;font-size:0.6875rem;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:var(--muted);margin-bottom:0.375rem" data-i18n="wtModalBranch">${t('wtModalBranch')}</label>
+            <input id="wt-branch-input" type="text" placeholder="main" value="${repo.currentBranch||'main'}" style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:0.5rem;padding:0.625rem 0.875rem;font-size:0.875rem;color:var(--text);outline:none;font-family:monospace;transition:border-color .15s" oninput="updateWorktreePreview()" onfocus="this.style.borderColor='var(--blue)'" onblur="this.style.borderColor='var(--border)'" />
+          </div>
+        </div>
+
+        <!-- Preview Section -->
+        <div style="background:var(--bg);border:1px solid var(--border);border-radius:0.625rem;padding:1rem;margin-bottom:1.5rem">
+          <div style="font-size:0.6875rem;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:var(--muted);margin-bottom:0.75rem" data-i18n="wtModalDestination">${t('wtModalDestination')}</div>
+
+          <div style="display:flex;flex-direction:column;gap:0.625rem;font-size:0.75rem;font-family:monospace">
+            <div style="display:flex;align-items:center;gap:0.5rem">
+              <svg class="ti" width="0.875rem" height="0.875rem" style="stroke:var(--indigo);flex-shrink:0"><use href="/icons.svg#ti-folder"/></svg>
+              <span style="color:var(--muted)" data-i18n="wtModalRepoFolder">${t('wtModalRepoFolder')}</span>
+              <span style="color:var(--text);font-weight:500">${repoName}</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:0.5rem">
+              <svg class="ti" width="0.875rem" height="0.875rem" style="stroke:var(--blue);flex-shrink:0"><use href="/icons.svg#ti-folder-down"/></svg>
+              <span style="color:var(--muted)" data-i18n="wtModalWorktreeFolder">${t('wtModalWorktreeFolder')}</span>
+              <span style="color:var(--text);font-weight:500">${worktreesBasePath}</span>
+            </div>
+          </div>
+
+          <div style="height:1px;background:var(--border);margin:0.875rem 0"></div>
+
+          <div style="margin-bottom:0.75rem">
+            <div style="font-size:0.6875rem;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:var(--muted);margin-bottom:0.5rem" data-i18n="wtModalFinalPath">${t('wtModalFinalPath')}</div>
+            <div id="wt-preview-path" style="font-size:0.75rem;font-family:monospace;color:#a6e3a1;background:rgba(166,227,161,0.1);padding:0.5rem 0.75rem;border-radius:0.375rem;word-break:break-all">${worktreesBasePath}\\${repoFolder}\\&lt;nome&gt;</div>
+          </div>
+
+          <div>
+            <div style="font-size:0.6875rem;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:var(--muted);margin-bottom:0.5rem" data-i18n="wtModalGitCommand">${t('wtModalGitCommand')}</div>
+            <div id="wt-preview-cmd" style="font-size:0.6875rem;font-family:monospace;color:var(--text);background:rgba(137,180,250,0.1);padding:0.5rem 0.75rem;border-radius:0.375rem;word-break:break-all;line-height:1.4">git worktree add -b main "${worktreesBasePath}\\${repoFolder}\\&lt;nome&gt;" main</div>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div style="display:flex;align-items:center;gap:0.75rem">
+          <button style="flex:1;padding:0.75rem 1.5rem;border-radius:0.625rem;background:#cba6f7;color:#1e1e2e;font-size:0.875rem;font-weight:700;border:none;cursor:pointer;transition:all .15s;box-shadow:0 4px 14px rgba(203,166,247,0.3)" onclick="createWorktree('${repoName}')" onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 6px 20px rgba(203,166,247,0.4)'" onmouseout="this.style.transform='';this.style.boxShadow='0 4px 14px rgba(203,166,247,0.3)'">
+            <span data-i18n="wtModalCreate">${t('wtModalCreate')}</span>
           </button>
-          <button class="px-4 py-2 rounded-xl bg-[#181926] border border-app-border text-sm" onclick="closeCreateWorktreeModal()">
-            Cancelar
+          <button style="padding:0.75rem 1.5rem;border-radius:0.625rem;background:var(--subtle);border:1px solid var(--border);color:var(--text);font-size:0.875rem;font-weight:600;cursor:pointer;transition:all .15s" onclick="closeCreateWorktreeModal()" onmouseover="this.style.borderColor='var(--muted)'" onmouseout="this.style.borderColor='var(--border)'">
+            <span data-i18n="wtModalCancel">${t('wtModalCancel')}</span>
           </button>
         </div>
+
       </div>
     </div>
   `;
 
   document.body.insertAdjacentHTML('beforeend',modalHtml);
+
+  // Set up live preview updates
+  window.updateWorktreePreview=updatePreview;
+  updatePreview();
 }
 
 function closeCreateWorktreeModal(){

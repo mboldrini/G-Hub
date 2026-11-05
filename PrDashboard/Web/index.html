@@ -465,55 +465,57 @@
           <!-- Repository Filter -->
           <div style="display:flex;flex-direction:column;gap:0.375rem;min-width:12.5rem">
             <label style="font-size:0.69rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)" data-i18n="wtFilterRepo">REPOSITÓRIO</label>
-            <div style="position:relative">
-              <select style="width:100%;appearance:none;background:var(--subtle);border:1px solid var(--border);border-radius:6px;padding:0.5rem 0.75rem;font-size:0.8125rem;font-weight:500;color:var(--text);cursor:pointer;padding-right:2rem">
-                <option selected="" data-i18n="wtAllRepos">Todos os repositórios (14)</option>
-                <option>auth-service</option>
-                <option>billing-api</option>
-                <option>frontend-dashboard</option>
-                <option>notification-worker</option>
-                <option>data-pipeline</option>
-              </select>
-              <svg class="ti" width="14" height="14" style="position:absolute;right:0.625rem;top:50%;transform:translateY(-50%);pointer-events:none;stroke:var(--muted)"><use href="/icons.svg#ti-chevron-down"/></svg>
+            <div class="ms-wrap" id="ms-wt-repo">
+              <button class="ms-btn" onclick="toggleWtMS('repo',event)"><span class="ms-label" data-i18n="wtAllRepos">Todos os repositórios</span><span class="ms-arrow">▾</span></button>
+              <div class="ms-panel" id="ms-panel-wt-repo" style="display:none"></div>
             </div>
           </div>
           <!-- Status Filter -->
           <div style="display:flex;flex-direction:column;gap:0.375rem;min-width:10.625rem">
             <label style="font-size:0.69rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)" data-i18n="wtFilterStatus">STATUS DO REPO</label>
-            <div style="position:relative">
-              <select style="width:100%;appearance:none;background:var(--subtle);border:1px solid var(--border);border-radius:6px;padding:0.5rem 0.75rem;font-size:0.8125rem;font-weight:500;color:var(--text);cursor:pointer;padding-right:2rem">
-                <option selected="" data-i18n="wtAllStates">Todos os estados</option>
-                <option data-i18n="wtOutdated">Desatualizados (5)</option>
-                <option data-i18n="wtWithWorktrees">Com Worktrees (4)</option>
-                <option data-i18n="wtWithChanges">Com alterações locais (2)</option>
-                <option data-i18n="wtInConflict">Em conflito (1)</option>
-              </select>
-              <svg class="ti" width="14" height="14" style="position:absolute;right:0.625rem;top:50%;transform:translateY(-50%);pointer-events:none;stroke:var(--muted)"><use href="/icons.svg#ti-chevron-down"/></svg>
+            <div class="ms-wrap" id="ms-wt-status">
+              <button class="ms-btn" onclick="toggleWtMS('status',event)"><span class="ms-label" data-i18n="wtAllStates">Todos os estados</span><span class="ms-arrow">▾</span></button>
+              <div class="ms-panel" id="ms-panel-wt-status" style="display:none">
+                <div class="ms-item" data-val="outdated" onclick="toggleWtMSItem('status','outdated')"><span class="ms-check"></span><span data-i18n="wtOutdated">Desatualizados</span></div>
+                <div class="ms-item" data-val="hasWorktrees" onclick="toggleWtMSItem('status','hasWorktrees')"><span class="ms-check"></span><span data-i18n="wtWithWorktrees">Com Worktrees</span></div>
+                <div class="ms-item" data-val="hasChanges" onclick="toggleWtMSItem('status','hasChanges')"><span class="ms-check"></span><span data-i18n="wtWithChanges">Com alterações locais</span></div>
+                <div class="ms-item" data-val="conflict" onclick="toggleWtMSItem('status','conflict')"><span class="ms-check"></span><span data-i18n="wtInConflict">Em conflito</span></div>
+              </div>
             </div>
           </div>
           <!-- Search Input -->
           <div style="display:flex;flex-direction:column;gap:0.375rem">
             <label style="font-size:0.69rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)" data-i18n="wtFilterSearch">BUSCAR RAMO / REPO</label>
             <div style="position:relative;width:16.25rem">
-              <input type="search" placeholder="Filtrar por nome ou branch..." data-i18n-ph="wtSearchPlaceholder" style="width:100%;background:var(--subtle);border:1px solid var(--border);border-radius:6px;padding:0.5rem 0.75rem 0.5rem 2.25rem;font-size:0.8125rem;color:var(--text);outline:none" onfocus="this.style.borderColor='var(--indigo)'" onblur="this.style.borderColor='var(--border)'">
+              <input id="wt-search-input" type="search" placeholder="Filtrar por nome ou branch..." data-i18n-ph="wtSearchPlaceholder" oninput="applyWorktreeFilters()" style="width:100%;background:var(--subtle);border:1px solid var(--border);border-radius:6px;padding:0.5rem 0.75rem 0.5rem 2.25rem;font-size:0.8125rem;color:var(--text);outline:none" onfocus="this.style.borderColor='var(--indigo)'" onblur="this.style.borderColor='var(--border)'">
               <svg class="ti" width="15" height="15" style="position:absolute;left:0.75rem;top:50%;transform:translateY(-50%);stroke:var(--muted)"><use href="/icons.svg#ti-search"/></svg>
             </div>
           </div>
-          <!-- Worktree View Toggle -->
+          <!-- Order By -->
+          <div style="display:flex;flex-direction:column;gap:0.375rem;min-width:10rem">
+            <label style="font-size:0.69rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)" data-i18n="wtOrderBy">ORDENAR POR</label>
+            <div style="position:relative">
+              <select id="wt-order-by" onchange="applyWorktreeFilters()" style="width:100%;appearance:none;background:var(--subtle);border:1px solid var(--border);border-radius:6px;padding:0.5rem 0.75rem;font-size:0.8125rem;font-weight:500;color:var(--text);cursor:pointer;padding-right:2rem">
+                <option value="name-asc" selected data-i18n="wtOrderNameAsc">Nome (A-Z)</option>
+                <option value="name-desc" data-i18n="wtOrderNameDesc">Nome (Z-A)</option>
+                <option value="modified" data-i18n="wtOrderModified">Última modificação</option>
+                <option value="status" data-i18n="wtOrderStatus">Status</option>
+                <option value="worktrees" data-i18n="wtOrderWorktrees">Worktrees</option>
+              </select>
+              <svg class="ti" width="14" height="14" style="position:absolute;right:0.625rem;top:50%;transform:translateY(-50%);pointer-events:none;stroke:var(--muted)"><use href="/icons.svg#ti-chevron-down"/></svg>
+            </div>
+          </div>
+          <!-- Clear Filters Button -->
           <div style="display:flex;align-items:center;gap:0.75rem;padding-top:1.375rem">
-            <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;user-select:none">
-              <input type="checkbox" checked="" style="width:1rem;height:1rem;cursor:pointer">
-              <span style="font-size:0.8125rem;color:var(--muted);font-weight:500" data-i18n="wtWorktreeView">Worktree View</span>
-            </label>
-            <button data-i18n-title="wtClearFilters" title="Limpar filtros" class="wt-filter-clear-btn" style="padding:0.5rem;border-radius:6px;background:var(--subtle);border:1px solid var(--border);color:var(--muted);cursor:pointer;transition:all .15s">
+            <button onclick="clearWorktreeFilters()" data-i18n-title="wtClearFilters" title="Limpar filtros" class="wt-filter-clear-btn" style="padding:0.5rem;border-radius:6px;background:var(--subtle);border:1px solid var(--border);color:var(--muted);cursor:pointer;transition:all .15s">
               <svg class="ti" width="16" height="16"><use href="/icons.svg#ti-filter-x"/></svg>
             </button>
           </div>
         </div>
-        <!-- Export Button -->
+        <!-- Export Button (disabled) -->
         <div style="display:flex;align-items:center;gap:0.75rem;padding-top:1.375rem">
-          <button class="wt-export-btn" style="display:flex;align-items:center;gap:0.5rem;padding:0.5rem 1rem;border-radius:6px;background:var(--subtle);border:1px solid var(--border);color:var(--text);font-size:0.8125rem;font-weight:500;cursor:pointer;transition:all .15s">
-            <svg class="ti" width="16" height="16" style="stroke:var(--indigo)"><use href="/icons.svg#ti-download"/></svg>
+          <button class="wt-export-btn" disabled style="display:flex;align-items:center;gap:0.5rem;padding:0.5rem 1rem;border-radius:6px;background:var(--subtle);border:1px solid var(--border);color:var(--muted);font-size:0.8125rem;font-weight:500;cursor:not-allowed;transition:all .15s;opacity:0.5">
+            <svg class="ti" width="16" height="16" style="stroke:var(--muted)"><use href="/icons.svg#ti-download"/></svg>
             <span data-i18n="wtExportReport">Exportar Relatório</span>
             <svg class="ti" width="14" height="14" style="stroke:var(--muted)"><use href="/icons.svg#ti-chevron-down"/></svg>
           </button>

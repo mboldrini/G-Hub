@@ -307,12 +307,16 @@ public class WebServer(PrsDataService dataService, AppConfig config, Notificatio
             var lines = output.Split('\n', StringSplitOptions.RemoveEmptyEntries);
 
             object? current = null;
+            bool isFirstWorktree = true;
+
             foreach (var line in lines)
             {
                 if (line.StartsWith("worktree "))
                 {
                     if (current != null) worktrees.Add(current);
-                    current = new { path = line.Replace("worktree ", "").Trim(), branch = "", head = "", isMain = false };
+                    // O primeiro worktree é sempre o repositório principal
+                    current = new { path = line.Replace("worktree ", "").Trim(), branch = "", head = "", isMain = isFirstWorktree };
+                    isFirstWorktree = false;
                 }
                 else if (line.StartsWith("branch "))
                 {
@@ -323,10 +327,6 @@ public class WebServer(PrsDataService dataService, AppConfig config, Notificatio
                 {
                     var head = line.Replace("HEAD ", "").Trim();
                     current = new { ((dynamic)current!).path, ((dynamic)current).branch, head, ((dynamic)current).isMain };
-                }
-                else if (line == "bare")
-                {
-                    current = new { ((dynamic)current!).path, ((dynamic)current).branch, ((dynamic)current).head, isMain = true };
                 }
             }
             if (current != null) worktrees.Add(current);
@@ -757,6 +757,73 @@ public class WebServer(PrsDataService dataService, AppConfig config, Notificatio
                 return Results.Json(new { success = false, error = error }, JsonOpts);
 
             return Results.Json(new { success = true, output }, JsonOpts);
+        });
+
+        app.MapPost("/api/worktrees/switch-to-main", async (HttpContext ctx) =>
+        {
+            using var reader = new System.IO.StreamReader(ctx.Request.Body);
+            var json = await reader.ReadToEndAsync();
+            var body = JsonSerializer.Deserialize<JsonElement>(json);
+            var repoPath = body.TryGetProperty("repoPath", out var rp) ? rp.GetString() : null;
+
+            if (string.IsNullOrEmpty(repoPath) || !Directory.Exists(repoPath))
+                return Results.Json(new { success = false, error = "invalidPath" }, JsonOpts);
+
+            // Try 'main' first, fallback to 'master'
+            var branches = new[] { "main", "master" };
+            string? targetBranch = null;
+
+            foreach (var branch in branches)
+            {
+                var checkPsi = new ProcessStartInfo
+                {
+                    FileName = "git",
+                    Arguments = $"rev-parse --verify {branch}",
+                    WorkingDirectory = repoPath,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true
+                };
+
+                var checkProcess = Process.Start(checkPsi);
+                if (checkProcess != null)
+                {
+                    await checkProcess.WaitForExitAsync();
+                    if (checkProcess.ExitCode == 0)
+                    {
+                        targetBranch = branch;
+                        break;
+                    }
+                }
+            }
+
+            if (string.IsNullOrEmpty(targetBranch))
+                return Results.Json(new { success = false, error = "neitherMainNorMasterExists" }, JsonOpts);
+
+            var psi = new ProcessStartInfo
+            {
+                FileName = "git",
+                Arguments = $"checkout {targetBranch}",
+                WorkingDirectory = repoPath,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
+
+            var process = Process.Start(psi);
+            if (process == null)
+                return Results.Json(new { success = false, error = "failedToStartProcess" }, JsonOpts);
+
+            var output = await process.StandardOutput.ReadToEndAsync();
+            var error = await process.StandardError.ReadToEndAsync();
+            await process.WaitForExitAsync();
+
+            if (process.ExitCode != 0)
+                return Results.Json(new { success = false, error = error }, JsonOpts);
+
+            return Results.Json(new { success = true, output, branch = targetBranch }, JsonOpts);
         });
 
         app.MapPost("/api/select-folder", async (HttpContext ctx) =>

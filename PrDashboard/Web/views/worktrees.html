@@ -55,21 +55,17 @@
               <svg class="ti" width="0.9375rem" height="0.9375rem" style="position:absolute;left:0.75rem;top:50%;transform:translateY(-50%);stroke:var(--muted)"><use href="/icons.svg#ti-search"/></svg>
             </div>
           </div>
-          <!-- Worktree View Toggle -->
+          <!-- Clear filters button -->
           <div style="display:flex;align-items:center;gap:0.75rem;padding-top:1.375rem">
-            <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;user-select:none">
-              <input type="checkbox" checked="" class="wt-checkbox" style="width:1rem;height:1rem;cursor:pointer">
-              <span style="font-size:0.8125rem;color:var(--muted);font-weight:500" data-i18n="wtWorktreeView">Worktree View</span>
-            </label>
             <button data-i18n-title="wtClearFilters" title="Limpar filtros" class="wt-clear-btn" style="padding:0.5rem;border-radius:0.375rem;background:var(--subtle);border:1px solid var(--border);color:var(--muted);cursor:pointer;transition:all .15s">
               <svg class="ti" width="1rem" height="1rem"><use href="/icons.svg#ti-filter-x"/></svg>
             </button>
           </div>
         </div>
-        <!-- Export Button -->
+        <!-- Export Button (disabled) -->
         <div style="display:flex;align-items:center;gap:0.75rem;padding-top:1.375rem">
-          <button class="wt-export-btn" style="display:flex;align-items:center;gap:0.5rem;padding:0.5rem 1rem;border-radius:0.375rem;background:var(--subtle);border:1px solid var(--border);color:var(--text);font-size:0.8125rem;font-weight:500;cursor:pointer;transition:all .15s">
-            <svg class="ti" width="1rem" height="1rem" style="stroke:var(--indigo)"><use href="/icons.svg#ti-download"/></svg>
+          <button class="wt-export-btn" disabled style="display:flex;align-items:center;gap:0.5rem;padding:0.5rem 1rem;border-radius:0.375rem;background:var(--subtle);border:1px solid var(--border);color:var(--muted);font-size:0.8125rem;font-weight:500;cursor:not-allowed;transition:all .15s;opacity:0.5">
+            <svg class="ti" width="1rem" height="1rem" style="stroke:var(--muted)"><use href="/icons.svg#ti-download"/></svg>
             <span data-i18n="wtExportReport">Exportar Relatório</span>
             <svg class="ti" width="0.875rem" height="0.875rem" style="stroke:var(--muted)"><use href="/icons.svg#ti-chevron-down"/></svg>
           </button>
